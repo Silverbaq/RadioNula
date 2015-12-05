@@ -1,0 +1,33 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.radionula.radionula.TopFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:clipToPadding="false"
+        android:background="@android:color/transparent" >
+
+        <ImageView
+            android:id="@+id/fragment_top_ivRecord"
+            android:layout_alignParentBottom="true"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:layout_marginLeft="-20dp"
+            android:layout_marginRight="-20dp"
+            android:layout_marginBottom="-175dp"
+            android:clipChildren="false"
+            android:src="@drawable/record" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitStart"
+            android:src="@drawable/nula_logo_ch1"
+            android:layout_alignParentBottom="true"/>
+
+    </RelativeLayout>
+</FrameLayout>

@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    tools:context="com.radionula.radionula.ControlsFragment">
+
+    <ImageView
+        android:id="@+id/fragment_controls_ivSkip"
+        android:paddingRight="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/button_skip_01"
+        />
+
+    <ImageView
+        android:id="@+id/fragment_controls_ivPause"
+        android:paddingLeft="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/button_pause_1"
+         />
+
+</LinearLayout>
