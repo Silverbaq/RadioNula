@@ -30,16 +30,28 @@ public class TopFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_top, container, false);
 
+        ivRecord = (ImageView) view.findViewById(R.id.fragment_top_ivRecord);
+
+
+        return view;
+    }
+
+    public void StopVinyl(){
+        try {
+            ivRecord.getAnimation().cancel();
+        } catch (Exception e){
+
+        }
+    }
+
+    public void StartVinyl(){
         RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         anim.setInterpolator(new LinearInterpolator());
         anim.setRepeatCount(Animation.INFINITE);
         anim.setDuration(2500);
 
-        // Start animating the image
-        ivRecord = (ImageView) view.findViewById(R.id.fragment_top_ivRecord);
         ivRecord.startAnimation(anim);
-
-        return view;
     }
+
 
 }

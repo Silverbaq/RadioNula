@@ -33,7 +33,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:name="com.radionula.radionula.TopFragment"
-            android:id="@+id/fragment"
+            android:id="@+id/activityMain_fragmentTop"
             tools:layout="@layout/fragment_top" />
 
         <fragment
@@ -41,14 +41,14 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:name="com.radionula.radionula.PlaylistFragment"
-            android:id="@+id/fragment_playlist"
+            android:id="@+id/activityMain_fragmentPlaylist"
             tools:layout="@layout/fragment_playlist" />
 
 
     </LinearLayout>
 
     <fragment
-        android:id="@+id/fragment_controls"
+        android:id="@+id/activityMain_fragmentControls"
         android:foregroundGravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

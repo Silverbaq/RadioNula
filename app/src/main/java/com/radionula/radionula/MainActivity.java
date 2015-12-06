@@ -1,20 +1,22 @@
 package com.radionula.radionula;
 
-import android.app.ActionBar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity {
+import com.radionula.interfaces.IControls;
+
+public class MainActivity extends AppCompatActivity implements IControls {
 
     private DrawerLayout mDrawer;
     ImageView navButton;
+
+    TopFragment topFragment;
+    ControlsFragment controlFragment;
 
 
     @Override
@@ -25,6 +27,11 @@ public class MainActivity extends AppCompatActivity {
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (ImageView)findViewById(R.id.nav_Button);
+
+        topFragment = (TopFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentTop);
+        controlFragment = (ControlsFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentControls);
+
+
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,5 +59,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+    }
+
+    @Override
+    public void Skip() {
+        topFragment.StartVinyl();
+    }
+
+    @Override
+    public void Pause() {
+        topFragment.StopVinyl();
     }
 }
