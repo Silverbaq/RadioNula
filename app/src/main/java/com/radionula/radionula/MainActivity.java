@@ -1,5 +1,7 @@
 package com.radionula.radionula;
 
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,13 +12,19 @@ import android.widget.ImageView;
 
 import com.radionula.interfaces.IControls;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity implements IControls {
 
     private DrawerLayout mDrawer;
     ImageView navButton;
 
+    // Fragments
     TopFragment topFragment;
     ControlsFragment controlFragment;
+
+    // Mediaplayer
+    MediaPlayer mp;
 
 
     @Override
@@ -32,6 +40,11 @@ public class MainActivity extends AppCompatActivity implements IControls {
         controlFragment = (ControlsFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentControls);
 
 
+        // Mediaplayer
+        mp = new MediaPlayer();
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,6 +55,26 @@ public class MainActivity extends AppCompatActivity implements IControls {
 
     }
 
+    private void makeMediaPlayerReady(String url) {
+        mp.reset();
+        try {
+            mp.setDataSource(url);
+            mp.prepare();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -64,10 +97,12 @@ public class MainActivity extends AppCompatActivity implements IControls {
     @Override
     public void Skip() {
         topFragment.StartVinyl();
+        mp.start();
     }
 
     @Override
     public void Pause() {
         topFragment.StopVinyl();
+        mp.pause();
     }
 }
