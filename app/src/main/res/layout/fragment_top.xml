@@ -9,8 +9,7 @@
     <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:clipToPadding="false"
-        android:background="@android:color/transparent" >
+        android:clipToPadding="false" >
 
         <ImageView
             android:id="@+id/fragment_top_ivRecord"
@@ -26,6 +25,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="10dp"
             android:scaleType="fitStart"
             android:src="@drawable/nula_logo_ch1"
             android:layout_alignParentBottom="true"/>

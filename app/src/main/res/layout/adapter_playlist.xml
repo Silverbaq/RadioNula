@@ -43,7 +43,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Text"
-                    android:id="@+id/adapter_playlist_ivPlayingArtist" />
+                    android:id="@+id/adapter_playlist_tvPlayingArtist" />
 
                 <TextView
                     android:layout_marginTop="2dp"
@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Text"
-                    android:id="@+id/adapter_playlist_ivPlayingTitle" />
+                    android:id="@+id/adapter_playlist_tvPlayingTitle" />
             </LinearLayout>
 
 
@@ -106,7 +106,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Text"
-                    android:id="@+id/adapter_playlist_ivPlaylistArtist" />
+                    android:id="@+id/adapter_playlist_tvPlaylistArtist" />
 
                 <TextView
                     android:layout_marginTop="2dp"
@@ -114,7 +114,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="New Text"
-                    android:id="@+id/adapter_playlist_ivPlaylistTitle" />
+                    android:id="@+id/adapter_playlist_tvPlaylistTitle" />
             </LinearLayout>
 
 

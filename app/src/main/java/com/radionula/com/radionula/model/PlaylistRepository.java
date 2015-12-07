@@ -23,10 +23,10 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * Created by silverbaq on 12/6/15.
  */
-public class PlaylistReposetory{
+public class PlaylistRepository {
     List<NulaTrack> tracks = new ArrayList<NulaTrack>();
 
-    private void updatePlaylist(String url){
+    public void updatePlaylist(String url){
         new RSSFeedTask().execute(url);
     }
 

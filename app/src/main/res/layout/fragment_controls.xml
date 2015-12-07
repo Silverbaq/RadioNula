@@ -8,17 +8,17 @@
     <ImageView
         android:id="@+id/fragment_controls_ivSkip"
         android:paddingRight="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/button_skip_01"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/button_skip"
         />
 
     <ImageView
         android:id="@+id/fragment_controls_ivPause"
         android:paddingLeft="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/button_pause_1"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/button_pause"
          />
 
 </LinearLayout>

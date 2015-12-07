@@ -1,11 +1,18 @@
 package com.radionula.radionula;
 
 
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+
+import com.radionula.com.radionula.model.NulaTrack;
+
+import java.util.List;
 
 
 /**
@@ -13,6 +20,8 @@ import android.view.ViewGroup;
  */
 public class PlaylistFragment extends Fragment {
 
+    ListView lvPlaylist;
+    PlaylistAdapter adapter;
 
     public PlaylistFragment() {
         // Required empty public constructor
@@ -23,7 +32,16 @@ public class PlaylistFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_playlist, container, false);
+        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
+
+        lvPlaylist = (ListView)view.findViewById(R.id.fragment_playlist_listview);
+
+        return view;
+    }
+
+    public void SetPlaylist(List<NulaTrack> tracks){
+        adapter = new PlaylistAdapter(getActivity(), tracks);
+        lvPlaylist.setAdapter(adapter);
     }
 
 }

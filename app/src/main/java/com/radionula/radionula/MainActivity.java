@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.radionula.com.radionula.model.PlaylistRepository;
 import com.radionula.interfaces.IControls;
 
 import java.io.IOException;
@@ -19,9 +20,13 @@ public class MainActivity extends AppCompatActivity implements IControls {
     private DrawerLayout mDrawer;
     ImageView navButton;
 
+    // Playlist
+    PlaylistRepository playlistReposetory = new PlaylistRepository();
+
     // Fragments
     TopFragment topFragment;
     ControlsFragment controlFragment;
+    PlaylistFragment playlistFragment;
 
     // Mediaplayer
     MediaPlayer mp;
@@ -38,7 +43,10 @@ public class MainActivity extends AppCompatActivity implements IControls {
 
         topFragment = (TopFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentTop);
         controlFragment = (ControlsFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentControls);
+        playlistFragment = (PlaylistFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlaylist);
 
+        // TODO: Move update playlist to better place
+        playlistReposetory.updatePlaylist(getString(R.string.classic_rrs));
 
         // Mediaplayer
         mp = new MediaPlayer();
@@ -97,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements IControls {
     @Override
     public void Skip() {
         topFragment.StartVinyl();
+        playlistFragment.SetPlaylist(playlistReposetory.getPlaylist());
         mp.start();
     }
 
