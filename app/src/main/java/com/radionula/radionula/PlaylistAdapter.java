@@ -19,7 +19,7 @@ public class PlaylistAdapter extends BaseAdapter {
     List<NulaTrack> tracks;
     Activity activity;
 
-    public PlaylistAdapter(Activity activity, List<NulaTrack> playlist){
+    public PlaylistAdapter(Activity activity, List<NulaTrack> playlist) {
         this.tracks = playlist;
         this.activity = activity;
     }
@@ -40,7 +40,7 @@ public class PlaylistAdapter extends BaseAdapter {
         return position;
     }
 
-    private static class ViewHolder{
+    private static class ViewHolder {
         ImageView image;
         TextView artist;
         TextView title;
@@ -50,26 +50,15 @@ public class PlaylistAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
-        if (convertView == null){
+        if (convertView == null) {
             holder = new ViewHolder();
 
             convertView = activity.getLayoutInflater().inflate(R.layout.adapter_playlist, parent, false);
 
-            // Checks if it's the first, and current number playing
-            if (position == 0){
-                holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlayingCover);
-                holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlayingArtist);
-                holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlayingTitle);
+            holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlaylistCover);
+            holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistArtist);
+            holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistTitle);
 
-                convertView.findViewById(R.id.adapter_playlist_llNowPlaying).setVisibility(View.GONE);
-
-            } else {
-                holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlaylistCover);
-                holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistArtist);
-                holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistTitle);
-
-                convertView.findViewById(R.id.adapter_playlist_llPlaylist).setVisibility(View.GONE);
-            }
 
             convertView.setTag(holder);
         } else {
@@ -82,7 +71,7 @@ public class PlaylistAdapter extends BaseAdapter {
         holder.title.setText(item.getTitel());
 
         //TODO: Image from url to ImageView
-        //TODO: Animation on image
+        //TODO: Fade animation on image
 
         return convertView;
     }
