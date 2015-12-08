@@ -1,4 +1,4 @@
-package com.radionula.com.radionula.model;
+package com.radionula.model;
 
 import android.os.AsyncTask;
 import android.util.Log;

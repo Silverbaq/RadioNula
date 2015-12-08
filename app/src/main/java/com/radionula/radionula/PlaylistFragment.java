@@ -1,16 +1,14 @@
 package com.radionula.radionula;
 
 
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ListView;
 
-import com.radionula.com.radionula.model.NulaTrack;
+import com.radionula.model.NulaTrack;
 
 import java.util.List;
 

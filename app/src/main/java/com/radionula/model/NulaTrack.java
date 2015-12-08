@@ -1,4 +1,4 @@
-package com.radionula.com.radionula.model;
+package com.radionula.model;
 
 /**
  * Created by silverbaq on 12/6/15.

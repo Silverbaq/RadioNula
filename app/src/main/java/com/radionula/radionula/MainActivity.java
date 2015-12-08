@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.radionula.com.radionula.model.PlaylistRepository;
+import com.radionula.model.PlaylistRepository;
 import com.radionula.interfaces.IControls;
 
 import java.io.IOException;

@@ -5,10 +5,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.radionula.com.radionula.model.NulaTrack;
+import com.androidquery.AQuery;
+import com.radionula.model.NulaTrack;
+
 
 import java.util.List;
 
@@ -69,9 +70,8 @@ public class PlaylistAdapter extends BaseAdapter {
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
+        MyApp.aquery.id(holder.image).image(item.getImage(),true,true,0,0,null,AQuery.FADE_IN);
 
-        //TODO: Image from url to ImageView
-        //TODO: Fade animation on image
 
         return convertView;
     }
