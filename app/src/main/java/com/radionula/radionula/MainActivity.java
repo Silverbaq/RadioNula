@@ -1,5 +1,6 @@
 package com.radionula.radionula;
 
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.v4.view.GravityCompat;
@@ -104,7 +105,10 @@ public class MainActivity extends AppCompatActivity implements IControls {
 
     @Override
     public void Skip() {
+        // TODO: Refactor
         topFragment.StartVinyl();
+
+        topFragment.SetVinylImage(playlistReposetory.getPlaylist().get(0).getImage());
         playlistFragment.SetPlaylist(playlistReposetory.getPlaylist());
         mp.start();
     }
