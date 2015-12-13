@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RadioNula.iml" filepath="$PROJECT_DIR$/RadioNula.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/radio-nula.iml" filepath="$PROJECT_DIR$/radio-nula.iml" />
     </modules>
   </component>
 </project>
