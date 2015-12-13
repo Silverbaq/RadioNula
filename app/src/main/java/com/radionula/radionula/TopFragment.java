@@ -1,15 +1,7 @@
 package com.radionula.radionula;
 
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,7 +14,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
 import com.androidquery.AQuery;
-import com.androidquery.callback.ImageOptions;
+import com.mikhaellopez.circularimageview.CircularImageView;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -34,13 +26,15 @@ import java.net.URL;
  */
 public class TopFragment extends Fragment {
 
+    RotateAnimation anim;
 
     public TopFragment() {
         // Required empty public constructor
     }
 
     ImageView ivRecord;
-    ImageView ivRecordImage;
+    ImageView ivLogo;
+    CircularImageView ivRecordImage;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,7 +43,15 @@ public class TopFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_top, container, false);
 
         ivRecord = (ImageView) view.findViewById(R.id.fragment_top_ivRecord);
-        ivRecordImage = (ImageView) view.findViewById(R.id.fragment_top_ivRecordImage);
+        ivRecordImage = (CircularImageView) view.findViewById(R.id.fragment_top_ivRecordImage);
+        ivLogo = (ImageView)view.findViewById(R.id.fragment_top_ivLogo);
+
+        // Image spin animation
+        anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(Animation.INFINITE);
+        anim.setDuration(4000);
+
 
         return view;
     }
@@ -57,27 +59,60 @@ public class TopFragment extends Fragment {
     public void StopVinyl(){
         try {
             ivRecord.getAnimation().cancel();
+            ivRecordImage.getAnimation().cancel();
         } catch (Exception e){
 
         }
     }
 
     public void StartVinyl(){
-        RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        anim.setInterpolator(new LinearInterpolator());
-        anim.setRepeatCount(Animation.INFINITE);
-        anim.setDuration(4000);
-
         ivRecord.startAnimation(anim);
     }
 
     public void SetVinylImage(String imageUrl){
-        // TODO: Implement round image
+        new GetBitmapFromHTTPTask().execute(imageUrl);
 
     }
 
+    class GetBitmapFromHTTPTask extends AsyncTask<String, Void, Void>{
+
+        Bitmap image;
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            ivRecordImage.setImageBitmap(image);
+
+            // Set animation
+            Animation a = new RotateAnimation(0.0f, 360.0f,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
+                    0.5f);
+            a.setInterpolator(new LinearInterpolator());
+            a.setRepeatCount(Animation.INFINITE);
+            a.setDuration(4000);
+
+            ivRecordImage.startAnimation(a);
+
+            // Brings the logo infront
+            ivLogo.bringToFront();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            URL url = null;
+            try {
+                url = new URL(params[0]);
+                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
 
-
+            return null;
+        }
+    }
 
 }
