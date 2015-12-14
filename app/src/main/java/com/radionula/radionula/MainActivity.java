@@ -15,14 +15,13 @@ import com.radionula.model.PlaylistRepository;
 import com.radionula.interfaces.IControls;
 
 import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
 
-public class MainActivity extends AppCompatActivity implements IControls {
+public class MainActivity extends AppCompatActivity implements IControls, Observer {
 
     private DrawerLayout mDrawer;
     ImageView navButton;
-
-    // Playlist
-    PlaylistRepository playlistReposetory = new PlaylistRepository();
 
     // Fragments
     TopFragment topFragment;
@@ -38,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements IControls {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Start to observe the playlist repository
+        MyApp.get_playlistRepository().addObserver(this);
+
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (ImageView)findViewById(R.id.nav_Button);
@@ -46,8 +48,9 @@ public class MainActivity extends AppCompatActivity implements IControls {
         controlFragment = (ControlsFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentControls);
         playlistFragment = (PlaylistFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlaylist);
 
-        // TODO: Move update playlist to better place
-        playlistReposetory.updatePlaylist(getString(R.string.classic_rrs));
+        // Sets playlist
+        playlistFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
+        topFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
 
         // Mediaplayer
         mp = new MediaPlayer();
@@ -108,8 +111,6 @@ public class MainActivity extends AppCompatActivity implements IControls {
         // TODO: Refactor
         topFragment.StartVinyl();
 
-        topFragment.SetVinylImage(playlistReposetory.getPlaylist().get(0).getImage());
-        playlistFragment.SetPlaylist(playlistReposetory.getPlaylist());
         mp.start();
     }
 
@@ -117,5 +118,12 @@ public class MainActivity extends AppCompatActivity implements IControls {
     public void Pause() {
         topFragment.StopVinyl();
         mp.pause();
+    }
+
+    @Override
+    public void update(Observable observable, Object data) {
+        // updates playlist
+        playlistFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
+        topFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
     }
 }

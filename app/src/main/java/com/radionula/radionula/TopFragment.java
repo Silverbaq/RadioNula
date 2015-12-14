@@ -16,7 +16,10 @@ import android.widget.ImageView;
 import com.androidquery.AQuery;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -70,7 +73,8 @@ public class TopFragment extends Fragment {
     }
 
     public void SetVinylImage(String imageUrl){
-        new GetBitmapFromHTTPTask().execute(imageUrl);
+        //new GetBitmapFromHTTPTask().execute(imageUrl);
+        //Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
 
     }
 
@@ -102,8 +106,8 @@ public class TopFragment extends Fragment {
         protected Void doInBackground(String... params) {
             URL url = null;
             try {
-                url = new URL(params[0]);
-                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                URL newurl = new URL(params[0]);
+                image = BitmapFactory.decodeStream(newurl.openConnection() .getInputStream());
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {

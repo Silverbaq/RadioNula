@@ -44,8 +44,8 @@
             android:id="@+id/activityMain_fragmentPlaylist"
             tools:layout="@layout/fragment_playlist" />
 
-
     </LinearLayout>
+
 
     <fragment
         android:id="@+id/activityMain_fragmentControls"
@@ -62,6 +62,8 @@
 
     <!-- The navigation drawer that comes from the left -->
     <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
+
+<!-- NEED NEW DRAWER
     <android.support.design.widget.NavigationView
         android:id="@+id/nvView"
         android:layout_width="wrap_content"
@@ -70,5 +72,7 @@
         android:background="@android:color/white"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/draw_view" />
+-->
 
 </android.support.v4.widget.DrawerLayout>
+

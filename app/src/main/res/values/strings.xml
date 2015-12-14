@@ -6,5 +6,6 @@
 
     <string name="classic_radiostream_path">http://streaming.radionula.com:8800/classics</string>
     <string name="classic_rrs">http://radionula.com/rss.xml</string>
+    <string name="title_activity_init">InitActivity</string>
 
 </resources>
