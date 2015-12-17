@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     @Override
     public void update(Observable observable, Object data) {
         // updates playlist
-        playlistFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
+        playlistFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
         topFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
     }
 }

@@ -11,6 +11,7 @@ import com.androidquery.AQuery;
 import com.radionula.model.NulaTrack;
 
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -45,6 +46,12 @@ public class PlaylistAdapter extends BaseAdapter {
         ImageView image;
         TextView artist;
         TextView title;
+    }
+
+    public void updateList(List<NulaTrack> list){
+        tracks = list;
+        synchronized(tracks){
+        tracks.notifyAll();}
     }
 
 

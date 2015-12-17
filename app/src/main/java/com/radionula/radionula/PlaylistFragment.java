@@ -42,4 +42,8 @@ public class PlaylistFragment extends Fragment {
         lvPlaylist.setAdapter(adapter);
     }
 
+    public void UpdatePlaylist(List<NulaTrack> tracks){
+        adapter.updateList(tracks);
+        //adapter.notifyDataSetChanged();
+    }
 }
