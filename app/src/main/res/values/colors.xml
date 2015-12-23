@@ -6,4 +6,5 @@
     <color name="brown">#918671</color>
     <color name="dark_blue">#2A333E</color>
     <color name="BackgroundBlue">#24303C</color>
+    <color name="adapterFavoriteBackground">#a0000000</color>
 </resources>

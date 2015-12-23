@@ -31,6 +31,8 @@ public class TopFragment extends Fragment {
 
     RotateAnimation anim;
 
+
+
     public TopFragment() {
         // Required empty public constructor
     }
@@ -70,53 +72,16 @@ public class TopFragment extends Fragment {
 
     public void StartVinyl(){
         ivRecord.startAnimation(anim);
+        // TODO: Make this animation work
+        ivRecordImage.setAnimation(anim);
+        ivLogo.bringToFront();
     }
 
     public void SetVinylImage(String imageUrl){
-        //new GetBitmapFromHTTPTask().execute(imageUrl);
-        //Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
+        MyApp.getImageLoader().displayImage(imageUrl, ivRecordImage);
 
+        ivLogo.bringToFront();
     }
 
-    class GetBitmapFromHTTPTask extends AsyncTask<String, Void, Void>{
-
-        Bitmap image;
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            ivRecordImage.setImageBitmap(image);
-
-            // Set animation
-            Animation a = new RotateAnimation(0.0f, 360.0f,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF,
-                    0.5f);
-            a.setInterpolator(new LinearInterpolator());
-            a.setRepeatCount(Animation.INFINITE);
-            a.setDuration(4000);
-
-            ivRecordImage.startAnimation(a);
-
-            // Brings the logo infront
-            ivLogo.bringToFront();
-        }
-
-        @Override
-        protected Void doInBackground(String... params) {
-            URL url = null;
-            try {
-                URL newurl = new URL(params[0]);
-                image = BitmapFactory.decodeStream(newurl.openConnection() .getInputStream());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            return null;
-        }
-    }
 
 }

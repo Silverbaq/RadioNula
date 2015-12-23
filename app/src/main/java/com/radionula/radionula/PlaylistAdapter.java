@@ -5,9 +5,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.androidquery.AQuery;
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.radionula.model.NulaTrack;
 
 
@@ -46,6 +48,7 @@ public class PlaylistAdapter extends BaseAdapter {
         ImageView image;
         TextView artist;
         TextView title;
+        RelativeLayout container;
     }
 
     public void updateList(List<NulaTrack> list){
@@ -57,7 +60,7 @@ public class PlaylistAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        final ViewHolder holder;
         if (convertView == null) {
             holder = new ViewHolder();
 
@@ -66,7 +69,7 @@ public class PlaylistAdapter extends BaseAdapter {
             holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlaylistCover);
             holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistArtist);
             holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistTitle);
-
+            holder.container = (RelativeLayout)convertView.findViewById(R.id.adapter_playlist_rlItem);
 
             convertView.setTag(holder);
         } else {
@@ -77,8 +80,28 @@ public class PlaylistAdapter extends BaseAdapter {
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
-        MyApp.aquery.id(holder.image).image(item.getImage(),true,true,0,0,null,AQuery.FADE_IN);
+        //MyApp.aquery.id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
+        MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
 
+
+/*        // OnClick - Add to favorite
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RelativeLayout layout = new RelativeLayout(activity);
+                layout.setBackgroundResource(R.color.adapterFavoriteBackground);
+
+                ImageView ivFavorite = new ImageView(activity);
+                MyApp.aquery.id(ivFavorite).image(R.drawable.ico_favorite);
+
+
+                layout.addView(ivFavorite);
+
+                holder.container.addView(layout);
+
+            }
+        });
+        */
 
         return convertView;
     }
