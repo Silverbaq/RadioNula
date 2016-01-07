@@ -15,6 +15,7 @@ import android.widget.ImageView;
 
 import com.androidquery.AQuery;
 import com.mikhaellopez.circularimageview.CircularImageView;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 
 import java.io.IOException;
@@ -30,7 +31,9 @@ import java.net.URL;
 public class TopFragment extends Fragment {
 
     RotateAnimation anim;
+    RotateAnimation anim2;
 
+    boolean playing = false;
 
 
     public TopFragment() {
@@ -57,6 +60,10 @@ public class TopFragment extends Fragment {
         anim.setRepeatCount(Animation.INFINITE);
         anim.setDuration(4000);
 
+        anim2 = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        anim2.setInterpolator(new LinearInterpolator());
+        anim2.setRepeatCount(Animation.INFINITE);
+        anim2.setDuration(4000);
 
         return view;
     }
@@ -65,21 +72,33 @@ public class TopFragment extends Fragment {
         try {
             ivRecord.getAnimation().cancel();
             ivRecordImage.getAnimation().cancel();
+            playing = false;
         } catch (Exception e){
 
         }
     }
 
     public void StartVinyl(){
+        playing = true;
+
         ivRecord.startAnimation(anim);
-        // TODO: Make this animation work
-        ivRecordImage.setAnimation(anim);
+        ivRecordImage.startAnimation(anim2);
+
         ivLogo.bringToFront();
     }
 
     public void SetVinylImage(String imageUrl){
         MyApp.getImageLoader().displayImage(imageUrl, ivRecordImage);
 
+        // Load image, decode it to Bitmap and return Bitmap to callback
+        /*MyApp.getImageLoader().loadImage(imageUrl, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+
+                ivRecordImage.setImageBitmap(loadedImage);
+            }
+        });
+        */
         ivLogo.bringToFront();
     }
 
