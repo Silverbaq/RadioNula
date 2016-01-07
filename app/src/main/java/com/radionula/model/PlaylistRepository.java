@@ -28,7 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class PlaylistRepository extends Observable implements Runnable {
     List<NulaTrack> tracks = new ArrayList<NulaTrack>();
     Handler myHandler = new Handler();
-
+    private NulaTrack _current;
 
     public PlaylistRepository() {
         myHandler.postDelayed(this, 10000);
@@ -54,7 +54,11 @@ public class PlaylistRepository extends Observable implements Runnable {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            triggerObserver();
+
+            if (_current == null || !tracks.get(0).getTitel().equals(_current.getTitel())){
+                _current = tracks.get(0);
+                triggerObserver();
+            }
         }
 
         @Override
