@@ -1,12 +1,14 @@
 package com.radionula.radionula;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidquery.AQuery;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -51,10 +53,11 @@ public class PlaylistAdapter extends BaseAdapter {
         RelativeLayout container;
     }
 
-    public void updateList(List<NulaTrack> list){
+    public void updateList(List<NulaTrack> list) {
         tracks = list;
-        synchronized(tracks){
-        tracks.notifyAll();}
+        synchronized (tracks) {
+            tracks.notifyAll();
+        }
     }
 
 
@@ -69,39 +72,48 @@ public class PlaylistAdapter extends BaseAdapter {
             holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlaylistCover);
             holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistArtist);
             holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistTitle);
-            holder.container = (RelativeLayout)convertView.findViewById(R.id.adapter_playlist_rlItem);
+            holder.container = (RelativeLayout) convertView.findViewById(R.id.adapter_playlist_rlItem);
 
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        NulaTrack item = (NulaTrack) getItem(position);
+        final NulaTrack item = (NulaTrack) getItem(position);
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
-        //MyApp.aquery.id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
-        MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
+        MyApp.aquery.id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
+        //MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
 
+        Typeface artistFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Regular.ttf");
+        holder.artist.setTypeface(artistFont);
 
-/*        // OnClick - Add to favorite
+        Typeface titleFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Light.ttf");
+        holder.title.setTypeface(titleFont);
+
+        // OnClick - Add to favorite
+        final View finalConvertView = convertView;
         convertView.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
-                RelativeLayout layout = new RelativeLayout(activity);
-                layout.setBackgroundResource(R.color.adapterFavoriteBackground);
 
-                ImageView ivFavorite = new ImageView(activity);
-                MyApp.aquery.id(ivFavorite).image(R.drawable.ico_favorite);
+                View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
+                ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivAddFavorit);
 
+                // Click on favorite icon
+                ivFavorit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(activity, item.getArtist(), Toast.LENGTH_LONG).show();
+                    }
+                });
 
-                layout.addView(ivFavorite);
-
-                holder.container.addView(layout);
 
             }
         });
-        */
+
 
         return convertView;
     }
