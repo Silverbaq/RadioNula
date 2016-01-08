@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.radionula.model.NulaTrack;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 public class PlaylistFragment extends Fragment {
 
-    ListView lvPlaylist;
+    LinearLayout llPlaylist ;
     PlaylistAdapter adapter;
 
     public PlaylistFragment() {
@@ -32,14 +33,21 @@ public class PlaylistFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
 
-        lvPlaylist = (ListView)view.findViewById(R.id.fragment_playlist_listview);
+        llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
 
         return view;
     }
 
     public void SetPlaylist(List<NulaTrack> tracks){
         adapter = new PlaylistAdapter(getActivity(), tracks);
-        lvPlaylist.setAdapter(adapter);
+
+        llPlaylist.removeAllViews();
+
+        for (int i = 0; i < adapter.getCount(); i++){
+            LinearLayout layout = new LinearLayout(getContext());
+            View item = adapter.getView(i, null, null);
+            llPlaylist.addView(item);
+        }
     }
 
     public void UpdatePlaylist(List<NulaTrack> tracks){

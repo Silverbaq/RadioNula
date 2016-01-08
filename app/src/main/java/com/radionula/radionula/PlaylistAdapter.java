@@ -51,6 +51,7 @@ public class PlaylistAdapter extends BaseAdapter {
         TextView artist;
         TextView title;
         RelativeLayout container;
+        boolean clicked;
     }
 
     public void updateList(List<NulaTrack> list) {
@@ -92,6 +93,8 @@ public class PlaylistAdapter extends BaseAdapter {
         Typeface titleFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Light.ttf");
         holder.title.setTypeface(titleFont);
 
+        holder.clicked = false;
+
         // OnClick - Add to favorite
         final View finalConvertView = convertView;
         convertView.setOnClickListener(new View.OnClickListener() {
@@ -100,19 +103,28 @@ public class PlaylistAdapter extends BaseAdapter {
             public void onClick(View v) {
 
                 View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
-                ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivAddFavorit);
 
-                // Click on favorite icon
-                ivFavorit.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(activity, item.getArtist(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                if (!holder.clicked) {
 
 
+                    ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivAddFavorit);
+
+                    // Click on favorite icon
+                    ivFavorit.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Toast.makeText(activity, item.getArtist(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                    holder.clicked = true;
+                } else {
+                    holder.container.removeAllViews();
+                    holder.clicked = false;
+                }
             }
         });
+
 
 
         return convertView;
