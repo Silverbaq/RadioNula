@@ -3,17 +3,17 @@
 
     <group android:id="@+id/nav_grp1" android:checkableBehavior="all">
         <item
-            android:id="@+id/nav_first_fragment"
+            android:id="@+id/nav_Radio_Player"
             android:title="RADIO PLAYER" />
     </group>
     <group android:id="@+id/nav_grp2" android:checkableBehavior="all">
         <item
-            android:id="@+id/nav_second_fragment"
+            android:id="@+id/nav_Favorites"
             android:title="FAVORITES" />
     </group>
     <group android:id="@+id/nav_grp3" android:checkableBehavior="all">
         <item
-            android:id="@+id/nav_third_fragment"
+            android:id="@+id/nav_Comments"
             android:title="COMMENTS" />
     </group>
     <group android:id="@+id/nav_grp4" android:checkableBehavior="single">

@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.radionula.model.PlaylistRepository;
 import com.radionula.interfaces.IControls;
@@ -23,7 +24,8 @@ import java.util.Observer;
 
 public class MainActivity extends AppCompatActivity implements IControls, Observer {
 
-    private DrawerLayout mDrawer;
+    DrawerLayout mDrawer;
+    NavigationView nvDrawer;
     ImageView navButton;
 
     // Fragments
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        nvDrawer = (NavigationView) findViewById(R.id.nvView);
         navButton = (ImageView)findViewById(R.id.nav_Button);
 
         topFragment = (TopFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentTop);
@@ -68,9 +71,40 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             }
         });
 
+        setupDrawerContent(nvDrawer);
 
 
     }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        selectDrawerItem(menuItem);
+                        return true;
+                    }
+                });
+    }
+
+    public void selectDrawerItem(MenuItem menuItem) {
+        // Create a new fragment and specify the planet to show based on
+        // position
+        switch (menuItem.getItemId()) {
+            case R.id.nav_Radio_Player:
+                Toast.makeText(this,"Radio Player", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_Favorites:
+                Toast.makeText(this,"Favorites", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_Comments:
+                Toast.makeText(this,"Comments", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+    }
+
 
     private void makeMediaPlayerReady(String url) {
         mp.reset();
@@ -93,17 +127,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // The action bar home/up action should open or close the drawer.
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mDrawer.openDrawer(GravityCompat.START);
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     // Make sure this is the method with just `Bundle` as the signature
     @Override
