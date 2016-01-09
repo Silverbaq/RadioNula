@@ -52,6 +52,7 @@ public class PlaylistFragment extends Fragment {
 
     public void UpdatePlaylist(List<NulaTrack> tracks){
         adapter.updateList(tracks);
+        SetPlaylist(tracks);
         //adapter.notifyDataSetChanged();
     }
 }

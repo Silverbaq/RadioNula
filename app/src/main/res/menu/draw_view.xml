@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <group android:id="@+id/nav_grp1" android:checkableBehavior="all">
         <item
             android:id="@+id/nav_first_fragment"
-            android:title="First" />
+            android:title="RADIO PLAYER" />
+    </group>
+    <group android:id="@+id/nav_grp2" android:checkableBehavior="all">
         <item
             android:id="@+id/nav_second_fragment"
-            android:title="Second" />
+            android:title="FAVORITES" />
+    </group>
+    <group android:id="@+id/nav_grp3" android:checkableBehavior="all">
         <item
             android:id="@+id/nav_third_fragment"
-            android:title="Third" />
+            android:title="COMMENTS" />
     </group>
-
+    <group android:id="@+id/nav_grp4" android:checkableBehavior="single">
+        <item
+            android:title="" />
+    </group>
 </menu>
+

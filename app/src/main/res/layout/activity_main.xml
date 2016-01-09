@@ -66,15 +66,26 @@
 <!-- NEED NEW DRAWER -->
     <android.support.design.widget.NavigationView
         android:id="@+id/nvView"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@android:color/white"
+        android:background="@color/BackgroundBlue"
+        app:itemTextColor="@color/white"
         app:headerLayout="@layout/nav_header"
-        app:itemTextColor="?android:textColorPrimary"
-        app:menu="@menu/draw_view" />
+        app:menu="@menu/draw_view">
 
 
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="radionula@gmail.com"
+            android:textColor="@color/white"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="bottom|center_horizontal"/>
+
+    </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>
 
