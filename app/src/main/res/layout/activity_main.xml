@@ -20,40 +20,13 @@
         android:layout_height="wrap_content" />
 
 
-    <LinearLayout
-
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:weightSum="2">
-
-        <fragment
-
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:name="com.radionula.radionula.TopFragment"
-            android:id="@+id/activityMain_fragmentTop"
-            tools:layout="@layout/fragment_top" />
-
-        <fragment
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:name="com.radionula.radionula.PlaylistFragment"
-            android:id="@+id/activityMain_fragmentPlaylist"
-            tools:layout="@layout/fragment_playlist" />
-
-    </LinearLayout>
-
-
     <fragment
-        android:id="@+id/activityMain_fragmentControls"
+        android:id="@+id/activityMain_fragmentPlayer"
         android:foregroundGravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:name="com.radionula.radionula.ControlsFragment"
-        tools:layout="@layout/fragment_controls"
+        android:name="com.radionula.fragments.PlayerFragment"
+        tools:layout="@layout/fragment_player"
         android:layout_gravity="center_vertical"/>
 
 
@@ -62,8 +35,6 @@
 
     <!-- The navigation drawer that comes from the left -->
     <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
-
-<!-- NEED NEW DRAWER -->
     <android.support.design.widget.NavigationView
         android:id="@+id/nvView"
         android:layout_width="200dp"

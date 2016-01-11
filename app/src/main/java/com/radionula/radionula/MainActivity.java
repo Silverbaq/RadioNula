@@ -1,6 +1,5 @@
 package com.radionula.radionula;
 
-import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.design.widget.NavigationView;
@@ -10,12 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import com.radionula.model.PlaylistRepository;
+import com.radionula.fragments.ControlsFragment;
+import com.radionula.fragments.PlayerFragment;
+import com.radionula.fragments.PlaylistFragment;
+import com.radionula.fragments.TopFragment;
 import com.radionula.interfaces.IControls;
 
 import java.io.IOException;
@@ -29,9 +29,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     ImageView navButton;
 
     // Fragments
-    TopFragment topFragment;
-    ControlsFragment controlFragment;
-    PlaylistFragment playlistFragment;
+    PlayerFragment playerFragment;
 
     // Mediaplayer
     MediaPlayer mp;
@@ -50,13 +48,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         nvDrawer = (NavigationView) findViewById(R.id.nvView);
         navButton = (ImageView)findViewById(R.id.nav_Button);
 
-        topFragment = (TopFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentTop);
-        controlFragment = (ControlsFragment) getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentControls);
-        playlistFragment = (PlaylistFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlaylist);
+        playerFragment = (PlayerFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlayer);
 
         // Sets playlist
-        playlistFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
-        topFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+        playerFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
+        playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
 
         // Mediaplayer
         mp = new MediaPlayer();
@@ -137,21 +133,21 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     @Override
     public void Skip() {
         // TODO: Refactor
-        topFragment.StartVinyl();
+        playerFragment.StartVinyl();
 
         mp.start();
     }
 
     @Override
     public void Pause() {
-        topFragment.StopVinyl();
+        playerFragment.StopVinyl();
         mp.pause();
     }
 
     @Override
     public void update(Observable observable, Object data) {
         // updates playlist
-        playlistFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
-        topFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+        playerFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
+        playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
     }
 }

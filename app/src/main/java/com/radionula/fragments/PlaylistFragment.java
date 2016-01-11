@@ -1,4 +1,4 @@
-package com.radionula.radionula;
+package com.radionula.fragments;
 
 
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.radionula.model.NulaTrack;
+import com.radionula.radionula.PlaylistAdapter;
+import com.radionula.radionula.R;
 
 import java.util.List;
 

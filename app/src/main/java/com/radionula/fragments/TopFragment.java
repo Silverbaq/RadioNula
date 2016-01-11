@@ -1,4 +1,4 @@
-package com.radionula.radionula;
+package com.radionula.fragments;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import com.androidquery.AQuery;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+import com.radionula.radionula.MyApp;
+import com.radionula.radionula.R;
 
 
 import java.io.IOException;

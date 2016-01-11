@@ -1,4 +1,4 @@
-package com.radionula.radionula;
+package com.radionula.fragments;
 
 
 import android.content.Context;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.radionula.interfaces.IControls;
+import com.radionula.radionula.R;
 
 
 /**

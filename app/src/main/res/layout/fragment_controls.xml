@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    tools:context="com.radionula.radionula.ControlsFragment">
+    tools:context="com.radionula.fragments.ControlsFragment">
 
     <ImageView
         android:id="@+id/fragment_controls_ivSkip"
