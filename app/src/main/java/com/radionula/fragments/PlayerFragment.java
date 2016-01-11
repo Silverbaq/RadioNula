@@ -102,6 +102,9 @@ public class PlayerFragment extends Fragment {
             }
         });
 
+        SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
+        SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+
         return view;
     }
 

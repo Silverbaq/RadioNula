@@ -1,17 +1,21 @@
 package com.radionula.radionula;
 
+import android.app.Fragment;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
 
@@ -24,9 +28,13 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     DrawerLayout mDrawer;
     NavigationView nvDrawer;
     ImageView navButton;
+    FrameLayout flFragments;
 
     // Fragments
     PlayerFragment playerFragment;
+    FavoritsFragment favoritsFragment;
+
+    FragmentTransaction transaction;
 
     // Mediaplayer
     MediaPlayer mp;
@@ -45,11 +53,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         nvDrawer = (NavigationView) findViewById(R.id.nvView);
         navButton = (ImageView)findViewById(R.id.nav_Button);
 
-        playerFragment = (PlayerFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlayer);
-
-        // Sets playlist
-        playerFragment.SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
-        playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+        //playerFragment = (PlayerFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlayer);
+        flFragments = (FrameLayout)findViewById(R.id.activityMain_flFragments);
 
         // Mediaplayer
         mp = new MediaPlayer();
@@ -64,7 +69,24 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             }
         });
 
+        playerFragment = new PlayerFragment();
+        favoritsFragment = new FavoritsFragment();
+
+        // Transaction to swap fragments
+        transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.activityMain_flFragments, playerFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+
+
+
         setupDrawerContent(nvDrawer);
+
 
 
     }
@@ -81,14 +103,28 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
     public void selectDrawerItem(MenuItem menuItem) {
+        transaction = getSupportFragmentManager().beginTransaction();
+
         // Create a new fragment and specify the planet to show based on
         // position
         switch (menuItem.getItemId()) {
             case R.id.nav_Radio_Player:
                 Toast.makeText(this,"Radio Player", Toast.LENGTH_SHORT).show();
+
+                transaction.replace(R.id.activityMain_flFragments, playerFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
                 break;
             case R.id.nav_Favorites:
                 Toast.makeText(this,"Favorites", Toast.LENGTH_SHORT).show();
+
+                transaction.replace(R.id.activityMain_flFragments, favoritsFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
                 break;
             case R.id.nav_Comments:
                 Toast.makeText(this,"Comments", Toast.LENGTH_SHORT).show();
