@@ -12,10 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.radionula.fragments.ControlsFragment;
 import com.radionula.fragments.PlayerFragment;
-import com.radionula.fragments.PlaylistFragment;
-import com.radionula.fragments.TopFragment;
 import com.radionula.interfaces.IControls;
 
 import java.io.IOException;
