@@ -28,8 +28,8 @@
             android:id="@+id/fragment_top_ivLogo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:paddingTop="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="-40dp"
             android:scaleType="fitCenter"
             android:src="@drawable/nula_logo_ch1" />
 

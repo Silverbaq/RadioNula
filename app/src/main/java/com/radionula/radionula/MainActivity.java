@@ -1,6 +1,7 @@
 package com.radionula.radionula;
 
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.support.design.widget.NavigationView;
@@ -15,11 +16,16 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
+import com.radionula.model.NulaTrack;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -155,6 +161,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
 
     }
+
+
 
 
     // Make sure this is the method with just `Bundle` as the signature

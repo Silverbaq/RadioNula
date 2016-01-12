@@ -113,6 +113,8 @@ public class PlaylistAdapter extends BaseAdapter {
                     ivFavorit.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            MyApp.addToFavorites(item);
+                            MyApp.SaveUserFavorites(activity);
                             Toast.makeText(activity, item.getArtist(), Toast.LENGTH_LONG).show();
                         }
                     });

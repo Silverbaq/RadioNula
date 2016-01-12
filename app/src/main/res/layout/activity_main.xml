@@ -6,6 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <!-- The ActionBar displayed at the top -->
+    <include
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 <FrameLayout
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activityMain_flFragments"
@@ -14,11 +25,7 @@
     android:background="@color/brown"
     tools:context="com.radionula.radionula.MainActivity">
 
-    <!-- The ActionBar displayed at the top -->
-    <include
-        layout="@layout/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+
 
 <!--
     <fragment
@@ -31,8 +38,8 @@
         android:layout_gravity="center_vertical"/>
 -->
 
-
-</FrameLayout>
+    </FrameLayout>
+</LinearLayout>
 
     <!-- The navigation drawer that comes from the left -->
     <!-- Note that `android:layout_gravity` needs to be set to 'start' -->

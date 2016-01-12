@@ -105,6 +105,8 @@ public class PlayerFragment extends Fragment {
         SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
         SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
 
+
+
         return view;
     }
 
@@ -140,6 +142,7 @@ public class PlayerFragment extends Fragment {
         for (int i = 0; i < adapter.getCount(); i++){
             LinearLayout layout = new LinearLayout(getContext());
             View item = adapter.getView(i, null, null);
+
             llPlaylist.addView(item);
         }
     }
