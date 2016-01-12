@@ -2,6 +2,7 @@ package com.radionula.fragments;
 
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -148,11 +149,24 @@ public class PlayerFragment extends Fragment {
             // Set header
             if (i == 0){
                 View view = getActivity().getLayoutInflater().inflate(R.layout.list_header, null);
-                ((TextView)view.findViewById(R.id.list_header_textview)).setText("NOW PLAYING");
+
+                TextView tvHeader = ((TextView)view.findViewById(R.id.list_header_textview));
+                tvHeader.setText("NOW PLAYING");
+
+                Typeface artistFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Roboto-Regular.ttf");
+                tvHeader.setTypeface(artistFont);
+
                 llPlaylist.addView(view);
             } else if (i == 1){
                 View view = getActivity().getLayoutInflater().inflate(R.layout.list_header, null);
-                ((TextView)view.findViewById(R.id.list_header_textview)).setText("PLAYLIST HISTORY");
+
+                TextView tvHeader = ((TextView) view.findViewById(R.id.list_header_textview));
+                tvHeader.setText("PLAYLIST HISTORY");
+
+                Typeface artistFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Roboto-Regular.ttf");
+                tvHeader.setTypeface(artistFont);
+
+
                 llPlaylist.addView(view);
             }
 

@@ -122,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
                 // Commit the transaction
                 transaction.commit();
+
+                mDrawer.closeDrawer(GravityCompat.START);
                 break;
             case R.id.nav_Favorites:
                 Toast.makeText(this,"Favorites", Toast.LENGTH_SHORT).show();
@@ -131,9 +133,13 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
                 // Commit the transaction
                 transaction.commit();
+
+                mDrawer.closeDrawer(GravityCompat.START);
                 break;
             case R.id.nav_Comments:
                 Toast.makeText(this,"Comments", Toast.LENGTH_SHORT).show();
+
+                mDrawer.closeDrawer(GravityCompat.START);
                 break;
             default:
                 break;

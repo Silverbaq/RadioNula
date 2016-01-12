@@ -1,6 +1,7 @@
 package com.radionula.fragments;
 
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,12 +11,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -26,6 +30,7 @@ public class FavoritsFragment extends Fragment {
 
     ListView lvFavorites;
     PlaylistAdapter adapter;
+    TextView tvHeader;
 
     public FavoritsFragment() {
         // Required empty public constructor
@@ -39,8 +44,14 @@ public class FavoritsFragment extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_favorits, container, false);
 
         lvFavorites = (ListView) view.findViewById(R.id.fragment_favorites_lvFavorites);
+        tvHeader = (TextView)view.findViewById(R.id.fragment_favorites_tvHeader);
 
-        setFavoritesList((List<NulaTrack>) MyApp.LoadUserFavorites(getActivity()));
+        List<NulaTrack> tracks = (List<NulaTrack>) MyApp.LoadUserFavorites(getActivity());
+        if (tracks != null)
+            setFavoritesList(tracks);
+
+        Typeface artistFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Roboto-Regular.ttf");
+        tvHeader.setTypeface(artistFont);
 
         return view;
     }
@@ -50,17 +61,7 @@ public class FavoritsFragment extends Fragment {
 
         lvFavorites.setAdapter(adapter);
 
-        /*
 
-        llFavorites.removeAllViews();
-
-        for (int i = 0; i < adapter.getCount(); i++){
-            LinearLayout layout = new LinearLayout(getContext());
-            View view = adapter.getView(i, null, null);
-
-            llFavorites.addView(view);
-        }
-        */
     }
 
 }

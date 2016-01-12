@@ -16,11 +16,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="FAVORITES"
+        android:id="@+id/fragment_favorites_tvHeader"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="10dp"
-        android:textColor="@color/white"
-        />
+        android:textColor="@color/white" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/faded_white"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"/>
 
         <ListView
             android:id="@+id/fragment_favorites_lvFavorites"
