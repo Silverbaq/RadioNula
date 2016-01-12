@@ -68,7 +68,7 @@ public class MyApp extends Application {
     }
 
     public static List<NulaTrack> LoadUserFavorites(Context context){
-        SharedPreferences mPrefs = context.getSharedPreferences("Nula",MODE_PRIVATE);
+        SharedPreferences mPrefs = context.getSharedPreferences("Nula", MODE_PRIVATE);
 
         Gson gson = new Gson();
         String json = mPrefs.getString("favorites", "");
@@ -77,4 +77,7 @@ public class MyApp extends Application {
     }
 
 
+    public static void RemoveFavorit(NulaTrack item) {
+        _favorites.remove(item);
+    }
 }

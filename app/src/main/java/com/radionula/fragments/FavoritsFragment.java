@@ -6,7 +6,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.MyApp;
@@ -20,7 +24,7 @@ import java.util.List;
  */
 public class FavoritsFragment extends Fragment {
 
-    LinearLayout llFavorites;
+    ListView lvFavorites;
     PlaylistAdapter adapter;
 
     public FavoritsFragment() {
@@ -34,7 +38,7 @@ public class FavoritsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_favorits, container, false);
 
-        llFavorites = (LinearLayout) view.findViewById(R.id.fragment_favorites_llFavorites);
+        lvFavorites = (ListView) view.findViewById(R.id.fragment_favorites_lvFavorites);
 
         setFavoritesList((List<NulaTrack>) MyApp.LoadUserFavorites(getActivity()));
 
@@ -42,16 +46,21 @@ public class FavoritsFragment extends Fragment {
     }
 
     public void setFavoritesList(List<NulaTrack> tracks){
-        adapter = new PlaylistAdapter(getActivity(), tracks);
+        adapter = new PlaylistAdapter(getActivity(), tracks, PlaylistAdapter.AdapterType.REMOVE);
+
+        lvFavorites.setAdapter(adapter);
+
+        /*
 
         llFavorites.removeAllViews();
 
         for (int i = 0; i < adapter.getCount(); i++){
             LinearLayout layout = new LinearLayout(getContext());
-            View item = adapter.getView(i, null, null);
+            View view = adapter.getView(i, null, null);
 
-            llFavorites.addView(item);
+            llFavorites.addView(view);
         }
+        */
     }
 
 }

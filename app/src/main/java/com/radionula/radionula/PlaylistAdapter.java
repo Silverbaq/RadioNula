@@ -22,12 +22,18 @@ import java.util.List;
  * Created by silverbaq on 12/7/15.
  */
 public class PlaylistAdapter extends BaseAdapter {
+    public enum AdapterType {
+        ADD, REMOVE
+    }
+
     List<NulaTrack> tracks;
     Activity activity;
+    AdapterType adapterType;
 
-    public PlaylistAdapter(Activity activity, List<NulaTrack> playlist) {
+    public PlaylistAdapter(Activity activity, List<NulaTrack> playlist, AdapterType type) {
         this.tracks = playlist;
         this.activity = activity;
+        this.adapterType = type;
     }
 
 
@@ -102,31 +108,62 @@ public class PlaylistAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
 
-                View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
+                if (adapterType == AdapterType.ADD) {
 
-                if (!holder.clicked) {
+                    View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
+
+                    if (!holder.clicked) {
 
 
-                    ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivAddFavorit);
+                        ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivAddFavorit);
 
-                    // Click on favorite icon
-                    ivFavorit.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            MyApp.addToFavorites(item);
-                            MyApp.SaveUserFavorites(activity);
-                            Toast.makeText(activity, item.getArtist(), Toast.LENGTH_LONG).show();
-                        }
-                    });
+                        // Click on favorite icon
+                        ivFavorit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                MyApp.addToFavorites(item);
+                                MyApp.SaveUserFavorites(activity);
+                                holder.container.removeAllViews();
+                                Toast.makeText(activity, "Added " +  item.getTitel() + " to favorites", Toast.LENGTH_LONG).show();
+                            }
+                        });
 
-                    holder.clicked = true;
-                } else {
-                    holder.container.removeAllViews();
-                    holder.clicked = false;
+                        holder.clicked = true;
+                    } else {
+                        holder.container.removeAllViews();
+                        holder.clicked = false;
+                    }
+                } else if (adapterType == AdapterType.REMOVE){
+                    View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.remove_favorit, holder.container);
+
+                    if (!holder.clicked) {
+
+
+                        ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivRemoveFavorit);
+
+                        // Click on favorite icon
+                        ivFavorit.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                MyApp.RemoveFavorit(item);
+                                MyApp.SaveUserFavorites(activity);
+
+                                holder.container.removeAllViews();
+                                tracks.remove(item);
+                                notifyDataSetChanged();
+
+                                Toast.makeText(activity, "Removed " + item.getTitel(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        holder.clicked = true;
+                    } else {
+                        holder.container.removeAllViews();
+                        holder.clicked = false;
+                    }
                 }
             }
         });
-
 
 
         return convertView;
