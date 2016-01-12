@@ -126,12 +126,14 @@ public class PlayerFragment extends Fragment {
     }
 
     public void StartVinyl(){
-        playing = true;
+        if (!playing) {
+            playing = true;
 
-        ivRecord.startAnimation(anim);
-        ivRecordImage.startAnimation(anim2);
+            ivRecord.startAnimation(anim);
+            ivRecordImage.startAnimation(anim2);
 
-        ivLogo.bringToFront();
+            ivLogo.bringToFront();
+        }
     }
 
     public void SetVinylImage(String imageUrl){
@@ -185,6 +187,15 @@ public class PlayerFragment extends Fragment {
         SetPlaylist(tracks);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
+        if (playing){
+            ivRecord.startAnimation(anim);
+            ivRecordImage.startAnimation(anim2);
 
+            ivLogo.bringToFront();
+        }
+    }
 }

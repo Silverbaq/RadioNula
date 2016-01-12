@@ -115,8 +115,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         // position
         switch (menuItem.getItemId()) {
             case R.id.nav_Radio_Player:
-                Toast.makeText(this,"Radio Player", Toast.LENGTH_SHORT).show();
-
                 transaction.replace(R.id.activityMain_flFragments, playerFragment);
                 transaction.addToBackStack(null);
 
@@ -126,8 +124,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 mDrawer.closeDrawer(GravityCompat.START);
                 break;
             case R.id.nav_Favorites:
-                Toast.makeText(this,"Favorites", Toast.LENGTH_SHORT).show();
-
                 transaction.replace(R.id.activityMain_flFragments, favoritsFragment);
                 transaction.addToBackStack(null);
 
@@ -137,8 +133,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 mDrawer.closeDrawer(GravityCompat.START);
                 break;
             case R.id.nav_Comments:
-                Toast.makeText(this,"Comments", Toast.LENGTH_SHORT).show();
-
                 mDrawer.closeDrawer(GravityCompat.START);
                 break;
             default:
