@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
+import com.radionula.utils.HttpRequest;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -73,6 +75,7 @@ public class PlaylistRepository extends Observable implements Runnable {
 
             URL url1;
             try {
+                //String response = HttpRequest.get(rssurl).body();
                 url1 = new URL(rssurl);
 
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
