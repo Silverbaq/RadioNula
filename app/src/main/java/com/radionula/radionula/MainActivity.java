@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.radionula.fragments.CommentsFragment;
 import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     // Fragments
     PlayerFragment playerFragment;
     FavoritsFragment favoritsFragment;
+    CommentsFragment commentsFragment;
 
     FragmentTransaction transaction;
 
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         playerFragment = new PlayerFragment();
         favoritsFragment = new FavoritsFragment();
+        commentsFragment = new CommentsFragment();
 
         // Transaction to swap fragments
         transaction = getSupportFragmentManager().beginTransaction();
@@ -84,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
         transaction.replace(R.id.activityMain_flFragments, playerFragment);
-        transaction.addToBackStack(null);
 
         // Commit the transaction
         transaction.commit();
@@ -116,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         switch (menuItem.getItemId()) {
             case R.id.nav_Radio_Player:
                 transaction.replace(R.id.activityMain_flFragments, playerFragment);
-                transaction.addToBackStack(null);
 
                 // Commit the transaction
                 transaction.commit();
@@ -125,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 break;
             case R.id.nav_Favorites:
                 transaction.replace(R.id.activityMain_flFragments, favoritsFragment);
-                transaction.addToBackStack(null);
 
                 // Commit the transaction
                 transaction.commit();
@@ -134,6 +134,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 break;
             case R.id.nav_Comments:
                 mDrawer.closeDrawer(GravityCompat.START);
+
+                transaction.replace(R.id.activityMain_flFragments, commentsFragment);
+
+                // Commit the transaction
+                transaction.commit();
                 break;
             default:
                 break;
