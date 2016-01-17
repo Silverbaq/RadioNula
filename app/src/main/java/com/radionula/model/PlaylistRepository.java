@@ -14,6 +14,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -75,14 +76,20 @@ public class PlaylistRepository extends Observable implements Runnable {
 
             URL url1;
             try {
-                //String response = HttpRequest.get(rssurl).body();
-                url1 = new URL(rssurl);
+                //
+                // Downloading RSS feed to String
+                String xmlString = HttpRequest.get(rssurl).body();
 
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();
-                Document doc = db.parse(new InputSource(url1.openStream()));
+
+                //
+                // Building document from XML String
+                Document doc = db.parse(new InputSource(new StringReader(xmlString)));
                 doc.getDocumentElement().normalize();
 
+                //
+                // Getting all nodes
                 NodeList nodeList = doc.getElementsByTagName("item");
 
 
@@ -93,13 +100,15 @@ public class PlaylistRepository extends Observable implements Runnable {
 
                     Element fstElmnt = (Element) node;
 
-                    // getting title
+                    //
+                    // Getting title
                     NodeList titleList = fstElmnt.getElementsByTagName("title");
                     Element titleElement = (Element) titleList.item(0);
                     titleList = ((Node) titleElement).getChildNodes();
                     String titel = ((Node) titleList.item(0)).getNodeValue();
 
-                    // getting image
+                    //
+                    // Getting image
                     NodeList imageList = fstElmnt.getElementsByTagName("image");
                     Node imageNode = imageList.item(0);
 
