@@ -47,7 +47,7 @@ public class CommentsFragment extends Fragment {
         myWebView.setWebViewClient(new WebViewClient());
         myWebView.loadDataWithBaseURL(BASE_DOMAIN,
                 "<html><head></head><body><div id=\"fb-root\"></div><div id=\"fb-root\"></div><script>(function(d, s, id) {var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) return;js = d.createElement(s); js.id = id;js.src = \"http://connect.facebook.net/en_US/all.js#xfbml=1&appId=" + APP_KEY + "\";fjs.parentNode.insertBefore(js, fjs);}(document, 'script', 'facebook-jssdk'));</script><div class=\"fb-comments\" data-href=\""
-                        + BASE_DOMAIN + "\" data-width=\"470\"></div> </body></html>", "text/html", null, null);
+                        + BASE_DOMAIN + "\" data-width=\"470\" data-order-by=\"reverse_time\"></div> </body></html>", "text/html", null, null);
         myWebView.setWebViewClient(new WebViewClientActivity());
 
 
