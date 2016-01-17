@@ -178,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void Skip() {
-        // TODO: Refactor
         playerFragment.StartVinyl();
 
         mp.start();
@@ -193,7 +192,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     @Override
     public void update(Observable observable, Object data) {
         // updates playlist
-        playerFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
-        playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+        try {
+            playerFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
+            playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
     }
 }
