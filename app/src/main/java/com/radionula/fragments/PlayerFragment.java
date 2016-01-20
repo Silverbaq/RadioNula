@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
+import com.radionula.radionula.LoadingAdapter;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
@@ -78,6 +79,10 @@ public class PlayerFragment extends Fragment {
         llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
 
+        // Sets load adapter
+        LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
+        View item = loadingAdapter.getView(0, null, null);
+        llPlaylist.addView(item);
 
         // Image spin animation
         anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -106,11 +111,6 @@ public class PlayerFragment extends Fragment {
                 _controls.Pause();
             }
         });
-
-        SetPlaylist(MyApp.get_playlistRepository().getPlaylist());
-        SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
-
-
 
         return view;
     }
@@ -183,7 +183,6 @@ public class PlayerFragment extends Fragment {
     }
 
     public void UpdatePlaylist(List<NulaTrack> tracks){
-        adapter.updateList(tracks);
         SetPlaylist(tracks);
     }
 

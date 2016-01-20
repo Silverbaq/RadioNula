@@ -22,7 +22,7 @@ public class MyApp extends Application {
 
     public static AQuery aquery;
     private static ImageLoader imageLoader;
-    private static PlaylistRepository _playlistRepository;
+
     private static List<NulaTrack> _favorites;
 
     @Override
@@ -36,7 +36,7 @@ public class MyApp extends Application {
 
 
         aquery = new AQuery(this);
-        _playlistRepository = new PlaylistRepository();
+
         _favorites = new ArrayList<>();
     }
 
@@ -47,11 +47,6 @@ public class MyApp extends Application {
         return imageLoader;
     }
 
-
-    public static PlaylistRepository get_playlistRepository(){
-        return _playlistRepository;
-
-    }
 
     public static void addToFavorites(NulaTrack track){
         _favorites.add(track);

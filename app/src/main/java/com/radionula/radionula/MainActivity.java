@@ -23,6 +23,7 @@ import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
+import com.radionula.model.PlaylistRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     NavigationView nvDrawer;
     ImageView navButton;
     FrameLayout flFragments;
+
+    // Backend
+    private static PlaylistRepository _playlistRepository;
 
     // Fragments
     PlayerFragment playerFragment;
@@ -54,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         setContentView(R.layout.activity_main);
 
         //Start to observe the playlist repository
-        MyApp.get_playlistRepository().addObserver(this);
+        _playlistRepository = new PlaylistRepository();
+        _playlistRepository.addObserver(this);
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -193,8 +198,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     public void update(Observable observable, Object data) {
         // updates playlist
         try {
-            playerFragment.UpdatePlaylist(MyApp.get_playlistRepository().getPlaylist());
-            playerFragment.SetVinylImage(MyApp.get_playlistRepository().getPlaylist().get(0).getImage());
+            playerFragment.UpdatePlaylist(_playlistRepository.getPlaylist());
+            playerFragment.SetVinylImage(_playlistRepository.getPlaylist().get(0).getImage());
         } catch (Exception ex){
             ex.printStackTrace();
         }
