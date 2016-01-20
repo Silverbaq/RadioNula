@@ -8,10 +8,13 @@
 
 
     <item>
+
         <bitmap
             android:gravity="center"
             android:src="@drawable/nula_intro_logo"
+            
             />
+
 
     </item>
 
