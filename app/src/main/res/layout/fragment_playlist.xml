@@ -6,32 +6,5 @@
     android:orientation="vertical"
     android:background="@color/BackgroundBlue"
     >
-<RelativeLayout
 
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/background"
-    android:orientation="vertical">
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scaleType="fitStart"
-        android:id="@+id/fragment_playlist_ivShadow"
-        android:src="@drawable/shadow"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/fragment_playlist_llPlaylist"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </LinearLayout>
-    </ScrollView>
-
-</RelativeLayout>
 </LinearLayout>

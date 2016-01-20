@@ -26,6 +26,8 @@
 
         <ImageView
             android:id="@+id/fragment_top_ivLogo"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
