@@ -85,10 +85,13 @@ public class PlayerFragment extends Fragment {
         llPlaylist.addView(item);
 
         // Image spin animation
-        anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        anim = new RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         anim.setInterpolator(new LinearInterpolator());
         anim.setRepeatCount(Animation.INFINITE);
-        anim.setDuration(4000);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setDuration(50);
+
+
 
         anim2 = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         anim2.setInterpolator(new LinearInterpolator());
