@@ -199,4 +199,13 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             ex.printStackTrace();
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        if (commentsFragment.webViewGoBack()){
+
+        }else {
+            super.onBackPressed();
+        }
+    }
 }
