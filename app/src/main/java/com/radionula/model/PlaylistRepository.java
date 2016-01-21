@@ -35,7 +35,7 @@ public class PlaylistRepository extends Observable implements Runnable {
     private String feedUrl;
 
     public PlaylistRepository(String feedUrl) {
-        myHandler.postDelayed(this, 10000);
+        myHandler.post(this);
         this.feedUrl = feedUrl;
     }
 
