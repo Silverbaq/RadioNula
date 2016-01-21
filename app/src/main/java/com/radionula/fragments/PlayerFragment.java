@@ -121,6 +121,10 @@ public class PlayerFragment extends Fragment {
         return view;
     }
 
+    public void UpdateChannelLogo(String imageUrl){
+        MyApp.getImageLoader().displayImage(imageUrl, ivLogo);
+    }
+
     public void StopVinyl(){
         try {
             ivRecord.getAnimation().cancel();

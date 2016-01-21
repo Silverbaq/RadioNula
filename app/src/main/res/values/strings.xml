@@ -5,7 +5,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="classic_radiostream_path">http://streaming.radionula.com:8800/classics</string>
+    <string name="channel2_radiostream">http://streaming.radionula.com:8800/channel2</string>
+    <string name="channel3_radiostream">http://streaming.radionula.com:8800/channel3</string>
     <string name="classic_rrs">http://radionula.com/rss.xml</string>
+    <string name="channel2_rrs">http://radionula.com/rss_ch2.xml</string>
+    <string name="channel3_rrs">http://radionula.com/rss_ch3.xml</string>
     <string name="title_activity_init">InitActivity</string>
 
 </resources>

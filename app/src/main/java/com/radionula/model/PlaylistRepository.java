@@ -32,9 +32,11 @@ public class PlaylistRepository extends Observable implements Runnable {
     List<NulaTrack> tracks = new ArrayList<NulaTrack>();
     Handler myHandler = new Handler();
     private NulaTrack _current;
+    private String feedUrl;
 
-    public PlaylistRepository() {
+    public PlaylistRepository(String feedUrl) {
         myHandler.postDelayed(this, 10000);
+        this.feedUrl = feedUrl;
     }
 
     public List<NulaTrack> getPlaylist() {
@@ -46,14 +48,21 @@ public class PlaylistRepository extends Observable implements Runnable {
         notifyObservers();
     }
 
+    public void updateFeed(String url){
+        this.feedUrl = url;
+        myHandler.removeCallbacks(this);
+        myHandler.post(this);
+    }
+
     @Override
     public void run() {
-        new RSSFeedTask().execute();
+        new RSSFeedTask().execute(feedUrl);
         myHandler.postDelayed(this, 20000);
     }
 
 
     class RSSFeedTask extends AsyncTask<String, Void, Void> {
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -72,13 +81,12 @@ public class PlaylistRepository extends Observable implements Runnable {
 
         @Override
         protected Void doInBackground(String... params) {
-            String rssurl = "http://radionula.com/rss.xml";
 
             URL url1;
             try {
                 //
                 // Downloading RSS feed to String
-                String xmlString = HttpRequest.get(rssurl).body();
+                String xmlString = HttpRequest.get(params[0]).body();
 
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 DocumentBuilder db = dbf.newDocumentBuilder();

@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     // Backend
     private static PlaylistRepository _playlistRepository;
+    private static int _radioChannel = 1;
 
     // Fragments
     PlayerFragment playerFragment;
@@ -61,16 +62,15 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         setContentView(R.layout.activity_main);
 
         // Start to observe the playlist repository
-        _playlistRepository = new PlaylistRepository();
+        _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
         _playlistRepository.addObserver(this);
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         nvDrawer = (NavigationView) findViewById(R.id.nvView);
-        navButton = (ImageView)findViewById(R.id.nav_Button);
+        navButton = (ImageView) findViewById(R.id.nav_Button);
 
-        //playerFragment = (PlayerFragment)getSupportFragmentManager().findFragmentById(R.id.activityMain_fragmentPlayer);
-        flFragments = (FrameLayout)findViewById(R.id.activityMain_flFragments);
+        flFragments = (FrameLayout) findViewById(R.id.activityMain_flFragments);
 
         // Mediaplayer
         mp = new MediaPlayer();
@@ -104,10 +104,12 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         //
         // Call State
-        TelephonyManager TelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         TelephonyMgr.listen(new TeleListener(),
                 PhoneStateListener.LISTEN_CALL_STATE);
     }
+
+
 
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
@@ -178,8 +180,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
-
-
     // Make sure this is the method with just `Bundle` as the signature
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -188,15 +188,61 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void Skip() {
-        playerFragment.StartVinyl();
+        if (mp.isPlaying()) {
+            // TODO: Skip to next channel
+            ChangeChannel();
 
-        mp.start();
+        } else {
+            playerFragment.StartVinyl();
+            mp.start();
+        }
     }
 
     @Override
     public void Pause() {
         playerFragment.StopVinyl();
         mp.pause();
+    }
+
+    private void ChangeChannel(){
+        _radioChannel++;
+        switch (_radioChannel){
+            case 1:
+                // Classic Nula
+                _playlistRepository.updateFeed(getString(R.string.classic_rrs));
+
+                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch1);
+                if (mp.isPlaying())
+                    mp.stop();
+                makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+                mp.start();
+                break;
+            case 2:
+                // Soul / Funk Nula
+                _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
+
+                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch2);
+                if (mp.isPlaying())
+                    mp.stop();
+                makeMediaPlayerReady(getString(R.string.channel2_radiostream));
+                mp.start();
+                break;
+            case 3:
+                // Hip-Hop Nula
+                _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
+
+                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch3);
+                if (mp.isPlaying())
+                    mp.stop();
+                makeMediaPlayerReady(getString(R.string.channel3_radiostream));
+                mp.start();
+                break;
+            default:
+                _radioChannel = 0;
+                ChangeChannel();
+                break;
+        }
+
     }
 
     @Override
@@ -210,16 +256,16 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         try {
             playerFragment.UpdatePlaylist(_playlistRepository.getPlaylist());
             playerFragment.SetVinylImage(_playlistRepository.getPlaylist().get(0).getImage());
-        } catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     @Override
     public void onBackPressed() {
-        if (commentsFragment.webViewGoBack()){
+        if (commentsFragment.webViewGoBack()) {
 
-        }else {
+        } else {
             super.onBackPressed();
         }
     }
