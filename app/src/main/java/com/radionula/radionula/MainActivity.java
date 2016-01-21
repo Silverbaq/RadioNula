@@ -1,10 +1,12 @@
 package com.radionula.radionula;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -74,9 +76,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         // Mediaplayer
         mp = new MediaPlayer();
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
-
+        mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -158,28 +158,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
-    private void makeMediaPlayerReady(String url) {
-        mp.reset();
-        try {
-            mp.setDataSource(url);
-            mp.prepare();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-
+    //
     // Make sure this is the method with just `Bundle` as the signature
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -188,14 +167,16 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void Skip() {
-        if (mp.isPlaying()) {
-            // TODO: Skip to next channel
-            ChangeChannel();
 
+        if (mp.isPlaying()) {
+            ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "Loading", "Please wait...", true);
+            ChangeChannel();
+            dialog.dismiss();
         } else {
             playerFragment.StartVinyl();
             mp.start();
         }
+
     }
 
     @Override
@@ -204,6 +185,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         mp.pause();
     }
 
+    //
+    // Chances the channel logo, RSS feed and sets the audio stream
     private void ChangeChannel(){
         _radioChannel++;
         switch (_radioChannel){
@@ -214,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch1);
                 if (mp.isPlaying())
                     mp.stop();
-                makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
                 mp.start();
                 break;
             case 2:
@@ -224,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch2);
                 if (mp.isPlaying())
                     mp.stop();
-                makeMediaPlayerReady(getString(R.string.channel2_radiostream));
+                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.channel2_radiostream)));
                 mp.start();
                 break;
             case 3:
@@ -234,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                 playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch3);
                 if (mp.isPlaying())
                     mp.stop();
-                makeMediaPlayerReady(getString(R.string.channel3_radiostream));
+                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.channel3_radiostream)));
                 mp.start();
                 break;
             default:
@@ -270,6 +253,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
+
+    //
+    // Detects the call state of the phone. Will pause music if phone rings.
     class TeleListener extends PhoneStateListener {
         public void onCallStateChanged(int state, String incomingNumber) {
             super.onCallStateChanged(state, incomingNumber);
@@ -278,6 +264,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     // CALL_STATE_IDLE;
                     Toast.makeText(getApplicationContext(), "CALL_STATE_IDLE",
                             Toast.LENGTH_LONG).show();
+
+                    // TODO: Needs to restart music after a phone call. (If it was playing).
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
                     // CALL_STATE_OFFHOOK;
@@ -290,6 +278,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                             Toast.LENGTH_LONG).show();
                     Toast.makeText(getApplicationContext(), "CALL_STATE_RINGING",
                             Toast.LENGTH_LONG).show();
+
+                    // Pauses music
+                    Pause();
                     break;
                 default:
                     break;
