@@ -1,6 +1,7 @@
 package com.radionula.fragments;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -79,10 +80,13 @@ public class PlayerFragment extends Fragment {
         llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
 
+
         // Sets load adapter
         LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
         View item = loadingAdapter.getView(0, null, null);
         llPlaylist.addView(item);
+
+
 
         // Image spin animation
         anim = new RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -114,6 +118,8 @@ public class PlayerFragment extends Fragment {
                 _controls.Pause();
             }
         });
+
+
 
         return view;
     }
@@ -199,5 +205,9 @@ public class PlayerFragment extends Fragment {
 
             ivLogo.bringToFront();
         }
+
+        _controls.UpdatePlaylist();
+
+
     }
 }

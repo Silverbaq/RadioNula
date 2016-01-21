@@ -1,6 +1,7 @@
 package com.radionula.radionula;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -10,6 +11,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Start to observe the playlist repository
+        // Start to observe the playlist repository
         _playlistRepository = new PlaylistRepository();
         _playlistRepository.addObserver(this);
 
@@ -96,12 +99,14 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         // Commit the transaction
         transaction.commit();
 
-
-
         setupDrawerContent(nvDrawer);
 
 
-
+        //
+        // Call State
+        TelephonyManager TelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyMgr.listen(new TeleListener(),
+                PhoneStateListener.LISTEN_CALL_STATE);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -195,6 +200,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
     @Override
+    public void UpdatePlaylist() {
+        _playlistRepository.triggerObserver();
+    }
+
+    @Override
     public void update(Observable observable, Object data) {
         // updates playlist
         try {
@@ -211,6 +221,33 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         }else {
             super.onBackPressed();
+        }
+    }
+
+    class TeleListener extends PhoneStateListener {
+        public void onCallStateChanged(int state, String incomingNumber) {
+            super.onCallStateChanged(state, incomingNumber);
+            switch (state) {
+                case TelephonyManager.CALL_STATE_IDLE:
+                    // CALL_STATE_IDLE;
+                    Toast.makeText(getApplicationContext(), "CALL_STATE_IDLE",
+                            Toast.LENGTH_LONG).show();
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    // CALL_STATE_OFFHOOK;
+                    Toast.makeText(getApplicationContext(), "CALL_STATE_OFFHOOK",
+                            Toast.LENGTH_LONG).show();
+                    break;
+                case TelephonyManager.CALL_STATE_RINGING:
+                    // CALL_STATE_RINGING
+                    Toast.makeText(getApplicationContext(), incomingNumber,
+                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "CALL_STATE_RINGING",
+                            Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
