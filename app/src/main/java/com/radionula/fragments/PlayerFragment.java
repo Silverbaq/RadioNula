@@ -80,13 +80,10 @@ public class PlayerFragment extends Fragment {
         llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
 
-
         // Sets load adapter
         LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
         View item = loadingAdapter.getView(0, null, null);
         llPlaylist.addView(item);
-
-
 
         // Image spin animation
         anim = new RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
