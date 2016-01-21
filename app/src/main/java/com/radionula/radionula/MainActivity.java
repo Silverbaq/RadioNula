@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -169,9 +170,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     public void Skip() {
 
         if (mp.isPlaying()) {
-            ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "Loading", "Please wait...", true);
-            ChangeChannel();
-            dialog.dismiss();
+            //
+            // Loads in own thread to ease the gui thread - doing the changes are rather heavy
+            new ChangeChannelTask().execute();
+
+
         } else {
             playerFragment.StartVinyl();
             mp.start();
@@ -185,48 +188,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         mp.pause();
     }
 
-    //
-    // Chances the channel logo, RSS feed and sets the audio stream
-    private void ChangeChannel(){
-        _radioChannel++;
-        switch (_radioChannel){
-            case 1:
-                // Classic Nula
-                _playlistRepository.updateFeed(getString(R.string.classic_rrs));
 
-                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch1);
-                if (mp.isPlaying())
-                    mp.stop();
-                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
-                mp.start();
-                break;
-            case 2:
-                // Soul / Funk Nula
-                _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
-
-                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch2);
-                if (mp.isPlaying())
-                    mp.stop();
-                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.channel2_radiostream)));
-                mp.start();
-                break;
-            case 3:
-                // Hip-Hop Nula
-                _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
-
-                playerFragment.UpdateChannelLogo("drawable://" + R.drawable.nula_logo_ch3);
-                if (mp.isPlaying())
-                    mp.stop();
-                mp = MediaPlayer.create(this, Uri.parse(getString(R.string.channel3_radiostream)));
-                mp.start();
-                break;
-            default:
-                _radioChannel = 0;
-                ChangeChannel();
-                break;
-        }
-
-    }
 
     @Override
     public void UpdatePlaylist() {
@@ -286,5 +248,75 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     break;
             }
         }
+    }
+
+    private class ChangeChannelTask extends AsyncTask<Void, Void, Void>{
+        ProgressDialog dialog;
+        String logo = "";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog = ProgressDialog.show(MainActivity.this, "Loading", "Please wait...", true);
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            playerFragment.UpdateChannelLogo(logo);
+            dialog.dismiss();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            ChangeChannel();
+
+            return null;
+        }
+
+        //
+        // Chances the channel logo, RSS feed and sets the audio stream
+        private void ChangeChannel(){
+            _radioChannel++;
+            switch (_radioChannel){
+                case 1:
+                    // Classic Nula
+                    _playlistRepository.updateFeed(getString(R.string.classic_rrs));
+                    logo = "drawable://" + R.drawable.nula_logo_ch1;
+
+                    if (mp.isPlaying())
+                        mp.stop();
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
+                    mp.start();
+                    break;
+                case 2:
+                    // Soul / Funk Nula
+                    _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
+
+                    logo = "drawable://" + R.drawable.nula_logo_ch2;
+                    if (mp.isPlaying())
+                        mp.stop();
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
+                    mp.start();
+                    break;
+                case 3:
+                    // Hip-Hop Nula
+                    _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
+
+                    logo = "drawable://" + R.drawable.nula_logo_ch3;
+                    if (mp.isPlaying())
+                        mp.stop();
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
+                    mp.start();
+                    break;
+                default:
+                    _radioChannel = 0;
+                    ChangeChannel();
+                    break;
+            }
+
+        }
+
     }
 }
