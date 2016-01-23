@@ -55,6 +55,7 @@ public class PlayerFragment extends Fragment {
 
     ImageView ivSkip;
     ImageView ivPause;
+    private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;;
 
 
     public PlayerFragment() {
@@ -122,6 +123,7 @@ public class PlayerFragment extends Fragment {
     }
 
     public void UpdateChannelLogo(String imageUrl){
+        logoUrl = imageUrl;
         MyApp.getImageLoader().displayImage(imageUrl, ivLogo);
     }
 
@@ -207,6 +209,7 @@ public class PlayerFragment extends Fragment {
             ivLogo.bringToFront();
         }
 
+        UpdateChannelLogo(logoUrl);
         _controls.UpdatePlaylist();
 
 
