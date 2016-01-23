@@ -4,10 +4,17 @@
     android:layout_height="match_parent"
     tools:context="com.radionula.fragments.CommentsFragment">
 
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:id="@+id/parentLayout"></LinearLayout>
+
+
+    <!--
     <WebView  xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/fragment_comments_webview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         />
-
+-->
 </FrameLayout>
