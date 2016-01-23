@@ -69,8 +69,8 @@ public class CommentsFragment extends Fragment {
         webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setSupportMultipleWindows(true);
-        webView.getSettings().setSupportZoom(true);
-        webView.getSettings().setBuiltInZoomControls(true);
+        //webView.getSettings().setSupportZoom(true);
+        //webView.getSettings().setBuiltInZoomControls(true);
 
         if (Build.VERSION.SDK_INT >= 21) {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -156,8 +156,8 @@ public class CommentsFragment extends Fragment {
                                       boolean userGesture, Message resultMsg) {
             childView = new WebView(getActivity());
             childView.getSettings().setJavaScriptEnabled(true);
-            childView.getSettings().setSupportZoom(true);
-            childView.getSettings().setBuiltInZoomControls(true);
+            //childView.getSettings().setSupportZoom(true);
+            //childView.getSettings().setBuiltInZoomControls(false);
             childView.setWebViewClient(new FaceBookClient());
             childView.setWebChromeClient(this);
             childView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.FILL_PARENT));
