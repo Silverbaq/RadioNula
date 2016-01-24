@@ -41,7 +41,8 @@ public class PlayerFragment extends Fragment {
 
     ImageView ivRecord;
     ImageView ivLogo;
-    CircularImageView ivRecordImage;
+    //CircularImageView ivRecordImage;
+    ImageView ivRecordImage;
 
     //
     // Playlist of player
@@ -76,7 +77,7 @@ public class PlayerFragment extends Fragment {
 
 
         ivRecord = (ImageView) view.findViewById(R.id.fragment_top_ivRecord);
-        ivRecordImage = (CircularImageView) view.findViewById(R.id.fragment_top_ivRecordImage);
+        ivRecordImage = (ImageView) view.findViewById(R.id.fragment_top_ivRecordImage);
         ivLogo = (ImageView)view.findViewById(R.id.fragment_top_ivLogo);
         llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);

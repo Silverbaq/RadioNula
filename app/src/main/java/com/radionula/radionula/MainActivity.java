@@ -77,7 +77,10 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         // Mediaplayer
         mp = new MediaPlayer();
-        mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
+        //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+
 
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,6 +219,27 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
+    private void makeMediaPlayerReady(String url) {
+        mp.reset();
+        try {
+            mp.setDataSource(url);
+            mp.prepare();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
     //
     // Detects the call state of the phone. Will pause music if phone rings.
     class TeleListener extends PhoneStateListener {
@@ -283,7 +307,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
                     if (mp.isPlaying())
                         mp.stop();
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
+                    makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
                     mp.start();
                     break;
                 case 2:
@@ -293,7 +318,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     logo = "drawable://" + R.drawable.nula_logo_ch2;
                     if (mp.isPlaying())
                         mp.stop();
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
+                    makeMediaPlayerReady(getString(R.string.channel2_radiostream));
+                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
                     mp.start();
                     break;
                 case 3:
@@ -303,7 +329,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     logo = "drawable://" + R.drawable.nula_logo_ch3;
                     if (mp.isPlaying())
                         mp.stop();
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
+                    makeMediaPlayerReady(getString(R.string.channel3_radiostream));
+                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
                     mp.start();
                     break;
                 default:
