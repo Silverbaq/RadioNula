@@ -3,7 +3,10 @@ package com.radionula.fragments;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -16,8 +19,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
-import com.koushikdutta.ion.Ion;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.LoadingAdapter;
@@ -26,6 +27,9 @@ import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Observer;
 
@@ -83,6 +87,10 @@ public class PlayerFragment extends Fragment {
         ivLogo = (ImageView)view.findViewById(R.id.fragment_top_ivLogo);
         llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
+
+        // This disable hardware acceleration - fixes a bug for android 5.0
+        ivRecordImage.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
 
         // Sets load adapter
         LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
@@ -152,7 +160,9 @@ public class PlayerFragment extends Fragment {
     }
 
     public void SetVinylImage(String imageUrl){
-        Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
+        //MyApp.aquery.id(ivRecordImage).image(imageUrl, true, true, 0, 0, null, AQuery.FADE_IN);
+        //Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
+        new SetVinylImageTask().execute(imageUrl);
 
         ivLogo.bringToFront();
     }
@@ -218,4 +228,38 @@ public class PlayerFragment extends Fragment {
 
 
     }
+
+    class SetVinylImageTask extends AsyncTask<String,Void, Void>{
+        Bitmap image = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            ivRecordImage.setImageBitmap(image);
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            URL url = null;
+            try {
+                url = new URL(params[0]);
+                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+
+            return null;
+        }
+    }
+
 }
