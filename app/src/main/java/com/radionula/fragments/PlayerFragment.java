@@ -16,13 +16,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.mikhaellopez.circularimageview.CircularImageView;
+import com.androidquery.AQuery;
+import com.koushikdutta.ion.Ion;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.LoadingAdapter;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Observer;
@@ -95,7 +97,7 @@ public class PlayerFragment extends Fragment {
         anim.setDuration(50);
 
 
-
+        // Rotate animation
         anim2 = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         anim2.setInterpolator(new LinearInterpolator());
         anim2.setRepeatCount(Animation.INFINITE);
@@ -130,27 +132,28 @@ public class PlayerFragment extends Fragment {
 
     public void StopVinyl(){
         try {
+            playing = false;
             ivRecord.getAnimation().cancel();
             ivRecordImage.getAnimation().cancel();
-            playing = false;
         } catch (Exception e){
 
         }
     }
 
     public void StartVinyl(){
-        if (!playing) {
+      //  if (!playing) {
             playing = true;
 
             ivRecord.startAnimation(anim);
             ivRecordImage.startAnimation(anim2);
 
             ivLogo.bringToFront();
-        }
+       // }
     }
 
     public void SetVinylImage(String imageUrl){
-        MyApp.getImageLoader().displayImage(imageUrl, ivRecordImage);
+        Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
+
         ivLogo.bringToFront();
     }
 
