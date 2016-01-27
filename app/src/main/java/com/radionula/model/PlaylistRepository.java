@@ -63,12 +63,15 @@ public class PlaylistRepository extends Observable implements Runnable {
 
     class RSSFeedTask extends AsyncTask<String, Void, Void> {
 
+        NulaTrack _tempCurrent;
+
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            if (_current == null || !tracks.get(0).getTitel().equals(_current.getTitel())){
-                _current = tracks.get(0);
+            if (_current == null || !_tempCurrent.getTitel().equals(_current.getTitel())){
+                _current = _tempCurrent;
+                tracks.add(0,_tempCurrent);
                 triggerObserver();
             }
         }
@@ -76,7 +79,7 @@ public class PlaylistRepository extends Observable implements Runnable {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            tracks.clear();
+            //tracks.clear();
         }
 
         @Override
@@ -101,9 +104,9 @@ public class PlaylistRepository extends Observable implements Runnable {
                 NodeList nodeList = doc.getElementsByTagName("item");
 
 
-                for (int i = 0; i < nodeList.getLength(); i++) {
+             //   for (int i = 0; i < nodeList.getLength(); i++) {
 
-                    Node node = nodeList.item(i);
+                    Node node = nodeList.item(0);
 
 
                     Element fstElmnt = (Element) node;
@@ -129,11 +132,11 @@ public class PlaylistRepository extends Observable implements Runnable {
                     String urlformated = url.replace(" ", "%20");
                     String[] splitTitle = titel.split(" - ");
 
-                    tracks.add(new NulaTrack(splitTitle[0], splitTitle[1], urlformated));
+                    _tempCurrent = new  NulaTrack(splitTitle[0], splitTitle[1], urlformated);
                     Log.d("debug", "track added");
 
 
-                }
+//                }
 
             } catch (MalformedURLException e1) {
                 // TODO Auto-generated catch block
