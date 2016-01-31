@@ -62,62 +62,58 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            setContentView(R.layout.activity_main);
 
-            // Start to observe the playlist repository
-            _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
-            _playlistRepository.addObserver(this);
+        setContentView(R.layout.activity_main);
 
-            // Find our drawer view
-            mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-            nvDrawer = (NavigationView) findViewById(R.id.nvView);
-            navButton = (ImageView) findViewById(R.id.nav_Button);
+        // Start to observe the playlist repository
+        _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
+        _playlistRepository.addObserver(this);
 
-            flFragments = (FrameLayout) findViewById(R.id.activityMain_flFragments);
+        // Find our drawer view
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        nvDrawer = (NavigationView) findViewById(R.id.nvView);
+        navButton = (ImageView) findViewById(R.id.nav_Button);
 
-            // Mediaplayer
-            mp = new MediaPlayer();
-            //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
-            mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+        flFragments = (FrameLayout) findViewById(R.id.activityMain_flFragments);
 
-
-            navButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mDrawer.openDrawer(GravityCompat.START);
-                }
-            });
-
-            playerFragment = new PlayerFragment();
-            favoritsFragment = new FavoritsFragment();
-            commentsFragment = new CommentsFragment();
-
-            // Transaction to swap fragments
-            transaction = getSupportFragmentManager().beginTransaction();
-
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.activityMain_flFragments, playerFragment);
-
-            // Commit the transaction
-            transaction.commit();
-
-            setupDrawerContent(nvDrawer);
+        // Mediaplayer
+        mp = new MediaPlayer();
+        //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
 
 
-            //
-            // Call State
-            TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            TelephonyMgr.listen(new TeleListener(),
-                    PhoneStateListener.LISTEN_CALL_STATE);
-        } catch (Exception ex){
-            Toast.makeText(this,"Something is wrong - Please check your connection, and try agian", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawer.openDrawer(GravityCompat.START);
+            }
+        });
+
+        playerFragment = new PlayerFragment();
+        favoritsFragment = new FavoritsFragment();
+        commentsFragment = new CommentsFragment();
+
+        // Transaction to swap fragments
+        transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.activityMain_flFragments, playerFragment);
+
+        // Commit the transaction
+        transaction.commit();
+
+        setupDrawerContent(nvDrawer);
+
+
+        //
+        // Call State
+        TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyMgr.listen(new TeleListener(),
+                PhoneStateListener.LISTEN_CALL_STATE);
+
     }
-
 
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -197,7 +193,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
-
     @Override
     public void UpdatePlaylist() {
         _playlistRepository.triggerObserver();
@@ -275,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
-    private class ChangeChannelTask extends AsyncTask<Void, Void, Void>{
+    private class ChangeChannelTask extends AsyncTask<Void, Void, Void> {
         ProgressDialog dialog;
         String logo = "";
 
@@ -302,9 +297,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         //
         // Chances the channel logo, RSS feed and sets the audio stream
-        private void ChangeChannel(){
+        private void ChangeChannel() {
             _radioChannel++;
-            switch (_radioChannel){
+            switch (_radioChannel) {
                 case 1:
                     // Classic Nula
                     _playlistRepository.updateFeed(getString(R.string.classic_rrs));

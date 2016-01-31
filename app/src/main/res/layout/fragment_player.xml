@@ -75,8 +75,14 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/background"
+
                 android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/background"
+                    android:scaleType="centerCrop"/>
 
                 <ImageView
                     android:id="@+id/fragment_playlist_ivShadow"
@@ -112,14 +118,14 @@
 
         <ImageView
             android:id="@+id/fragment_controls_ivSkip"
-            android:layout_width="100dp"
+            android:layout_width="115dp"
             android:layout_height="100dp"
             android:paddingRight="10dp"
             android:src="@drawable/button_skip" />
 
         <ImageView
             android:id="@+id/fragment_controls_ivPause"
-            android:layout_width="100dp"
+            android:layout_width="115dp"
             android:layout_height="100dp"
             android:paddingLeft="10dp"
             android:src="@drawable/button_pause" />

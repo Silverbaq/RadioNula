@@ -3,6 +3,7 @@ package com.radionula.radionula;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 
 import com.androidquery.AQuery;
 import com.google.gson.Gson;
