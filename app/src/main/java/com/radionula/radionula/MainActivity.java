@@ -65,9 +65,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         setContentView(R.layout.activity_main);
 
-        // Start to observe the playlist repository
-        _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
-        _playlistRepository.addObserver(this);
+
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -76,11 +74,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         flFragments = (FrameLayout) findViewById(R.id.activityMain_flFragments);
 
-        // Mediaplayer
-        mp = new MediaPlayer();
-        //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+
 
 
         navButton.setOnClickListener(new View.OnClickListener() {
@@ -190,6 +184,24 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     public void Pause() {
         playerFragment.StopVinyl();
         mp.pause();
+    }
+
+    @Override
+    public void TuneIn() {
+        // Start to observe the playlist repository
+        _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
+        _playlistRepository.addObserver(this);
+
+        // Mediaplayer
+        mp = new MediaPlayer();
+        //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
+
+
+        Skip();
+        MyApp.tunedIn = true;
+
     }
 
 

@@ -25,6 +25,7 @@ public class MyApp extends Application {
     private static ImageLoader imageLoader;
 
     private static List<NulaTrack> _favorites;
+    public static boolean tunedIn;
 
     @Override
     public void onCreate() {
@@ -39,6 +40,8 @@ public class MyApp extends Application {
         aquery = new AQuery(this);
 
         _favorites = new ArrayList<>();
+
+        tunedIn = false;
     }
 
     public static ImageLoader getImageLoader(){

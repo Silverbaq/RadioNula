@@ -62,6 +62,7 @@ public class PlayerFragment extends Fragment {
 
     ImageView ivSkip;
     ImageView ivPause;
+    ImageView ivTuneIn;
     private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;;
 
 
@@ -93,9 +94,9 @@ public class PlayerFragment extends Fragment {
 
 
         // Sets load adapter
-        LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
-        View item = loadingAdapter.getView(0, null, null);
-        llPlaylist.addView(item);
+        //LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
+        //View item = loadingAdapter.getView(0, null, null);
+        //llPlaylist.addView(item);
 
         // Image spin animation
         anim = new RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -113,6 +114,7 @@ public class PlayerFragment extends Fragment {
 
         ivSkip = (ImageView) view.findViewById(R.id.fragment_controls_ivSkip);
         ivPause = (ImageView) view.findViewById(R.id.fragment_controls_ivPause);
+        ivTuneIn = (ImageView) view.findViewById(R.id.fragment_controls_ivTuneIn);
 
         ivSkip.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,9 +130,24 @@ public class PlayerFragment extends Fragment {
             }
         });
 
+        ivTuneIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tuneIn();
+            }
+        });
 
 
         return view;
+    }
+
+    private void tuneIn() {
+        ivTuneIn.setVisibility(View.INVISIBLE);
+        ivPause.setVisibility(View.VISIBLE);
+        ivSkip.setVisibility(View.VISIBLE);
+
+        // TODO: Add tunein function
+        _controls.TuneIn();
     }
 
     public void UpdateChannelLogo(String imageUrl){
@@ -216,16 +233,17 @@ public class PlayerFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (playing){
-            ivRecord.startAnimation(anim);
-            ivRecordImage.startAnimation(anim2);
+        if (MyApp.tunedIn) {
+            if (playing) {
+                ivRecord.startAnimation(anim);
+                ivRecordImage.startAnimation(anim2);
 
-            ivLogo.bringToFront();
+                ivLogo.bringToFront();
+            }
+
+            UpdateChannelLogo(logoUrl);
+            _controls.UpdatePlaylist();
         }
-
-        UpdateChannelLogo(logoUrl);
-        _controls.UpdatePlaylist();
-
 
     }
 

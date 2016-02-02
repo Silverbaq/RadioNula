@@ -9,6 +9,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -17,10 +19,13 @@ import java.util.Observer;
 
 public class InitActivity extends AppCompatActivity{
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_init);
+
+        Toast.makeText(this, "No network!!!", Toast.LENGTH_SHORT).show();
 
         if (isNetworkConnected()) {
 
