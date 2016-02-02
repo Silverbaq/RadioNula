@@ -285,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     private class ChangeChannelTask extends AsyncTask<Void, Void, Void> {
         ProgressDialog dialog;
         String logo = "";
+        int skipImage = 0;
 
         @Override
         protected void onPreExecute() {
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            playerFragment.UpdateChannelLogo(logo);
+            playerFragment.UpdateChannelLogo(logo,skipImage);
             dialog.dismiss();
         }
 
@@ -316,6 +317,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     // Classic Nula
                     _playlistRepository.updateFeed(getString(R.string.classic_rrs));
                     logo = "drawable://" + R.drawable.nula_logo_ch1;
+                    skipImage = R.drawable.play_button_1;
 
                     if (mp.isPlaying())
                         mp.stop();
@@ -328,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
 
                     logo = "drawable://" + R.drawable.nula_logo_ch2;
+                    skipImage = R.drawable.play_button_2;
                     if (mp.isPlaying())
                         mp.stop();
                     makeMediaPlayerReady(getString(R.string.channel2_radiostream));
@@ -339,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
 
                     logo = "drawable://" + R.drawable.nula_logo_ch3;
+                    skipImage = R.drawable.play_button_3;
                     if (mp.isPlaying())
                         mp.stop();
                     makeMediaPlayerReady(getString(R.string.channel3_radiostream));

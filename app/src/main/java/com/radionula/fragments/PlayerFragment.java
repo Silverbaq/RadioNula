@@ -64,6 +64,7 @@ public class PlayerFragment extends Fragment {
     ImageView ivPause;
     ImageView ivTuneIn;
     private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;;
+    private int skipurl = R.drawable.play_button_1;
 
 
     public PlayerFragment() {
@@ -150,9 +151,13 @@ public class PlayerFragment extends Fragment {
         _controls.TuneIn();
     }
 
-    public void UpdateChannelLogo(String imageUrl){
+    public void UpdateChannelLogo(String imageUrl, int skipUrl){
         logoUrl = imageUrl;
+        skipurl = skipUrl;
         MyApp.getImageLoader().displayImage(imageUrl, ivLogo);
+        //MyApp.getImageLoader().displayImage(skipUrl, ivSkip);
+        ivSkip.setImageResource(skipUrl);
+
     }
 
     public void StopVinyl(){
@@ -241,7 +246,11 @@ public class PlayerFragment extends Fragment {
                 ivLogo.bringToFront();
             }
 
-            UpdateChannelLogo(logoUrl);
+            ivSkip.setVisibility(View.VISIBLE);
+            ivPause.setVisibility(View.VISIBLE);
+            ivTuneIn.setVisibility(View.INVISIBLE);
+
+            UpdateChannelLogo(logoUrl, skipurl);
             _controls.UpdatePlaylist();
         }
 
