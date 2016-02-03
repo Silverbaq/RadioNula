@@ -26,6 +26,7 @@ public class MyApp extends Application {
 
     private static List<NulaTrack> _favorites;
     public static boolean tunedIn;
+    public static boolean reconnect = false;
 
     @Override
     public void onCreate() {

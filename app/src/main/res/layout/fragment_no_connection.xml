@@ -1,0 +1,53 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.radionula.fragments.NoConnectionFragment" >
+
+        <RelativeLayout
+            android:background="@drawable/background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ImageView
+                android:id="@+id/activity_init_ivlogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/nula_intro_logo"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+
+            <LinearLayout
+                android:orientation="vertical" android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/faded_black"
+                android:gravity="center">
+
+                <LinearLayout
+                    android:layout_width="250dp"
+                    android:layout_height="75dp"
+                    android:background="@drawable/dialog_shape"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="There is no internet connection"
+                        android:textColor="#000000"
+                        android:id="@+id/fragment_no_connection_textview1"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="try re-connecting"
+                        android:textColor="#000000"
+                        android:id="@+id/fragment_no_connection_textview2"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+</FrameLayout>

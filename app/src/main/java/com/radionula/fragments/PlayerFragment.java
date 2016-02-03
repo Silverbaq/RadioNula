@@ -251,6 +251,8 @@ public class PlayerFragment extends Fragment {
 
             UpdateChannelLogo(logoUrl, skipurl);
             _controls.UpdatePlaylist();
+
+
         }
 
     }

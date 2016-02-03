@@ -26,23 +26,11 @@ public class InitActivity extends AppCompatActivity{
         setContentView(R.layout.activity_init);
 
 
-        if (isNetworkConnected()) {
-
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
-        } else {
-            Toast.makeText(this, "No network!!!", Toast.LENGTH_SHORT).show();
-            // TODO: Make it goto retry activity
-        }
-    }
 
-
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        return cm.getActiveNetworkInfo() != null;
     }
 
 }

@@ -1,10 +1,12 @@
 package com.radionula.radionula;
 
+import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.media.AudioManager;
@@ -21,9 +23,12 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,10 +36,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.radionula.fragments.CommentsFragment;
 import com.radionula.fragments.FavoritsFragment;
+import com.radionula.fragments.NoConnectionFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
+import com.radionula.model.NetworkStateReceiver;
 import com.radionula.model.NulaTrack;
 import com.radionula.model.PlaylistRepository;
+import com.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +50,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class MainActivity extends AppCompatActivity implements IControls, Observer {
+public class MainActivity extends AppCompatActivity implements IControls, Observer, NetworkStateReceiverListener {
 
     DrawerLayout mDrawer;
     NavigationView nvDrawer;
@@ -63,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     // Mediaplayer
     MediaPlayer mp;
 
+    private NetworkStateReceiver networkStateReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         favoritsFragment = new FavoritsFragment();
         commentsFragment = new CommentsFragment();
 
+
         // Transaction to swap fragments
         transaction = getSupportFragmentManager().beginTransaction();
 
@@ -111,6 +121,12 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         TelephonyManager TelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         TelephonyMgr.listen(new TeleListener(),
                 PhoneStateListener.LISTEN_CALL_STATE);
+
+        //
+        // Network state
+        networkStateReceiver = new NetworkStateReceiver(this);
+        networkStateReceiver.addListener(this);
+        this.registerReceiver(networkStateReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
 
     }
 
@@ -232,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
+
 /*
     @Override
     public void onBackPressed() {
@@ -278,6 +295,61 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
 
     }
+
+    //
+    // When the internet connection is reestablished
+    @Override
+    public void onNetworkAvailable() {
+    /* TODO: Your connection-oriented stuff here */
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
+        //findViewById(R.id.activityMain_toolbar).setVisibility(View.VISIBLE);
+        transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.activityMain_flFragments, playerFragment);
+        transaction.commit();
+
+        if (MyApp.reconnect) {
+            switch (_radioChannel){
+                case 1:
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
+                    break;
+                case 2:
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
+                    break;
+                case 3:
+                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
+                    break;
+            }
+            // Starts music player once agian.
+            Skip();
+        }
+
+    }
+
+
+    //
+    // If there is no internet connection
+    @Override
+    public void onNetworkUnavailable() {
+/* TODO: Your disconnection-oriented stuff here */
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+        findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
+
+        if(MyApp.tunedIn && mp.isPlaying()) {
+           Pause();
+            MyApp.reconnect = true;
+        }
+
+
+        transaction = getSupportFragmentManager().beginTransaction();
+        NoConnectionFragment fragment = new NoConnectionFragment();
+        transaction.replace(R.id.activityMain_flFragments, fragment);
+        transaction.commit();
+
+    }
+
+
+
 
     //
     // Detects the call state of the phone. Will pause music if phone rings.

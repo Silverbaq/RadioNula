@@ -54,6 +54,11 @@ public class PlaylistRepository extends Observable implements Runnable {
         myHandler.post(this);
     }
 
+    public void stopFeed(){
+        // TODO: Need to be tested
+        myHandler.removeCallbacks(this);
+    }
+
     @Override
     public void run() {
         new RSSFeedTask().execute(feedUrl);
