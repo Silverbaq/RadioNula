@@ -188,6 +188,10 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void TuneIn() {
+        // Play TuneIn noice sound
+        MediaPlayer mpNoize = MediaPlayer.create(this, R.raw.radionoise);
+        mpNoize.start();
+
         // Start to observe the playlist repository
         _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
         _playlistRepository.addObserver(this);
@@ -197,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
-
+        mpNoize.stop();
 
         Skip();
         MyApp.tunedIn = true;
@@ -319,35 +323,39 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
                     logo = "drawable://" + R.drawable.nula_logo_ch1;
                     skipImage = R.drawable.play_button_1;
 
+                    MediaPlayer mpTmp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
                     if (mp.isPlaying())
                         mp.stop();
-                    makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
-                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
-                    mp.start();
+                    mpTmp.start();
+
+                    mp = mpTmp;
                     break;
                 case 2:
                     // Soul / Funk Nula
                     _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
-
                     logo = "drawable://" + R.drawable.nula_logo_ch2;
                     skipImage = R.drawable.play_button_2;
+
+
+                    MediaPlayer mpTmp2 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
                     if (mp.isPlaying())
                         mp.stop();
-                    makeMediaPlayerReady(getString(R.string.channel2_radiostream));
-                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
-                    mp.start();
+                    mpTmp2.start();
+
+                    mp = mpTmp2;
                     break;
                 case 3:
                     // Hip-Hop Nula
                     _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
-
                     logo = "drawable://" + R.drawable.nula_logo_ch3;
                     skipImage = R.drawable.play_button_3;
+
+                    MediaPlayer mpTmp3 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
                     if (mp.isPlaying())
                         mp.stop();
-                    makeMediaPlayerReady(getString(R.string.channel3_radiostream));
-                    //mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
-                    mp.start();
+                    mpTmp3.start();
+
+                    mp = mpTmp3;
                     break;
                 default:
                     _radioChannel = 0;

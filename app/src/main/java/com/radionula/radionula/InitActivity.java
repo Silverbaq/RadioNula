@@ -25,7 +25,6 @@ public class InitActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_init);
 
-        Toast.makeText(this, "No network!!!", Toast.LENGTH_SHORT).show();
 
         if (isNetworkConnected()) {
 
