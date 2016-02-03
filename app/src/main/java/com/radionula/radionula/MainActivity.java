@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.media.AudioManager;
@@ -194,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     public void TuneIn() {
         // Play TuneIn noice sound
         MediaPlayer mpNoize = MediaPlayer.create(this, R.raw.radionoise);
+        mpNoize.setLooping(true);
         mpNoize.start();
 
         // Start to observe the playlist repository
@@ -229,6 +231,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
+
+/*
     @Override
     public void onBackPressed() {
         if (commentsFragment.webViewGoBack()) {
@@ -237,7 +241,22 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             super.onBackPressed();
         }
     }
+*/
 
+    /**
+     * Back button listener.
+     * Will close the application if the back button pressed twice.
+     */
+    @Override
+    public void onBackPressed()
+    {
+
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+    }
 
     private void makeMediaPlayerReady(String url) {
         mp.reset();
