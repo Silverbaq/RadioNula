@@ -1,9 +1,11 @@
 package com.radionula.radionula;
 
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -18,8 +20,10 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -287,14 +291,21 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
     private class ChangeChannelTask extends AsyncTask<Void, Void, Void> {
-        ProgressDialog dialog;
+        Dialog dialog;
         String logo = "";
         int skipImage = 0;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            dialog = ProgressDialog.show(MainActivity.this, "Loading", "Please wait...", true);
+            dialog = new Dialog(MainActivity.this,android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+            dialog.setContentView(R.layout.loading_dialog);
+
+            TextView textView = (TextView) dialog.findViewById(R.id.loading_dialog_textview);
+            Typeface font = Typeface.createFromAsset(MainActivity.this.getAssets(), "fonts/Roboto-Regular.ttf");
+            textView.setTypeface(font);
+
+            dialog.show();
 
         }
 

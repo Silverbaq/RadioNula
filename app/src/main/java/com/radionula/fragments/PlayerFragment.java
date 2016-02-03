@@ -147,7 +147,6 @@ public class PlayerFragment extends Fragment {
         ivPause.setVisibility(View.VISIBLE);
         ivSkip.setVisibility(View.VISIBLE);
 
-        // TODO: Add tunein function
         _controls.TuneIn();
     }
 

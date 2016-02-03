@@ -9,4 +9,5 @@
     <color name="adapterFavoriteBackground">#a0000000</color>
     <color name="white">#ffffff</color>
     <color name="faded_white">#32ffffff</color>
+    <color name="faded_black">#dc000000</color>
 </resources>
