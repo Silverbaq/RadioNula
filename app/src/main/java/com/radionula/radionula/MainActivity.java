@@ -128,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         networkStateReceiver.addListener(this);
         this.registerReceiver(networkStateReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
 
+
+
+
     }
 
 
@@ -311,20 +314,31 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         if (MyApp.reconnect) {
             switch (_radioChannel){
                 case 1:
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
+                    MediaPlayer mpTmp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
+                    mp = mpTmp;
+
                     break;
                 case 2:
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
+                    MediaPlayer mpTmp2 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
+                    mp = mpTmp2;
                     break;
                 case 3:
-                    mp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
+                    MediaPlayer mpTmp3 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
+                    mp = mpTmp3;
+                    break;
+                default:
                     break;
             }
             // Starts music player once agian.
             Skip();
+            MyApp.reconnect = false;
         }
 
     }
+
+
+
+
 
 
     //
