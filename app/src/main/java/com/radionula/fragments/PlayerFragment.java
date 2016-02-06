@@ -91,7 +91,7 @@ public class PlayerFragment extends Fragment {
         ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
 
         // This disable hardware acceleration - fixes a bug for android 5.0
-        ivRecordImage.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        //ivRecordImage.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
 
         // Sets load adapter

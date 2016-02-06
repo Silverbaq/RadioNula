@@ -6,23 +6,39 @@
     android:gravity="center">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="275dp"
         android:layout_height="75dp"
         android:background="@drawable/dialog_shape"
         android:gravity="center_vertical"
         android:weightSum="100">
-
-        <ProgressBar
+<!--
+        <com.github.rahatarmanahmed.cpv.CircularProgressView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_weight="30"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:indeterminate="true"
+            app:cpv_color="#000000"
+            app:cpv_animAutostart="true"
             android:layout_marginRight="20dp"/>
+-->
+        <com.github.rahatarmanahmed.cpv.CircularProgressView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progress_view"
+            android:layout_weight="30"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:cpv_color="#88000000"
+            app:cpv_animAutostart="true"
+            app:cpv_indeterminate="true"
+            android:padding="10dp"
+            android:layout_marginLeft="10dp"/>
 
         <TextView
             android:layout_weight="70"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Loading . Please Wait..."
             android:textColor="#000000"
             android:id="@+id/loading_dialog_textview"/>

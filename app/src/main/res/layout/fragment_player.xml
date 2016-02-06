@@ -35,6 +35,21 @@
                     android:src="@drawable/record" />
 
 
+                <com.mikhaellopez.circularimageview.CircularImageView
+                    android:id="@+id/fragment_top_ivRecordImage"
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+
+                    android:layout_centerInParent="true"
+                    android:layout_marginBottom="-125dp"
+                    android:clipChildren="false"
+                    app:civ_border="false"
+                    />
+
+
+
+
+                <!--
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/fragment_top_ivRecordImage"
                     android:layout_width="250dp"
@@ -46,6 +61,7 @@
                     app:border="false"
 
                     />
+                    -->
 
             </RelativeLayout>
 
