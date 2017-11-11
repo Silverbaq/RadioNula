@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.radionula.utils.HttpRequest;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -48,13 +50,13 @@ public class PlaylistRepository extends Observable implements Runnable {
         notifyObservers();
     }
 
-    public void updateFeed(String url){
+    public void updateFeed(String url) {
         this.feedUrl = url;
         myHandler.removeCallbacks(this);
         myHandler.post(this);
     }
 
-    public void stopFeed(){
+    public void stopFeed() {
         // TODO: Need to be tested
         myHandler.removeCallbacks(this);
     }
@@ -68,15 +70,16 @@ public class PlaylistRepository extends Observable implements Runnable {
 
     class RSSFeedTask extends AsyncTask<String, Void, Void> {
 
+
         NulaTrack _tempCurrent;
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            if (_current == null || !_tempCurrent.getTitel().equals(_current.getTitel())){
+            if (_current == null || !_tempCurrent.getTitel().equals(_current.getTitel())) {
                 _current = _tempCurrent;
-                tracks.add(0,_tempCurrent);
+                tracks.add(0, _tempCurrent);
                 triggerObserver();
             }
         }
@@ -94,66 +97,29 @@ public class PlaylistRepository extends Observable implements Runnable {
             try {
                 //
                 // Downloading RSS feed to String
-                String xmlString = HttpRequest.get(params[0]).body();
 
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
+                String jsonString = HttpRequest.get(params[0]).body();
 
-                //
-                // Building document from XML String
-                Document doc = db.parse(new InputSource(new StringReader(xmlString)));
-                doc.getDocumentElement().normalize();
+                JSONObject reader = new JSONObject(jsonString);
 
-                //
-                // Getting all nodes
-                NodeList nodeList = doc.getElementsByTagName("item");
+                JSONObject ch1 = reader.getJSONObject("ch1");
+                JSONObject currentSong = ch1.getJSONObject("currentSong");
 
+                String artist = currentSong.getString("artist");
+                String title = currentSong.getString("title");
+                String cover = currentSong.getString("cover");
 
-             //   for (int i = 0; i < nodeList.getLength(); i++) {
+                //String urlformated = url.replace(" ", "%20");
+                //String[] splitTitle = titel.split(" - ");
 
-                    Node node = nodeList.item(0);
-
-
-                    Element fstElmnt = (Element) node;
-
-                    //
-                    // Getting title
-                    NodeList titleList = fstElmnt.getElementsByTagName("title");
-                    Element titleElement = (Element) titleList.item(0);
-                    titleList = ((Node) titleElement).getChildNodes();
-                    String titel = ((Node) titleList.item(0)).getNodeValue();
-
-                    //
-                    // Getting image
-                    NodeList imageList = fstElmnt.getElementsByTagName("image");
-                    Node imageNode = imageList.item(0);
-
-                    Element urlElement = (Element) imageNode;
-                    NodeList urlList = urlElement.getElementsByTagName("url");
-                    Element urlelmt = (Element) urlList.item(0);
-                    urlList = ((Node) urlelmt).getChildNodes();
-                    String url = ((Node) urlList.item(0)).getNodeValue();
-
-                    String urlformated = url.replace(" ", "%20");
-                    String[] splitTitle = titel.split(" - ");
-
-                    _tempCurrent = new  NulaTrack(splitTitle[0], splitTitle[1], urlformated);
-                    Log.d("debug", "track added");
+                //_tempCurrent = new  NulaTrack(splitTitle[0], splitTitle[1], urlformated);
+                _tempCurrent = new NulaTrack(artist, title, cover);
+                Log.d("debug", "track added");
 
 
 //                }
 
-            } catch (MalformedURLException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            } catch (SAXException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (ParserConfigurationException e) {
-                // TODO Auto-generated catch block
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
 

@@ -4,7 +4,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '25.0.0'
 
 
 
@@ -45,4 +45,6 @@ dependencies {
     compile 'com.mikhaellopez:circularimageview:3.0.1'
     compile 'com.github.rahatarmanahmed:circularprogressview:2.4.0'
 
+
+    compile 'com.google.android.exoplayer:exoplayer:r2.2.0'
 }

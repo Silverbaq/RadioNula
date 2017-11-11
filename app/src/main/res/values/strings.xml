@@ -12,4 +12,6 @@
     <string name="channel3_rrs">http://radionula.com/rss_ch3.xml</string>
     <string name="title_activity_init">InitActivity</string>
 
+    <string name="nula_playlist">http://socket.radionula.com/playlist</string>
+
 </resources>

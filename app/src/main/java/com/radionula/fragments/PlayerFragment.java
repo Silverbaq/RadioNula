@@ -120,7 +120,7 @@ public class PlayerFragment extends Fragment {
         ivSkip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                _controls.Skip();
+                _controls.TuneIn();
             }
         });
 

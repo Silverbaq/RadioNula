@@ -57,9 +57,6 @@ public class CommentsFragment extends Fragment {
         parentLayout =(LinearLayout)view.findViewById(R.id.parentLayout);
 
 
-
-
-
         webView = new WebView(getActivity());
         webView.setLayoutParams(getLayoutParams());
 

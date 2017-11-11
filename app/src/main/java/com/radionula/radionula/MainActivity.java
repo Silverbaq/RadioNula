@@ -1,56 +1,57 @@
 package com.radionula.radionula;
 
-import android.app.ActionBar;
-import android.app.Dialog;
-import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.graphics.Typeface;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.radionula.fragments.CommentsFragment;
 import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.NoConnectionFragment;
 import com.radionula.fragments.PlayerFragment;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NetworkStateReceiver;
-import com.radionula.model.NulaTrack;
-import com.radionula.model.PlaylistRepository;
 import com.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
+import com.radionula.model.PlaylistRepository;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 public class MainActivity extends AppCompatActivity implements IControls, Observer, NetworkStateReceiverListener {
+    private static String TAG = "MainActivity";
 
     DrawerLayout mDrawer;
     NavigationView nvDrawer;
@@ -59,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     // Backend
     private static PlaylistRepository _playlistRepository;
-    private static int _radioChannel = 1;
 
     // Fragments
     PlayerFragment playerFragment;
@@ -68,10 +68,66 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     FragmentTransaction transaction;
 
-    // Mediaplayer
-    MediaPlayer mp;
-
     private NetworkStateReceiver networkStateReceiver;
+
+    // Mediaplayer
+    private SimpleExoPlayer exoPlayer;
+    private boolean isPlaying = false;
+
+
+    private ExoPlayer.EventListener eventListener = new ExoPlayer.EventListener() {
+        @Override
+        public void onTimelineChanged(Timeline timeline, Object manifest) {
+        }
+
+        @Override
+        public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+        }
+
+        @Override
+        public void onLoadingChanged(boolean isLoading) {
+            Log.i(TAG, "onLoadingChanged");
+        }
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            Log.i(TAG, "onPlayerStateChanged: playWhenReady = " + String.valueOf(playWhenReady)
+                    + " playbackState = " + playbackState);
+            switch (playbackState) {
+                case ExoPlayer.STATE_ENDED:
+                    Log.i(TAG, "Playback ended!");
+                    //Stop playback and return to start position
+                    setPlayPause(false);
+                    exoPlayer.seekTo(0);
+                    break;
+                case ExoPlayer.STATE_READY:
+                    mpNoize.stop();
+
+                    //Log.i(TAG,"ExoPlayer ready! pos: "+exoPlayer.getCurrentPosition()
+                    //        +" max: "+stringForTime((int)exoPlayer.getDuration()));
+
+                    break;
+                case ExoPlayer.STATE_BUFFERING:
+                    Log.i(TAG, "Playback buffering!");
+                    break;
+                case ExoPlayer.STATE_IDLE:
+                    Log.i(TAG, "ExoPlayer idle!");
+                    break;
+            }
+        }
+
+        @Override
+        public void onPlayerError(ExoPlaybackException error) {
+            Log.i(TAG, "onPlaybackError: " + error.getMessage());
+        }
+
+        @Override
+        public void onPositionDiscontinuity() {
+            Log.i(TAG, "onPositionDiscontinuity");
+        }
+    };
+    private MediaPlayer mpNoize;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,15 +136,12 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         setContentView(R.layout.activity_main);
 
 
-
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         nvDrawer = (NavigationView) findViewById(R.id.nvView);
         navButton = (ImageView) findViewById(R.id.nav_Button);
 
         flFragments = (FrameLayout) findViewById(R.id.activityMain_flFragments);
-
-
 
 
         navButton.setOnClickListener(new View.OnClickListener() {
@@ -129,10 +182,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         this.registerReceiver(networkStateReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
 
 
-
-
     }
-
 
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
@@ -180,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
-
     //
     // Make sure this is the method with just `Bundle` as the signature
     @Override
@@ -188,48 +237,62 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         super.onPostCreate(savedInstanceState);
     }
 
-    @Override
-    public void Skip() {
-
-        if (mp.isPlaying()) {
-            //
-            // Loads in own thread to ease the gui thread - doing the changes are rather heavy
-            new ChangeChannelTask().execute();
-
-
-        } else {
-            playerFragment.StartVinyl();
-            mp.start();
-        }
-
-    }
 
     @Override
     public void Pause() {
         playerFragment.StopVinyl();
-        mp.pause();
+        setPlayPause(false);
+        this.isPlaying = false;
     }
 
     @Override
     public void TuneIn() {
-        // Play TuneIn noice sound
-        MediaPlayer mpNoize = MediaPlayer.create(this, R.raw.radionoise);
-        mpNoize.setLooping(true);
-        mpNoize.start();
+        if (!this.isPlaying) {
+            // Play TuneIn noice sound
+            mpNoize = MediaPlayer.create(this, R.raw.radionoise);
+            mpNoize.setLooping(true);
+            mpNoize.start();
 
-        // Start to observe the playlist repository
-        _playlistRepository = new PlaylistRepository(getString(R.string.classic_rrs));
-        _playlistRepository.addObserver(this);
+            if (!MyApp.tunedIn) {
+                // Start to observe the playlist repository
+                _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
+                _playlistRepository.addObserver(this);
+            }
 
-        // Mediaplayer
-        mp = new MediaPlayer();
-        //mp = MediaPlayer.create(this, Uri.parse(getString(R.string.classic_radiostream_path)));
-        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        makeMediaPlayerReady(getString(R.string.classic_radiostream_path));
-        mpNoize.stop();
+            // ExoPlayer
+            prepareExoPlayerFromURL(Uri.parse(getString(R.string.classic_radiostream_path)));
+            setPlayPause(true);
+            this.isPlaying = true;
 
-        Skip();
-        MyApp.tunedIn = true;
+            MyApp.tunedIn = true;
+            playerFragment.StartVinyl();
+        }
+
+    }
+
+
+    private void prepareExoPlayerFromURL(Uri uri) {
+
+        TrackSelector trackSelector = new DefaultTrackSelector();
+
+        LoadControl loadControl = new DefaultLoadControl();
+
+        exoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
+
+        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "exoplayer2example"), null);
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        MediaSource audioSource = new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
+        exoPlayer.addListener(eventListener);
+
+        exoPlayer.prepare(audioSource);
+
+
+    }
+
+
+    private void setPlayPause(boolean play) {
+        isPlaying = play;
+        exoPlayer.setPlayWhenReady(play);
 
     }
 
@@ -251,53 +314,20 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
-
-/*
-    @Override
-    public void onBackPressed() {
-        if (commentsFragment.webViewGoBack()) {
-
-        } else {
-            super.onBackPressed();
-        }
-    }
-*/
-
     /**
      * Back button listener.
      * Will close the application if the back button pressed twice.
      */
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
 
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-
-    }
-
-    private void makeMediaPlayerReady(String url) {
-        mp.reset();
-        try {
-            mp.setDataSource(url);
-            mp.prepare();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
 
     }
+
 
     //
     // When the internet connection is reestablished
@@ -312,48 +342,21 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         transaction.commit();
 
         if (MyApp.reconnect) {
-            switch (_radioChannel){
-                case 1:
-                    MediaPlayer mpTmp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
-                    mp = mpTmp;
-
-                    break;
-                case 2:
-                    MediaPlayer mpTmp2 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
-                    mp = mpTmp2;
-                    break;
-                case 3:
-                    MediaPlayer mpTmp3 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
-                    mp = mpTmp3;
-                    break;
-                default:
-                    break;
-            }
             // Starts music player once agian.
-            Skip();
+            TuneIn();
             MyApp.reconnect = false;
         }
 
     }
 
 
-
-
-
-
     //
     // If there is no internet connection
     @Override
     public void onNetworkUnavailable() {
-/* TODO: Your disconnection-oriented stuff here */
+        /* TODO: Your disconnection-oriented stuff here */
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
         findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
-
-        if(MyApp.tunedIn && mp.isPlaying()) {
-           Pause();
-            MyApp.reconnect = true;
-        }
-
 
         transaction = getSupportFragmentManager().beginTransaction();
         NoConnectionFragment fragment = new NoConnectionFragment();
@@ -363,8 +366,6 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     }
 
 
-
-
     //
     // Detects the call state of the phone. Will pause music if phone rings.
     class TeleListener extends PhoneStateListener {
@@ -372,19 +373,13 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             super.onCallStateChanged(state, incomingNumber);
             switch (state) {
                 case TelephonyManager.CALL_STATE_IDLE:
-                    // CALL_STATE_IDLE;
-                    //Toast.makeText(getApplicationContext(), "CALL_STATE_IDLE", Toast.LENGTH_LONG).show();
 
                     // TODO: Needs to restart music after a phone call. (If it was playing).
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
-                    // CALL_STATE_OFFHOOK;
-                    //Toast.makeText(getApplicationContext(), "CALL_STATE_OFFHOOK", Toast.LENGTH_LONG).show();
+
                     break;
                 case TelephonyManager.CALL_STATE_RINGING:
-                    // CALL_STATE_RINGING
-                    //Toast.makeText(getApplicationContext(), incomingNumber, Toast.LENGTH_LONG).show();
-                    //Toast.makeText(getApplicationContext(), "CALL_STATE_RINGING", Toast.LENGTH_LONG).show();
 
                     // Pauses music
                     Pause();
@@ -395,91 +390,4 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
-    private class ChangeChannelTask extends AsyncTask<Void, Void, Void> {
-        Dialog dialog;
-        String logo = "";
-        int skipImage = 0;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog = new Dialog(MainActivity.this,android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-            dialog.setContentView(R.layout.loading_dialog);
-
-            TextView textView = (TextView) dialog.findViewById(R.id.loading_dialog_textview);
-            Typeface font = Typeface.createFromAsset(MainActivity.this.getAssets(), "fonts/Roboto-Regular.ttf");
-            textView.setTypeface(font);
-
-            dialog.show();
-
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            playerFragment.UpdateChannelLogo(logo,skipImage);
-            dialog.dismiss();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            ChangeChannel();
-
-            return null;
-        }
-
-        //
-        // Chances the channel logo, RSS feed and sets the audio stream
-        private void ChangeChannel() {
-            _radioChannel++;
-            switch (_radioChannel) {
-                case 1:
-                    // Classic Nula
-                    _playlistRepository.updateFeed(getString(R.string.classic_rrs));
-                    logo = "drawable://" + R.drawable.nula_logo_ch1;
-                    skipImage = R.drawable.play_button_1;
-
-                    MediaPlayer mpTmp = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.classic_radiostream_path)));
-                    if (mp.isPlaying())
-                        mp.stop();
-                    mpTmp.start();
-
-                    mp = mpTmp;
-                    break;
-                case 2:
-                    // Soul / Funk Nula
-                    _playlistRepository.updateFeed(getString(R.string.channel2_rrs));
-                    logo = "drawable://" + R.drawable.nula_logo_ch2;
-                    skipImage = R.drawable.play_button_2;
-
-
-                    MediaPlayer mpTmp2 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel2_radiostream)));
-                    if (mp.isPlaying())
-                        mp.stop();
-                    mpTmp2.start();
-
-                    mp = mpTmp2;
-                    break;
-                case 3:
-                    // Hip-Hop Nula
-                    _playlistRepository.updateFeed(getString(R.string.channel3_rrs));
-                    logo = "drawable://" + R.drawable.nula_logo_ch3;
-                    skipImage = R.drawable.play_button_3;
-
-                    MediaPlayer mpTmp3 = MediaPlayer.create(MainActivity.this, Uri.parse(getString(R.string.channel3_radiostream)));
-                    if (mp.isPlaying())
-                        mp.stop();
-                    mpTmp3.start();
-
-                    mp = mpTmp3;
-                    break;
-                default:
-                    _radioChannel = 0;
-                    ChangeChannel();
-                    break;
-            }
-
-        }
-
-    }
 }
