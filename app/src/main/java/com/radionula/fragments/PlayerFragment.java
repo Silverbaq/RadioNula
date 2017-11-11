@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.androidquery.AQuery;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.LoadingAdapter;
@@ -28,6 +29,8 @@ import com.radionula.radionula.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -52,7 +55,7 @@ public class PlayerFragment extends Fragment {
 
     //
     // Playlist of player
-    LinearLayout llPlaylist ;
+    LinearLayout llPlaylist;
     PlaylistAdapter adapter;
     ImageView ivFaded;
 
@@ -63,7 +66,8 @@ public class PlayerFragment extends Fragment {
     ImageView ivSkip;
     ImageView ivPause;
     ImageView ivTuneIn;
-    private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;;
+    private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;
+    ;
     private int skipurl = R.drawable.play_button_1;
 
 
@@ -74,7 +78,7 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        _controls = (IControls)context;
+        _controls = (IControls) context;
     }
 
     @Override
@@ -86,9 +90,9 @@ public class PlayerFragment extends Fragment {
 
         ivRecord = (ImageView) view.findViewById(R.id.fragment_top_ivRecord);
         ivRecordImage = (ImageView) view.findViewById(R.id.fragment_top_ivRecordImage);
-        ivLogo = (ImageView)view.findViewById(R.id.fragment_top_ivLogo);
-        llPlaylist = (LinearLayout)view.findViewById(R.id.fragment_playlist_llPlaylist);
-        ivFaded = (ImageView)view.findViewById(R.id.fragment_playlist_ivShadow);
+        ivLogo = (ImageView) view.findViewById(R.id.fragment_top_ivLogo);
+        llPlaylist = (LinearLayout) view.findViewById(R.id.fragment_playlist_llPlaylist);
+        ivFaded = (ImageView) view.findViewById(R.id.fragment_playlist_ivShadow);
 
         // This disable hardware acceleration - fixes a bug for android 5.0
         //ivRecordImage.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -150,7 +154,7 @@ public class PlayerFragment extends Fragment {
         _controls.TuneIn();
     }
 
-    public void UpdateChannelLogo(String imageUrl, int skipUrl){
+    public void UpdateChannelLogo(String imageUrl, int skipUrl) {
         logoUrl = imageUrl;
         skipurl = skipUrl;
         MyApp.getImageLoader().displayImage(imageUrl, ivLogo);
@@ -159,54 +163,54 @@ public class PlayerFragment extends Fragment {
 
     }
 
-    public void StopVinyl(){
+    public void StopVinyl() {
         try {
             playing = false;
             ivRecord.getAnimation().cancel();
             ivRecordImage.getAnimation().cancel();
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
 
-    public void StartVinyl(){
-      //  if (!playing) {
-            playing = true;
+    public void StartVinyl() {
+        //  if (!playing) {
+        playing = true;
 
-            ivRecord.startAnimation(anim);
-            ivRecordImage.startAnimation(anim2);
+        ivRecord.startAnimation(anim);
+        ivRecordImage.startAnimation(anim2);
 
-            ivLogo.bringToFront();
-       // }
+        ivLogo.bringToFront();
+        // }
     }
 
-    public void SetVinylImage(String imageUrl){
-        //MyApp.aquery.id(ivRecordImage).image(imageUrl, true, true, 0, 0, null, AQuery.FADE_IN);
+    public void SetVinylImage(String imageUrl) {
         //Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
         new SetVinylImageTask().execute(imageUrl);
+        //MyApp.aquery.id(ivRecordImage).image(imageUrl, true, true, 0, 0, null, AQuery.FADE_IN);;
 
         ivLogo.bringToFront();
     }
 
-    public void SetPlaylist(List<NulaTrack> tracks){
+    public void SetPlaylist(List<NulaTrack> tracks) {
         adapter = new PlaylistAdapter(getActivity(), tracks, PlaylistAdapter.AdapterType.ADD);
 
         llPlaylist.removeAllViews();
 
-        for (int i = 0; i < adapter.getCount(); i++){
+        for (int i = 0; i < adapter.getCount(); i++) {
             //
             // Set header
-            if (i == 0){
+            if (i == 0) {
                 View view = getActivity().getLayoutInflater().inflate(R.layout.list_header, null);
 
-                TextView tvHeader = ((TextView)view.findViewById(R.id.list_header_textview));
+                TextView tvHeader = ((TextView) view.findViewById(R.id.list_header_textview));
                 tvHeader.setText("NOW PLAYING");
 
                 Typeface artistFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Roboto-Regular.ttf");
                 tvHeader.setTypeface(artistFont);
 
                 llPlaylist.addView(view);
-            } else if (i == 1){
+            } else if (i == 1) {
                 View view = getActivity().getLayoutInflater().inflate(R.layout.list_header, null);
 
                 TextView tvHeader = ((TextView) view.findViewById(R.id.list_header_textview));
@@ -229,7 +233,7 @@ public class PlayerFragment extends Fragment {
 
     }
 
-    public void UpdatePlaylist(List<NulaTrack> tracks){
+    public void UpdatePlaylist(List<NulaTrack> tracks) {
         SetPlaylist(tracks);
     }
 
@@ -257,7 +261,7 @@ public class PlayerFragment extends Fragment {
 
     }
 
-    class SetVinylImageTask extends AsyncTask<String,Void, Void>{
+    class SetVinylImageTask extends AsyncTask<String, Void, Void> {
         Bitmap image = null;
 
         @Override
@@ -277,7 +281,9 @@ public class PlayerFragment extends Fragment {
             URL url = null;
             try {
                 url = new URL(params[0]);
+
                 image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -285,9 +291,12 @@ public class PlayerFragment extends Fragment {
             }
 
 
-
             return null;
         }
+
+
+
+
     }
 
 }
