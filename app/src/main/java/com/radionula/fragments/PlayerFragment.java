@@ -280,7 +280,7 @@ public class PlayerFragment extends Fragment {
         protected Void doInBackground(String... params) {
             URL url = null;
             try {
-                url = new URL(params[0]);
+                url = new URL(params[0].replace(" ", "%20"));
 
                 image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
 
