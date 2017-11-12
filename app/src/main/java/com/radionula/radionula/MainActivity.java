@@ -38,6 +38,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.radionula.MediaPlayerService;
 import com.radionula.fragments.CommentsFragment;
 import com.radionula.fragments.FavoritsFragment;
 import com.radionula.fragments.NoConnectionFragment;
@@ -71,63 +72,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     private NetworkStateReceiver networkStateReceiver;
 
     // Mediaplayer
-    private SimpleExoPlayer exoPlayer;
-    private boolean isPlaying = false;
-
-
-    private ExoPlayer.EventListener eventListener = new ExoPlayer.EventListener() {
-        @Override
-        public void onTimelineChanged(Timeline timeline, Object manifest) {
-        }
-
-        @Override
-        public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-        }
-
-        @Override
-        public void onLoadingChanged(boolean isLoading) {
-            Log.i(TAG, "onLoadingChanged");
-        }
-
-        @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-            Log.i(TAG, "onPlayerStateChanged: playWhenReady = " + String.valueOf(playWhenReady)
-                    + " playbackState = " + playbackState);
-            switch (playbackState) {
-                case ExoPlayer.STATE_ENDED:
-                    Log.i(TAG, "Playback ended!");
-                    //Stop playback and return to start position
-                    setPlayPause(false);
-                    exoPlayer.seekTo(0);
-                    break;
-                case ExoPlayer.STATE_READY:
-                    mpNoize.stop();
-
-                    //Log.i(TAG,"ExoPlayer ready! pos: "+exoPlayer.getCurrentPosition()
-                    //        +" max: "+stringForTime((int)exoPlayer.getDuration()));
-
-                    break;
-                case ExoPlayer.STATE_BUFFERING:
-                    Log.i(TAG, "Playback buffering!");
-                    break;
-                case ExoPlayer.STATE_IDLE:
-                    Log.i(TAG, "ExoPlayer idle!");
-                    break;
-            }
-        }
-
-        @Override
-        public void onPlayerError(ExoPlaybackException error) {
-            Log.i(TAG, "onPlaybackError: " + error.getMessage());
-        }
-
-        @Override
-        public void onPositionDiscontinuity() {
-            Log.i(TAG, "onPositionDiscontinuity");
-        }
-    };
-    private MediaPlayer mpNoize;
-
+    Intent mediaPlayerServiceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         setContentView(R.layout.activity_main);
 
+        mediaPlayerServiceIntent = new Intent(MainActivity.this, MediaPlayerService.class);
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -241,59 +187,25 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     @Override
     public void Pause() {
         playerFragment.StopVinyl();
-        setPlayPause(false);
-        this.isPlaying = false;
+        stopService(mediaPlayerServiceIntent);
+        MyApp.isPlaying = false;
     }
 
     @Override
     public void TuneIn() {
-        if (!this.isPlaying) {
-            // Play TuneIn noice sound
-            mpNoize = MediaPlayer.create(this, R.raw.radionoise);
-            mpNoize.setLooping(true);
-            mpNoize.start();
-
-            if (!MyApp.tunedIn) {
-                // Start to observe the playlist repository
-                _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
-                _playlistRepository.addObserver(this);
-            }
-
-            // ExoPlayer
-            prepareExoPlayerFromURL(Uri.parse(getString(R.string.classic_radiostream_path)));
-            setPlayPause(true);
-            this.isPlaying = true;
-
-            MyApp.tunedIn = true;
-            playerFragment.StartVinyl();
+        if (!MyApp.tunedIn) {
+            // Start to observe the playlist repository
+            _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
+            _playlistRepository.addObserver(this);
         }
 
-    }
+        if (!MyApp.isPlaying) {
 
+            startService(mediaPlayerServiceIntent);
 
-    private void prepareExoPlayerFromURL(Uri uri) {
-
-        TrackSelector trackSelector = new DefaultTrackSelector();
-
-        LoadControl loadControl = new DefaultLoadControl();
-
-        exoPlayer = ExoPlayerFactory.newSimpleInstance(this, trackSelector, loadControl);
-
-        DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "exoplayer2example"), null);
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-        MediaSource audioSource = new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
-        exoPlayer.addListener(eventListener);
-
-        exoPlayer.prepare(audioSource);
-
-
-    }
-
-
-    private void setPlayPause(boolean play) {
-        isPlaying = play;
-        exoPlayer.setPlayWhenReady(play);
-
+            playerFragment.StartVinyl();
+        }
+        MyApp.isPlaying = true;
     }
 
 

@@ -26,6 +26,7 @@ public class MyApp extends Application {
 
     private static List<NulaTrack> _favorites;
     public static boolean tunedIn;
+    public static boolean isPlaying;
     public static boolean reconnect = false;
 
     @Override
@@ -42,6 +43,7 @@ public class MyApp extends Application {
 
         _favorites = new ArrayList<>();
 
+        isPlaying = false;
         tunedIn = false;
     }
 
