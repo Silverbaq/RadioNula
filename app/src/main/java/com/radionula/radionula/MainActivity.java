@@ -3,8 +3,6 @@ package com.radionula.radionula;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
@@ -21,23 +19,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.LoadControl;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.extractor.ExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 import com.radionula.MediaPlayerService;
 import com.radionula.fragments.CommentsFragment;
 import com.radionula.fragments.FavoritsFragment;
@@ -245,20 +226,22 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     // When the internet connection is reestablished
     @Override
     public void onNetworkAvailable() {
-    /* TODO: Your connection-oriented stuff here */
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
-        //findViewById(R.id.activityMain_toolbar).setVisibility(View.VISIBLE);
-        transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.activityMain_flFragments, playerFragment);
-        transaction.commit();
+        try {
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
+            //findViewById(R.id.activityMain_toolbar).setVisibility(View.VISIBLE);
+            transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.activityMain_flFragments, playerFragment);
+            transaction.commit();
 
-        if (MyApp.reconnect) {
-            // Starts music player once agian.
-            TuneIn();
-            MyApp.reconnect = false;
+            if (MyApp.reconnect) {
+                // Starts music player once agian.
+                TuneIn();
+                MyApp.reconnect = false;
+            }
+        } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage());
         }
-
     }
 
 
@@ -266,15 +249,17 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     // If there is no internet connection
     @Override
     public void onNetworkUnavailable() {
-        /* TODO: Your disconnection-oriented stuff here */
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-        findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
+        try {
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            findViewById(R.id.activityMain_toolbar).setLayoutParams(layoutParams);
 
-        transaction = getSupportFragmentManager().beginTransaction();
-        NoConnectionFragment fragment = new NoConnectionFragment();
-        transaction.replace(R.id.activityMain_flFragments, fragment);
-        transaction.commit();
-
+            transaction = getSupportFragmentManager().beginTransaction();
+            NoConnectionFragment fragment = new NoConnectionFragment();
+            transaction.replace(R.id.activityMain_flFragments, fragment);
+            transaction.commit();
+        } catch (Exception ex) {
+            Log.e(TAG, ex.getMessage());
+        }
     }
 
 

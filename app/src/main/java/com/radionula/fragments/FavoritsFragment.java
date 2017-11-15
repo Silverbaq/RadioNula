@@ -7,19 +7,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.radionula.model.NulaTrack;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 

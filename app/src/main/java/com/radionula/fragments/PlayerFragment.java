@@ -1,7 +1,6 @@
 package com.radionula.fragments;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +8,7 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,27 +19,23 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.androidquery.AQuery;
 import com.radionula.interfaces.IControls;
 import com.radionula.model.NulaTrack;
-import com.radionula.radionula.LoadingAdapter;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.PlaylistAdapter;
 import com.radionula.radionula.R;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Observer;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class PlayerFragment extends Fragment {
+
+    private static final String TAG = "PlayerFagment";
 
     //
     // Top of player
@@ -67,7 +63,6 @@ public class PlayerFragment extends Fragment {
     ImageView ivPause;
     ImageView ivTuneIn;
     private String logoUrl = "drawable://" + R.drawable.nula_logo_ch1;
-    ;
     private int skipurl = R.drawable.play_button_1;
 
 
@@ -241,22 +236,26 @@ public class PlayerFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (MyApp.tunedIn) {
-            if (playing) {
-                ivRecord.startAnimation(anim);
-                ivRecordImage.startAnimation(anim2);
+        try {
+            if (MyApp.tunedIn) {
+                if (playing) {
+                    ivRecord.startAnimation(anim);
+                    ivRecordImage.startAnimation(anim2);
 
-                ivLogo.bringToFront();
+                    ivLogo.bringToFront();
+                }
+
+                ivSkip.setVisibility(View.VISIBLE);
+                ivPause.setVisibility(View.VISIBLE);
+                ivTuneIn.setVisibility(View.INVISIBLE);
+
+                UpdateChannelLogo(logoUrl, skipurl);
+                _controls.UpdatePlaylist();
+
+
             }
-
-            ivSkip.setVisibility(View.VISIBLE);
-            ivPause.setVisibility(View.VISIBLE);
-            ivTuneIn.setVisibility(View.INVISIBLE);
-
-            UpdateChannelLogo(logoUrl, skipurl);
-            _controls.UpdatePlaylist();
-
-
+        } catch (Exception ex){
+            Log.e(TAG, ex.getMessage());
         }
 
     }

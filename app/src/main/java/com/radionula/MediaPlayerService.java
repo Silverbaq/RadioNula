@@ -24,7 +24,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.radionula.interfaces.IControls;
-import com.radionula.model.PlaylistRepository;
 import com.radionula.radionula.MyApp;
 import com.radionula.radionula.R;
 
