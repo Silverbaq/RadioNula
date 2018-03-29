@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     // Mediaplayer
     Intent mediaPlayerServiceIntent;
+    private PowerManager.WakeLock mWakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +110,10 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         networkStateReceiver.addListener(this);
         this.registerReceiver(networkStateReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
 
+        //
+        // WakeLock
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG);
 
     }
 
@@ -170,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         playerFragment.StopVinyl();
         stopService(mediaPlayerServiceIntent);
         MyApp.isPlaying = false;
+        mWakeLock.release();
     }
 
     @Override
@@ -178,12 +185,11 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             // Start to observe the playlist repository
             _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
             _playlistRepository.addObserver(this);
+            mWakeLock.acquire();
         }
 
         if (!MyApp.isPlaying) {
-
             startService(mediaPlayerServiceIntent);
-
             playerFragment.StartVinyl();
         }
         MyApp.isPlaying = true;
@@ -213,12 +219,10 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
      */
     @Override
     public void onBackPressed() {
-
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-
     }
 
 
@@ -270,14 +274,12 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             super.onCallStateChanged(state, incomingNumber);
             switch (state) {
                 case TelephonyManager.CALL_STATE_IDLE:
-
                     // TODO: Needs to restart music after a phone call. (If it was playing).
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
 
                     break;
                 case TelephonyManager.CALL_STATE_RINGING:
-
                     // Pauses music
                     Pause();
                     break;
