@@ -4,15 +4,20 @@ package com.radionula.radionula.model;
  * Created by silverbaq on 12/6/15.
  */
 public class NulaTrack {
+    private int id;
     private String artist;
     private String titel;
     private String image;
 
     public NulaTrack(String artist, String titel, String image) {
+        this.id = -1;
         this.setArtist(artist);
         this.setTitel(titel);
         this.setImage(image);
     }
+
+    public int getId(){return id;}
+    public void setId(int id){this.id = id;}
 
     public String getArtist() {
         return artist;

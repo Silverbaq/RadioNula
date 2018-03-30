@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.radionula.nula"
@@ -37,4 +38,8 @@ dependencies {
     compile 'com.github.rahatarmanahmed:circularprogressview:2.4.0'
 
     compile 'com.google.android.exoplayer:exoplayer:r2.2.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }

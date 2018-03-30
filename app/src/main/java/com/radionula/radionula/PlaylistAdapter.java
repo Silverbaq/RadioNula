@@ -120,7 +120,7 @@ public class PlaylistAdapter extends BaseAdapter {
                             @Override
                             public void onClick(View v) {
                                 MyApp.addToFavorites(item);
-                                MyApp.SaveUserFavorites(activity);
+                                //MyApp.SaveUserFavorites(activity);
                                 holder.container.removeAllViews();
                                 Toast.makeText(activity, "Added " +  item.getTitel() + " to favorites", Toast.LENGTH_LONG).show();
                             }
@@ -144,7 +144,7 @@ public class PlaylistAdapter extends BaseAdapter {
                             @Override
                             public void onClick(View v) {
                                 MyApp.RemoveFavorit(item);
-                                MyApp.SaveUserFavorites(activity);
+                                //MyApp.SaveUserFavorites(activity);
 
                                 holder.container.removeAllViews();
                                 tracks.remove(item);
