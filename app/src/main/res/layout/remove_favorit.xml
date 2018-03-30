@@ -4,6 +4,16 @@
     android:layout_height="match_parent"
     android:background="@color/adapterFavoriteBackground">
 
+    <ImageView
+        android:id="@+id/ivSearchFavorit"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="89dp"
+        android:scaleType="fitStart"
+        android:src="@drawable/ico_search" />
+
 
     <ImageView
         android:id="@+id/ivRemoveFavorit"

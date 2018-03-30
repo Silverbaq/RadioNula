@@ -1,6 +1,9 @@
 package com.radionula.radionula;
 
 import android.app.Activity;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +17,7 @@ import com.androidquery.AQuery;
 import com.radionula.radionula.model.NulaTrack;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +31,7 @@ public class PlaylistAdapter extends BaseAdapter {
     List<NulaTrack> tracks;
     Activity activity;
     AdapterType adapterType;
+
 
     public PlaylistAdapter(Activity activity, List<NulaTrack> playlist, AdapterType type) {
         this.tracks = playlist;
@@ -67,7 +72,7 @@ public class PlaylistAdapter extends BaseAdapter {
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         final ViewHolder holder;
         if (convertView == null) {
             holder = new ViewHolder();
@@ -120,7 +125,6 @@ public class PlaylistAdapter extends BaseAdapter {
                             @Override
                             public void onClick(View v) {
                                 MyApp.addToFavorites(item);
-                                //MyApp.SaveUserFavorites(activity);
                                 holder.container.removeAllViews();
                                 Toast.makeText(activity, "Added " +  item.getTitel() + " to favorites", Toast.LENGTH_LONG).show();
                             }
@@ -134,23 +138,45 @@ public class PlaylistAdapter extends BaseAdapter {
                 } else if (adapterType == AdapterType.REMOVE){
                     View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.remove_favorit, holder.container);
 
+                    // clean selected
+                    for(int i = 0; i < parent.getChildCount(); i++){
+                        View tmp = parent.getChildAt(i);
+                        ViewHolder tmpHolder = (ViewHolder) tmp.getTag();
+                        if (tmpHolder.clicked){
+                            tmpHolder.container.removeAllViews();
+                            if(i != position)
+                                tmpHolder.clicked = false;
+                        }
+                    }
+
+
                     if (!holder.clicked) {
 
-
                         ImageView ivFavorit = (ImageView) rlFavorit.findViewById(R.id.ivRemoveFavorit);
+                        ImageView ivSearch = (ImageView) rlFavorit.findViewById(R.id.ivSearchFavorit);
 
                         // Click on favorite icon
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 MyApp.RemoveFavorit(item);
-                                //MyApp.SaveUserFavorites(activity);
 
                                 holder.container.removeAllViews();
                                 tracks.remove(item);
                                 notifyDataSetChanged();
 
                                 Toast.makeText(activity, "Removed " + item.getTitel(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        // Click on search icon
+                        ivSearch.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                                String keyword= item.getArtist() + " " + item.getTitel();
+                                intent.putExtra(SearchManager.QUERY, keyword);
+                                activity.startActivity(intent);
                             }
                         });
 
@@ -166,4 +192,14 @@ public class PlaylistAdapter extends BaseAdapter {
 
         return convertView;
     }
+
+
+    void resetAdapter(){
+        List<NulaTrack> tmpList = new ArrayList<>();
+        tmpList.addAll(tracks);
+        tracks.clear();
+        tracks.addAll(tmpList);
+        notifyDataSetChanged();
+    }
+
 }
