@@ -1,4 +1,4 @@
-package com.radionula.interfaces;
+package com.radionula.radionula.interfaces;
 
 public interface IControls {
 

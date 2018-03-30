@@ -11,11 +11,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidquery.AQuery;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.radionula.model.NulaTrack;
+import com.radionula.radionula.model.NulaTrack;
 
 
-import java.io.Serializable;
 import java.util.List;
 
 /**

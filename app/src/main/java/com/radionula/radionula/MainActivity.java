@@ -21,14 +21,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.radionula.MediaPlayerService;
-import com.radionula.fragments.CommentsFragment;
-import com.radionula.fragments.FavoritsFragment;
-import com.radionula.fragments.NoConnectionFragment;
-import com.radionula.fragments.PlayerFragment;
-import com.radionula.interfaces.IControls;
-import com.radionula.model.NetworkStateReceiver;
-import com.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
-import com.radionula.model.PlaylistRepository;
+import com.radionula.radionula.fragments.CommentsFragment;
+import com.radionula.radionula.fragments.FavoritsFragment;
+import com.radionula.radionula.fragments.NoConnectionFragment;
+import com.radionula.radionula.fragments.PlayerFragment;
+import com.radionula.radionula.interfaces.IControls;
+import com.radionula.radionula.model.NetworkStateReceiver;
+import com.radionula.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
+import com.radionula.radionula.model.PlaylistRepository;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -163,6 +163,18 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Makes sure the music keeps playing after the screen is off.
+        try{
+            mWakeLock.acquire();
+        }catch (Exception ex){
+
+        }
+    }
+
     //
     // Make sure this is the method with just `Bundle` as the signature
     @Override
@@ -172,11 +184,24 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // If screen is backon while music is playing, release the lock
+        if (MyApp.isPlaying)
+        try {
+            mWakeLock.release();
+        } catch (Exception ex) {
+
+        }
+    }
+
+    @Override
     public void Pause() {
         playerFragment.StopVinyl();
         stopService(mediaPlayerServiceIntent);
         MyApp.isPlaying = false;
-        mWakeLock.release();
+
     }
 
     @Override
@@ -185,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             // Start to observe the playlist repository
             _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
             _playlistRepository.addObserver(this);
-            mWakeLock.acquire();
+
         }
 
         if (!MyApp.isPlaying) {

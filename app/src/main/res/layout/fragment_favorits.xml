@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/BackgroundBlue"
     android:orientation="vertical"
-    tools:context="com.radionula.fragments.FavoritsFragment">
+    tools:context=".fragments.FavoritsFragment">
 
     <LinearLayout
         android:orientation="vertical"

@@ -1,4 +1,4 @@
-package com.radionula.model;
+package com.radionula.radionula.model;
 
 import android.os.AsyncTask;
 import android.os.Handler;

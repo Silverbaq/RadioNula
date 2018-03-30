@@ -34,7 +34,7 @@
         android:foregroundGravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:name="com.radionula.fragments.PlayerFragment"
+        android:nacom.radionula.radionula.fragmentsents.PlayerFragment"
         tools:layout="@layout/fragment_player"
         android:layout_gravity="center_vertical"/>
 -->

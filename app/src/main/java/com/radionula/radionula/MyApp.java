@@ -3,15 +3,13 @@ package com.radionula.radionula;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 
 import com.androidquery.AQuery;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.radionula.model.NulaTrack;
-import com.radionula.model.PlaylistRepository;
+import com.radionula.radionula.model.NulaTrack;
 
 import java.util.ArrayList;
 import java.util.List;
