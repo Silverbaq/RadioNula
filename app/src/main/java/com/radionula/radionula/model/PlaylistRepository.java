@@ -112,7 +112,7 @@ public class PlaylistRepository extends Observable implements Runnable {
 
                 JSONObject jsonObject = new JSONObject(result);
 
-                JSONObject ch1 = jsonObject.getJSONObject("ch1");
+                JSONObject ch1 = jsonObject.getJSONObject("classics");
                 JSONObject currentSong = ch1.getJSONObject("currentSong");
 
                 String artist = currentSong.getString("artist");

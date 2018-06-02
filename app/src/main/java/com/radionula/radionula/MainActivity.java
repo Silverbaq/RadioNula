@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.provider.SyncStateContract;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +27,7 @@ import com.radionula.radionula.fragments.FavoritsFragment;
 import com.radionula.radionula.fragments.NoConnectionFragment;
 import com.radionula.radionula.fragments.PlayerFragment;
 import com.radionula.radionula.interfaces.IControls;
+import com.radionula.radionula.model.Constants;
 import com.radionula.radionula.model.NetworkStateReceiver;
 import com.radionula.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
 import com.radionula.radionula.model.PlaylistRepository;
@@ -198,10 +200,12 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void Pause() {
-        playerFragment.StopVinyl();
-        stopService(mediaPlayerServiceIntent);
-        MyApp.isPlaying = false;
-
+        if (MyApp.isPlaying) {
+            playerFragment.StopVinyl();
+            mediaPlayerServiceIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
+            startService(mediaPlayerServiceIntent);
+            MyApp.isPlaying = false;
+        }
     }
 
     @Override
@@ -214,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         }
 
         if (!MyApp.isPlaying) {
+            mediaPlayerServiceIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
             startService(mediaPlayerServiceIntent);
             playerFragment.StartVinyl();
         }
