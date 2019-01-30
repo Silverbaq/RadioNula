@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.provider.SyncStateContract;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -25,7 +24,7 @@ import com.radionula.MediaPlayerService;
 import com.radionula.radionula.fragments.CommentsFragment;
 import com.radionula.radionula.fragments.FavoritsFragment;
 import com.radionula.radionula.fragments.NoConnectionFragment;
-import com.radionula.radionula.fragments.PlayerFragment;
+import com.radionula.radionula.radio.PlayerFragment;
 import com.radionula.radionula.interfaces.IControls;
 import com.radionula.radionula.model.Constants;
 import com.radionula.radionula.model.NetworkStateReceiver;
@@ -241,6 +240,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             ex.printStackTrace();
         }
     }
+
+
 
 
     /**
