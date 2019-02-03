@@ -1,7 +1,8 @@
-package com.radionula.radionula.data.network
+package com.radionula.radionula.data
 
-import com.google.gson.Gson
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.radionula.radionula.data.network.ConnectivityInterceptorImpl
+import com.radionula.radionula.data.network.response.PlaylistResponse
 import kotlinx.coroutines.Deferred
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -15,7 +16,9 @@ interface PlaylistApiService {
     fun getPlaylist(): Deferred<PlaylistResponse>
 
     companion object {
-        operator fun invoke(): PlaylistApiService {
+        operator fun invoke(
+                connectivityInterceptor: ConnectivityInterceptorImpl
+        ): PlaylistApiService {
             val requestInterceptor = Interceptor { chain ->
 
                 val url = chain.request()
@@ -33,6 +36,7 @@ interface PlaylistApiService {
 
             val okHttpClient = OkHttpClient.Builder()
                     .addInterceptor(requestInterceptor)
+                    .addInterceptor(connectivityInterceptor)
                     .build()
 
             return Retrofit.Builder()

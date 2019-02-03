@@ -40,7 +40,7 @@ public class FavoritsFragment extends Fragment {
         lvFavorites = (ListView) view.findViewById(R.id.fragment_favorites_lvFavorites);
         tvHeader = (TextView)view.findViewById(R.id.fragment_favorites_tvHeader);
 
-        List<NulaTrack> tracks = (List<NulaTrack>) MyApp.LoadUserFavorites(getActivity());
+        List<NulaTrack> tracks = (List<NulaTrack>) MyApp.Companion.LoadUserFavorites(getActivity());
         if (tracks != null)
             setFavoritesList(tracks);
 

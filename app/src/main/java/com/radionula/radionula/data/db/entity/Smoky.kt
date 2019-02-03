@@ -1,4 +1,4 @@
-package com.radionula.radionula.data.network
+package com.radionula.radionula.data.db.entity
 
 data class Smoky(
         val currentSong: CurrentSong,

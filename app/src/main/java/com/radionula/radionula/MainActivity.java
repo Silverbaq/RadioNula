@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         super.onResume();
 
         // If screen is backon while music is playing, release the lock
-        if (MyApp.isPlaying)
+        if (MyApp.Companion.isPlaying())
         try {
             mWakeLock.release();
         } catch (Exception ex) {
@@ -199,29 +199,29 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
     @Override
     public void Pause() {
-        if (MyApp.isPlaying) {
+        if (MyApp.Companion.isPlaying()) {
             playerFragment.StopVinyl();
             mediaPlayerServiceIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
             startService(mediaPlayerServiceIntent);
-            MyApp.isPlaying = false;
+            MyApp.Companion.setIsPlaying(false);
         }
     }
 
     @Override
     public void TuneIn() {
-        if (!MyApp.tunedIn) {
+        if (!MyApp.Companion.getTunedIn()) {
             // Start to observe the playlist repository
             _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
             _playlistRepository.addObserver(this);
 
         }
 
-        if (!MyApp.isPlaying) {
+        if (!MyApp.Companion.isPlaying()) {
             mediaPlayerServiceIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
             startService(mediaPlayerServiceIntent);
             playerFragment.StartVinyl();
         }
-        MyApp.isPlaying = true;
+        MyApp.Companion.setIsPlaying(true);
     }
 
 
@@ -269,10 +269,10 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
             transaction.replace(R.id.activityMain_flFragments, playerFragment);
             transaction.commit();
 
-            if (MyApp.reconnect) {
+            if (MyApp.Companion.getReconnect()) {
                 // Starts music player once agian.
                 TuneIn();
-                MyApp.reconnect = false;
+                MyApp.Companion.setReconnect(false);
             }
         } catch (Exception ex) {
             Log.e(TAG, ex.getMessage());

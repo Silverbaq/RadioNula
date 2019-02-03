@@ -93,7 +93,7 @@ public class PlaylistAdapter extends BaseAdapter {
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
-        MyApp.aquery.id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
+        MyApp.Companion.getAquery().id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
         //MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
 
         Typeface artistFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Regular.ttf");
@@ -124,7 +124,7 @@ public class PlaylistAdapter extends BaseAdapter {
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                MyApp.addToFavorites(item);
+                                MyApp.Companion.addToFavorites(item);
                                 holder.container.removeAllViews();
                                 Toast.makeText(activity, "Added " +  item.getTitel() + " to favorites", Toast.LENGTH_LONG).show();
                             }
@@ -159,7 +159,7 @@ public class PlaylistAdapter extends BaseAdapter {
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                MyApp.RemoveFavorit(item);
+                                MyApp.Companion.RemoveFavorit(item);
 
                                 holder.container.removeAllViews();
                                 tracks.remove(item);

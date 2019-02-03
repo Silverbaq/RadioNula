@@ -1,6 +1,7 @@
-package com.radionula.radionula.data.network
+package com.radionula.radionula.data.db.entity
 
-data class History(
+
+data class CurrentSong(
         val artist: String,
         val cover: String,
         val title: String

@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 apply plugin: "kotlin-kapt"
 
@@ -51,6 +52,13 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0'
     kapt "androidx.room:room-compiler:2.0.0"
+
+    // Koin for Android
+    implementation 'org.koin:koin-android:1.0.2'
+    // or Koin for Lifecycle scoping
+    implementation 'org.koin:koin-androidx-scope:1.0.2'
+    // or Koin for Android Architecture ViewModel
+    implementation 'org.koin:koin-androidx-viewmodel:1.0.2'
 
     implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

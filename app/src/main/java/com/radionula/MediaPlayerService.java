@@ -200,7 +200,7 @@ public class MediaPlayerService extends Service {
             // ExoPlayer
             prepareExoPlayerFromURL(Uri.parse(getString(R.string.classic_radiostream_path)));
             setPlayPause(true);
-            MyApp.tunedIn = true;
+            MyApp.Companion.setTunedIn(true);
         }
 
         @Override
@@ -210,7 +210,7 @@ public class MediaPlayerService extends Service {
 
         private void setPlayPause(boolean play) {
             exoPlayer.setPlayWhenReady(play);
-            MyApp.isPlaying = play;
+            MyApp.Companion.setIsPlaying(play);
         }
 
         private void prepareExoPlayerFromURL(Uri uri) {

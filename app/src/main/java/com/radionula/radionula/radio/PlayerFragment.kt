@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.os.AsyncTask
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.provider.Contacts
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,17 +18,16 @@ import android.view.animation.RotateAnimation
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-
-import com.radionula.radionula.data.network.PlaylistApiService
-import com.radionula.radionula.interfaces.IControls
-import com.radionula.radionula.model.NulaTrack
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
+import com.radionula.radionula.interfaces.IControls
+import com.radionula.radionula.model.NulaTrack
+import kotlinx.android.synthetic.main.fragment_player.*
+import kotlinx.coroutines.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
@@ -41,31 +40,23 @@ class PlayerFragment : Fragment() {
 
     //
     // Top of player
-    internal lateinit var anim: RotateAnimation
-    internal lateinit var anim2: RotateAnimation
+    private lateinit var anim: RotateAnimation
+    private lateinit var anim2: RotateAnimation
 
-    internal var playing = false
-
-    internal lateinit var ivRecord: ImageView
-    internal lateinit var ivLogo: ImageView
-    //CircularImageView ivRecordImage;
-    internal lateinit var ivRecordImage: ImageView
+    private var playing = false
 
     //
     // Playlist of player
-    internal lateinit var llPlaylist: LinearLayout
-    internal lateinit var adapter: PlaylistAdapter
-    internal lateinit var ivFaded: ImageView
+    private lateinit var adapter: PlaylistAdapter
 
     //
     // Control of player
-    internal lateinit var _controls: IControls
+    private lateinit var _controls: IControls
 
-    internal lateinit var ivSkip: ImageView
-    internal lateinit var ivPause: ImageView
-    internal lateinit var ivTuneIn: ImageView
     private var logoUrl = "drawable://" + R.drawable.nula_logo_ch1
     private var skipurl = R.drawable.play_button_1
+
+    val radioViewModel: RadioModelView by viewModel()
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -73,32 +64,14 @@ class PlayerFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
-        val view = inflater!!.inflate(R.layout.fragment_player, container, false)
+        val view = inflater.inflate(R.layout.fragment_player, container, false)
 
-
-        ivRecord = view.findViewById<View>(R.id.fragment_top_ivRecord) as ImageView
-        ivRecordImage = view.findViewById<View>(R.id.fragment_top_ivRecordImage) as ImageView
-        ivLogo = view.findViewById<View>(R.id.fragment_top_ivLogo) as ImageView
-        llPlaylist = view.findViewById<View>(R.id.fragment_playlist_llPlaylist) as LinearLayout
-        ivFaded = view.findViewById<View>(R.id.fragment_playlist_ivShadow) as ImageView
-
-        // This disable hardware acceleration - fixes a bug for android 5.0
-        //ivRecordImage.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
-
-        // Sets load adapter
-        //LoadingAdapter loadingAdapter = new LoadingAdapter(getActivity());
-        //View item = loadingAdapter.getView(0, null, null);
-        //llPlaylist.addView(item);
-
-        // Image spin animation
+       // Image spin animation
         anim = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
         anim.interpolator = LinearInterpolator()
         anim.repeatCount = Animation.INFINITE
         anim.repeatMode = Animation.REVERSE
         anim.duration = 50
-
 
         // Rotate animation
         anim2 = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
@@ -106,24 +79,21 @@ class PlayerFragment : Fragment() {
         anim2.repeatCount = Animation.INFINITE
         anim2.duration = 4000
 
-        ivSkip = view.findViewById<View>(R.id.fragment_controls_ivSkip) as ImageView
-        ivPause = view.findViewById<View>(R.id.fragment_controls_ivPause) as ImageView
-        ivTuneIn = view.findViewById<View>(R.id.fragment_controls_ivTuneIn) as ImageView
-
-        ivSkip.setOnClickListener { _controls.TuneIn() }
-
-        ivPause.setOnClickListener { _controls.Pause() }
-
-        ivTuneIn.setOnClickListener { tuneIn() }
-
-
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        fragment_controls_ivSkip.setOnClickListener { _controls.TuneIn() }
+        fragment_controls_ivPause.setOnClickListener { _controls.Pause() }
+        fragment_controls_ivTuneIn.setOnClickListener { tuneIn() }
+    }
+
     private fun tuneIn() {
-        ivTuneIn.visibility = View.INVISIBLE
-        ivPause.visibility = View.VISIBLE
-        ivSkip.visibility = View.VISIBLE
+        fragment_controls_ivTuneIn.visibility = View.INVISIBLE
+        fragment_controls_ivPause.visibility = View.VISIBLE
+        fragment_controls_ivSkip.visibility = View.VISIBLE
 
         _controls.TuneIn()
     }
@@ -131,17 +101,15 @@ class PlayerFragment : Fragment() {
     fun UpdateChannelLogo(imageUrl: String, skipUrl: Int) {
         logoUrl = imageUrl
         skipurl = skipUrl
-        MyApp.getImageLoader().displayImage(imageUrl, ivLogo)
-        //MyApp.getImageLoader().displayImage(skipUrl, ivSkip);
-        ivSkip.setImageResource(skipUrl)
-
+        MyApp.getImageLoader()?.displayImage(imageUrl, fragment_top_ivLogo)
+        fragment_controls_ivSkip.setImageResource(skipUrl)
     }
 
     fun StopVinyl() {
         try {
             playing = false
-            ivRecord.animation.cancel()
-            ivRecordImage.animation.cancel()
+            fragment_top_ivRecord.animation.cancel()
+            fragment_top_ivRecordImage.animation.cancel()
         } catch (e: Exception) {
 
         }
@@ -149,28 +117,38 @@ class PlayerFragment : Fragment() {
     }
 
     fun StartVinyl() {
-        //  if (!playing) {
         playing = true
 
-        ivRecord.startAnimation(anim)
-        ivRecordImage.startAnimation(anim2)
+        fragment_top_ivRecord.startAnimation(anim)
+        fragment_top_ivRecordImage.startAnimation(anim2)
 
-        ivLogo.bringToFront()
-        // }
+        fragment_top_ivLogo.bringToFront()
     }
 
     fun SetVinylImage(imageUrl: String) {
-        //Picasso.with(getContext()).load(imageUrl).into(ivRecordImage);
-        SetVinylImageTask().execute(imageUrl)
-        //MyApp.aquery.id(ivRecordImage).image(imageUrl, true, true, 0, 0, null, AQuery.FADE_IN);;
 
-        ivLogo.bringToFront()
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                val url = URL(imageUrl.replace(" ", "%20"))
+
+                val image = withContext(Dispatchers.IO) {
+                    BitmapFactory.decodeStream(url.openConnection().getInputStream())
+                }
+                fragment_top_ivRecordImage.setImageBitmap(image)
+            } catch (e: MalformedURLException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+
+        fragment_top_ivLogo.bringToFront()
     }
 
     fun SetPlaylist(tracks: List<NulaTrack>) {
         adapter = PlaylistAdapter(activity, tracks, PlaylistAdapter.AdapterType.ADD)
 
-        llPlaylist.removeAllViews()
+        fragment_playlist_llPlaylist.removeAllViews()
 
         for (i in 0 until adapter.count) {
             //
@@ -184,7 +162,7 @@ class PlayerFragment : Fragment() {
                 val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/Roboto-Regular.ttf")
                 tvHeader.typeface = artistFont
 
-                llPlaylist.addView(view)
+                fragment_playlist_llPlaylist.addView(view)
             } else if (i == 1) {
                 val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
 
@@ -195,16 +173,16 @@ class PlayerFragment : Fragment() {
                 tvHeader.typeface = artistFont
 
 
-                llPlaylist.addView(view)
+                fragment_playlist_llPlaylist.addView(view)
             }
 
             val layout = LinearLayout(context)
             val item = adapter.getView(i, null, null)
 
-            llPlaylist.addView(item)
+            fragment_playlist_llPlaylist.addView(item)
 
         }
-        ivFaded.bringToFront()
+        fragment_playlist_ivShadow.bringToFront()
 
     }
 
@@ -218,15 +196,15 @@ class PlayerFragment : Fragment() {
         try {
             if (MyApp.tunedIn) {
                 if (playing) {
-                    ivRecord.startAnimation(anim)
-                    ivRecordImage.startAnimation(anim2)
+                    fragment_top_ivRecord.startAnimation(anim)
+                    fragment_top_ivRecordImage.startAnimation(anim2)
 
-                    ivLogo.bringToFront()
+                    fragment_top_ivLogo.bringToFront()
                 }
 
-                ivSkip.visibility = View.VISIBLE
-                ivPause.visibility = View.VISIBLE
-                ivTuneIn.visibility = View.INVISIBLE
+                fragment_controls_ivSkip.visibility = View.VISIBLE
+                fragment_controls_ivPause.visibility = View.VISIBLE
+                fragment_controls_ivTuneIn.visibility = View.INVISIBLE
 
                 UpdateChannelLogo(logoUrl, skipurl)
                 _controls.UpdatePlaylist()
@@ -239,47 +217,16 @@ class PlayerFragment : Fragment() {
 
     }
 
-    internal inner class SetVinylImageTask : AsyncTask<String, Void, Void>() {
-        var image: Bitmap? = null
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-        }
-
-        override fun onPostExecute(aVoid: Void) {
-            super.onPostExecute(aVoid)
-
-            ivRecordImage.setImageBitmap(image)
-        }
-
-        override fun doInBackground(vararg params: String): Void? {
-            var url: URL? = null
-            try {
-                url = URL(params[0].replace(" ", "%20"))
-
-                image = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-
-            } catch (e: MalformedURLException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-
-            return null
-        }
-
-
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        val playlistApiService = PlaylistApiService()
-        GlobalScope.launch(Dispatchers.Main){
-            val playlist = playlistApiService.getPlaylist().await()
-            Log.d(TAG, playlist.toString())
+        radioViewModel.observeCurrentSong().observe(this, Observer {
+            Log.d(TAG, it.toString())
+            SetVinylImage(it.cover)
+        })
 
+        GlobalScope.async {
+            radioViewModel.fetchPlaylist()
         }
     }
 
