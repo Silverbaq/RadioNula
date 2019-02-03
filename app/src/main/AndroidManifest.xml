@@ -33,7 +33,7 @@
         </activity>
 
         <service
-            android:name="com.radionula.MediaPlayerService"
+            android:name="com.radionula.services.MediaPlayerService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

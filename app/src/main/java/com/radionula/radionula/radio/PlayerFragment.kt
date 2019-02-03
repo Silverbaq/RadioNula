@@ -71,20 +71,16 @@ class PlayerFragment : Fragment() {
 
         radioViewModel.observeTuneIn().observe(this, Observer { tuneIn() })
         radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
-        radioViewModel.observePause().observe(this, Observer {
-            //_controls.Pause()
-            StopVinyl()
-        })
+        radioViewModel.observePause().observe(this, Observer { StopVinyl() })
         radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
             SetPlaylist(playlist)
         })
-        radioViewModel.observeCurrentChannel().observe(this, Observer { channel ->
-            setChannelLogo(channel)
-        })
+        radioViewModel.observeCurrentChannel().observe(this, Observer { channel -> setChannelLogo(channel) })
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
+            (activity as MainActivity).TuneIn()
         }
         fragment_controls_ivPause.setOnClickListener {
             radioViewModel.pauseRadio()
@@ -98,7 +94,9 @@ class PlayerFragment : Fragment() {
         fragment_controls_ivPause.visibility = View.VISIBLE
         fragment_controls_ivSkip.visibility = View.VISIBLE
 
-        GlobalScope.async { radioViewModel.fetchPlaylist() }
+        GlobalScope.async {
+            radioViewModel.fetchPlaylist()
+        }
         StartVinyl()
 
         (activity as MainActivity).TuneIn()

@@ -5,11 +5,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PowerManager;
+
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -20,7 +23,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.radionula.MediaPlayerService;
+import com.radionula.services.MediaPlayerService;
 import com.radionula.radionula.fragments.CommentsFragment;
 import com.radionula.radionula.fragments.FavoritsFragment;
 import com.radionula.radionula.fragments.NoConnectionFragment;
@@ -30,11 +33,12 @@ import com.radionula.radionula.model.Constants;
 import com.radionula.radionula.model.NetworkStateReceiver;
 import com.radionula.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener;
 import com.radionula.radionula.model.PlaylistRepository;
+import com.radionula.services.mediaplayer.MediaplayerPresenter;
 
 import java.util.Observable;
 import java.util.Observer;
 
-public class MainActivity extends AppCompatActivity implements IControls, Observer, NetworkStateReceiverListener {
+public class MainActivity extends AppCompatActivity implements NetworkStateReceiverListener {
     private static String TAG = "MainActivity";
 
     DrawerLayout mDrawer;
@@ -55,7 +59,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     private NetworkStateReceiver networkStateReceiver;
 
     // Mediaplayer
-    Intent mediaPlayerServiceIntent;
+    //Intent mediaPlayerServiceIntent;
+    private MediaplayerPresenter mediaplayerPresenter;
     private PowerManager.WakeLock mWakeLock;
 
     @Override
@@ -64,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         setContentView(R.layout.activity_main);
 
-        mediaPlayerServiceIntent = new Intent(MainActivity.this, MediaPlayerService.class);
+        //mediaPlayerServiceIntent = new Intent(MainActivity.this, MediaPlayerService.class);
 
         // Find our drawer view
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         favoritsFragment = new FavoritsFragment();
         commentsFragment = new CommentsFragment();
 
+        mediaplayerPresenter = new MediaplayerPresenter(this);
 
         // Transaction to swap fragments
         transaction = getSupportFragmentManager().beginTransaction();
@@ -169,9 +175,9 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
         super.onPause();
 
         // Makes sure the music keeps playing after the screen is off.
-        try{
+        try {
             mWakeLock.acquire();
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
         }
     }
@@ -190,59 +196,23 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
 
         // If screen is backon while music is playing, release the lock
         if (MyApp.Companion.isPlaying())
-        try {
-            mWakeLock.release();
-        } catch (Exception ex) {
+            try {
+                mWakeLock.release();
+            } catch (Exception ex) {
 
-        }
+            }
     }
 
-    @Override
     public void Pause() {
-        if (MyApp.Companion.isPlaying()) {
+
             playerFragment.StopVinyl();
-            mediaPlayerServiceIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION);
-            startService(mediaPlayerServiceIntent);
-            MyApp.Companion.setIsPlaying(false);
-        }
+            mediaplayerPresenter.pauseRadio();
     }
 
-    @Override
     public void TuneIn() {
-        if (!MyApp.Companion.getTunedIn()) {
-            // Start to observe the playlist repository
-            _playlistRepository = new PlaylistRepository(getString(R.string.nula_playlist));
-            _playlistRepository.addObserver(this);
-
-        }
-
-        if (!MyApp.Companion.isPlaying()) {
-            mediaPlayerServiceIntent.setAction(Constants.ACTION.STARTFOREGROUND_ACTION);
-            startService(mediaPlayerServiceIntent);
-            playerFragment.StartVinyl();
-        }
-        MyApp.Companion.setIsPlaying(true);
+        mediaplayerPresenter.tuneIn();
+        playerFragment.StartVinyl();
     }
-
-
-    @Override
-    public void UpdatePlaylist() {
-        _playlistRepository.triggerObserver();
-    }
-
-    @Override
-    public void update(Observable observable, Object data) {
-        // updates playlist
-        try {
-            //playerFragment.UpdatePlaylist(_playlistRepository.getPlaylist());
-            //playerFragment.SetVinylImage(_playlistRepository.getPlaylist().get(0).getImage());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-
-
 
     /**
      * Back button listener.

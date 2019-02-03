@@ -12,6 +12,7 @@ class RadioModelView(
         private val playlistReposetory: PlaylistRepository,
         private val channelPresenter: ChannelPresenter
 ) : ViewModel() {
+    private var playing = false
 
     private val tuneInData = MutableLiveData<Unit>()
     private val pauseData = MutableLiveData<Unit>()
@@ -30,17 +31,21 @@ class RadioModelView(
 
     fun tuneIn() {
         tuneInData.value = Unit
+        playing = true
     }
 
     suspend fun nextChannel() {
-        channelPresenter.nextChannel()
-        playlistReposetory.setChannel(channelPresenter.currentChannel)
-        playlistReposetory.fetchCurrentPlaylist()
-
+        if (playing) {
+            channelPresenter.nextChannel()
+            playlistReposetory.setChannel(channelPresenter.currentChannel)
+            playlistReposetory.fetchCurrentPlaylist()
+        }
+        playing = true
     }
 
     fun pauseRadio() {
         pauseData.value = Unit
+        playing = false
     }
 
 }

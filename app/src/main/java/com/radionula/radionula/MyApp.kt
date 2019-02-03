@@ -9,6 +9,7 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
 import com.radionula.radionula.Util.NulaDatabase
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.radionula.radio.playlistModule
+import com.radionula.services.mediaplayer.radioPlayerModule
 
 import java.util.ArrayList
 
@@ -33,7 +34,7 @@ class MyApp : Application() {
         isPlaying = false
         tunedIn = false
 
-        startKoin(this, listOf(playlistModule))
+        startKoin(this, listOf(playlistModule, radioPlayerModule))
     }
 
     companion object {
