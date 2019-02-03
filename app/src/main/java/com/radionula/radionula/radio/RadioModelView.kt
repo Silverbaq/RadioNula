@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import com.radionula.radionula.data.PlaylistRepository
 import com.radionula.radionula.data.db.entity.CurrentSong
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RadioModelView(
@@ -39,6 +41,9 @@ class RadioModelView(
             channelPresenter.nextChannel()
             playlistReposetory.setChannel(channelPresenter.currentChannel)
             playlistReposetory.fetchCurrentPlaylist()
+
+                channelData.postValue(channelPresenter.currentChannel)
+
         }
         playing = true
     }

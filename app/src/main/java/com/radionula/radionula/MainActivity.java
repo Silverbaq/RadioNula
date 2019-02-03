@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements NetworkStateRecei
     private NetworkStateReceiver networkStateReceiver;
 
     // Mediaplayer
-    //Intent mediaPlayerServiceIntent;
     private MediaplayerPresenter mediaplayerPresenter;
     private PowerManager.WakeLock mWakeLock;
 

@@ -76,7 +76,9 @@ class PlayerFragment : Fragment() {
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
             SetPlaylist(playlist)
         })
-        radioViewModel.observeCurrentChannel().observe(this, Observer { channel -> setChannelLogo(channel) })
+        radioViewModel.observeCurrentChannel().observe(this, Observer { channel ->
+            setChannelLogo(channel)
+        })
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
