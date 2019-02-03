@@ -1,13 +1,9 @@
 package com.radionula.radionula.radio
 
 
-import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
-import android.os.AsyncTask
 import android.os.Bundle
-import android.provider.Contacts
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,15 +11,14 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import com.radionula.radionula.MainActivity
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
-import com.radionula.radionula.interfaces.IControls
 import com.radionula.radionula.model.NulaTrack
 import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
@@ -49,24 +44,13 @@ class PlayerFragment : Fragment() {
     // Playlist of player
     private lateinit var adapter: PlaylistAdapter
 
-    //
-    // Control of player
-    private lateinit var _controls: IControls
-
-    private var logoUrl = "drawable://" + R.drawable.nula_logo_ch1
-    private var skipurl = R.drawable.play_button_1
-
     val radioViewModel: RadioModelView by viewModel()
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        _controls = (context as IControls?)!!
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_player, container, false)
 
-       // Image spin animation
+        // Image spin animation
         anim = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
         anim.interpolator = LinearInterpolator()
         anim.repeatCount = Animation.INFINITE
@@ -85,9 +69,28 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fragment_controls_ivSkip.setOnClickListener { _controls.TuneIn() }
-        fragment_controls_ivPause.setOnClickListener { _controls.Pause() }
-        fragment_controls_ivTuneIn.setOnClickListener { tuneIn() }
+        radioViewModel.observeTuneIn().observe(this, Observer { tuneIn() })
+        radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
+        radioViewModel.observePause().observe(this, Observer {
+            //_controls.Pause()
+            StopVinyl()
+        })
+        radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
+            val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
+            SetPlaylist(playlist)
+        })
+        radioViewModel.observeCurrentChannel().observe(this, Observer { channel ->
+            setChannelLogo(channel)
+        })
+
+        fragment_controls_ivSkip.setOnClickListener {
+            GlobalScope.async { radioViewModel.nextChannel() }
+        }
+        fragment_controls_ivPause.setOnClickListener {
+            radioViewModel.pauseRadio()
+            (activity as MainActivity).Pause()
+        }
+        fragment_controls_ivTuneIn.setOnClickListener { radioViewModel.tuneIn() }
     }
 
     private fun tuneIn() {
@@ -95,14 +98,43 @@ class PlayerFragment : Fragment() {
         fragment_controls_ivPause.visibility = View.VISIBLE
         fragment_controls_ivSkip.visibility = View.VISIBLE
 
-        _controls.TuneIn()
+        GlobalScope.async { radioViewModel.fetchPlaylist() }
+        StartVinyl()
+
+        (activity as MainActivity).TuneIn()
     }
 
     fun UpdateChannelLogo(imageUrl: String, skipUrl: Int) {
-        logoUrl = imageUrl
-        skipurl = skipUrl
+        //logoUrl = imageUrl
+        //skipurl = skipUrl
         MyApp.getImageLoader()?.displayImage(imageUrl, fragment_top_ivLogo)
         fragment_controls_ivSkip.setImageResource(skipUrl)
+    }
+
+    fun setChannelLogo(channel: ChannelPresenter.Channel) {
+        when (channel) {
+            ChannelPresenter.Channel.Classic -> {
+                val logoUrl = "drawable://" + R.drawable.nula_logo_ch1
+                val skipUrl = R.drawable.play_button_1
+
+                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
+                fragment_controls_ivSkip.setImageResource(skipUrl)
+            }
+            ChannelPresenter.Channel.Ch2 -> {
+                val logoUrl = "drawable://" + R.drawable.nula_logo_ch2
+                val skipUrl = R.drawable.play_button_2
+
+                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
+                fragment_controls_ivSkip.setImageResource(skipUrl)
+            }
+            ChannelPresenter.Channel.Smoky -> {
+                val logoUrl = "drawable://" + R.drawable.nula_logo_ch3
+                val skipUrl = R.drawable.play_button_3
+
+                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
+                fragment_controls_ivSkip.setImageResource(skipUrl)
+            }
+        }
     }
 
     fun StopVinyl() {
@@ -172,7 +204,6 @@ class PlayerFragment : Fragment() {
                 val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/Roboto-Regular.ttf")
                 tvHeader.typeface = artistFont
 
-
                 fragment_playlist_llPlaylist.addView(view)
             }
 
@@ -183,11 +214,6 @@ class PlayerFragment : Fragment() {
 
         }
         fragment_playlist_ivShadow.bringToFront()
-
-    }
-
-    fun UpdatePlaylist(tracks: List<NulaTrack>) {
-        SetPlaylist(tracks)
     }
 
     override fun onResume() {
@@ -206,32 +232,14 @@ class PlayerFragment : Fragment() {
                 fragment_controls_ivPause.visibility = View.VISIBLE
                 fragment_controls_ivTuneIn.visibility = View.INVISIBLE
 
-                UpdateChannelLogo(logoUrl, skipurl)
-                _controls.UpdatePlaylist()
-
-
+                //UpdateChannelLogo(logoUrl, skipurl)
             }
         } catch (ex: Exception) {
             Log.e(TAG, ex.message)
         }
-
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        radioViewModel.observeCurrentSong().observe(this, Observer {
-            Log.d(TAG, it.toString())
-            SetVinylImage(it.cover)
-        })
-
-        GlobalScope.async {
-            radioViewModel.fetchPlaylist()
-        }
     }
 
     companion object {
-
         private val TAG = "PlayerFagment"
     }
-}// Required empty public constructor
+}

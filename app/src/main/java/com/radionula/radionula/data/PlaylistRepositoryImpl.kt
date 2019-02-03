@@ -4,35 +4,41 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
-import com.radionula.radionula.data.network.response.PlaylistResponse
+import com.radionula.radionula.radio.ChannelPresenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PlaylistRepositoryImpl(
         private val playlistNetworkDataSource: PlaylistNetworkDataSource
 ) : PlaylistRepository {
 
-    private var currentChannel = "classic"
+    private var currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
 
     private val currentSong = MutableLiveData<CurrentSong>()
-    private val playlist = MutableLiveData<MutableList<CurrentSong>>()
+    private val playlist = MutableLiveData<MutableList<CurrentSong>>().apply { postValue(mutableListOf()) }
 
     init {
         playlistNetworkDataSource.downloadedPlaylist.observeForever { newPlaylist ->
             when (currentChannel) {
-                "classic" -> {
+                ChannelPresenter.Channel.Classic -> {
                     currentSong.value = newPlaylist.classics.currentSong
-                    playlist.value?.add(newPlaylist.classics.currentSong)
+                    val temp = playlist.value
+                    temp?.add(0, newPlaylist.classics.currentSong)
+                    playlist.value = temp
+
                 }
-                "ch2" -> {
+                ChannelPresenter.Channel.Ch2 -> {
                     currentSong.value = newPlaylist.ch2.currentSong
-                    playlist.value?.add(newPlaylist.ch2.currentSong)
+                    val temp = playlist.value
+                    temp?.add(0, newPlaylist.ch2.currentSong)
+                    playlist.value = temp
                 }
-                "smoky" -> {
+                ChannelPresenter.Channel.Smoky -> {
                     currentSong.value = newPlaylist.smoky.currentSong
-                    playlist.value?.add(newPlaylist.smoky.currentSong)
+                    val temp = playlist.value
+                    temp?.add(0, newPlaylist.smoky.currentSong)
+                    playlist.value = temp
                 }
             }
         }
@@ -52,7 +58,7 @@ class PlaylistRepositoryImpl(
         return playlist
     }
 
-    override fun setChannel(channel: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun setChannel(channel: ChannelPresenter.Channel) {
+        currentChannel = channel
     }
 }

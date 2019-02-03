@@ -14,10 +14,11 @@ import org.koin.dsl.module.module
 
 
 val playlistModule = module {
+    single { ChannelPresenter() }
 
     single<ConnectivityInterceptorImpl> { ConnectivityInterceptorImpl(androidContext()) }
     single<PlaylistApiService> { PlaylistApiService(get()) }
     single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get()) }
     single<PlaylistRepository> { PlaylistRepositoryImpl(get()) }
-    viewModel { RadioModelView(get()) }
+    viewModel { RadioModelView(get(), get()) }
 }

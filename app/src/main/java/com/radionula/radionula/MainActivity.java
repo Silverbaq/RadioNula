@@ -234,8 +234,8 @@ public class MainActivity extends AppCompatActivity implements IControls, Observ
     public void update(Observable observable, Object data) {
         // updates playlist
         try {
-            playerFragment.UpdatePlaylist(_playlistRepository.getPlaylist());
-            playerFragment.SetVinylImage(_playlistRepository.getPlaylist().get(0).getImage());
+            //playerFragment.UpdatePlaylist(_playlistRepository.getPlaylist());
+            //playerFragment.SetVinylImage(_playlistRepository.getPlaylist().get(0).getImage());
         } catch (Exception ex) {
             ex.printStackTrace();
         }

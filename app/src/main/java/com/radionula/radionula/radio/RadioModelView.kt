@@ -5,32 +5,42 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.radionula.radionula.data.PlaylistRepository
 import com.radionula.radionula.data.db.entity.CurrentSong
-import com.radionula.radionula.data.db.entity.History
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class RadioModelView(
-        private val playlistReposetory: PlaylistRepository
+        private val playlistReposetory: PlaylistRepository,
+        private val channelPresenter: ChannelPresenter
 ) : ViewModel() {
-    private var currentChannel = "classic"
-    private val currentSong: MutableLiveData<CurrentSong> = MutableLiveData()
-    private val history: MutableLiveData<History> = MutableLiveData()
+
+    private val tuneInData = MutableLiveData<Unit>()
+    private val pauseData = MutableLiveData<Unit>()
+    private val channelData = MutableLiveData<ChannelPresenter.Channel>()
 
     fun observeCurrentSong(): LiveData<CurrentSong> = playlistReposetory.getCurrentSong()
     fun observePlaylist(): LiveData<MutableList<CurrentSong>> = playlistReposetory.getCurrentPlaylist()
+    fun observeTuneIn(): LiveData<Unit> = tuneInData
+    fun observePause(): LiveData<Unit> = pauseData
+    fun observeCurrentChannel(): LiveData<ChannelPresenter.Channel> = channelData
 
-    suspend fun fetchPlaylist(){
+
+    suspend fun fetchPlaylist() {
         playlistReposetory.fetchCurrentPlaylist()
     }
 
-    fun tuneIn(){
-        TODO("implement function")
+    fun tuneIn() {
+        tuneInData.value = Unit
     }
 
-    fun nextChannel(){
-        TODO("implement function")
+    suspend fun nextChannel() {
+        channelPresenter.nextChannel()
+        playlistReposetory.setChannel(channelPresenter.currentChannel)
+        playlistReposetory.fetchCurrentPlaylist()
+
     }
 
-    fun pauseRadio(){
-        TODO("implement function")
+    fun pauseRadio() {
+        pauseData.value = Unit
     }
 
 }
