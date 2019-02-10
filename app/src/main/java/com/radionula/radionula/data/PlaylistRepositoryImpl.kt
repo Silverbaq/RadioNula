@@ -7,6 +7,7 @@ import com.radionula.radionula.data.network.PlaylistNetworkDataSource
 import com.radionula.radionula.radio.ChannelPresenter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class PlaylistRepositoryImpl(
@@ -22,23 +23,28 @@ class PlaylistRepositoryImpl(
         playlistNetworkDataSource.downloadedPlaylist.observeForever { newPlaylist ->
             when (currentChannel) {
                 ChannelPresenter.Channel.Classic -> {
-                    currentSong.value = newPlaylist.classics.currentSong
-                    val temp = playlist.value
-                    temp?.add(0, newPlaylist.classics.currentSong)
-                    playlist.value = temp
-
+                    if (currentSong.value != newPlaylist.classics.currentSong) {
+                        currentSong.value = newPlaylist.classics.currentSong
+                        val temp = playlist.value
+                        temp?.add(0, newPlaylist.classics.currentSong)
+                        playlist.value = temp
+                    }
                 }
                 ChannelPresenter.Channel.Ch2 -> {
-                    currentSong.value = newPlaylist.ch2.currentSong
-                    val temp = playlist.value
-                    temp?.add(0, newPlaylist.ch2.currentSong)
-                    playlist.value = temp
+                    if (currentSong.value != newPlaylist.ch2.currentSong) {
+                        currentSong.value = newPlaylist.ch2.currentSong
+                        val temp = playlist.value
+                        temp?.add(0, newPlaylist.ch2.currentSong)
+                        playlist.value = temp
+                    }
                 }
                 ChannelPresenter.Channel.Smoky -> {
-                    currentSong.value = newPlaylist.smoky.currentSong
-                    val temp = playlist.value
-                    temp?.add(0, newPlaylist.smoky.currentSong)
-                    playlist.value = temp
+                    if (currentSong.value != newPlaylist.smoky.currentSong) {
+                        currentSong.value = newPlaylist.smoky.currentSong
+                        val temp = playlist.value
+                        temp?.add(0, newPlaylist.smoky.currentSong)
+                        playlist.value = temp
+                    }
                 }
             }
         }
@@ -51,6 +57,16 @@ class PlaylistRepositoryImpl(
     override suspend fun fetchCurrentPlaylist() {
         GlobalScope.launch(Dispatchers.IO) {
             playlistNetworkDataSource.fetchPlaylist()
+        }
+    }
+
+    override suspend fun autoFetchPlaylist(){
+        GlobalScope.launch(Dispatchers.IO) {
+            while(true){
+                playlistNetworkDataSource.fetchPlaylist()
+
+                delay(20_000)
+            }
         }
     }
 

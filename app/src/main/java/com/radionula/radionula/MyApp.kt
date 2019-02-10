@@ -31,8 +31,8 @@ class MyApp : Application() {
         database = NulaDatabase(this)
         aquery = AQuery(this)
 
-        isPlaying = false
-        tunedIn = false
+        //isPlaying = false
+        //tunedIn = false
 
         startKoin(this, listOf(playlistModule, radioPlayerModule))
     }
@@ -42,14 +42,10 @@ class MyApp : Application() {
         lateinit var aquery: AQuery
         private var imageLoader: ImageLoader? = null
 
-        var tunedIn: Boolean = false
         var isPlaying: Boolean = false
         var reconnect = false
 
         private var database: NulaDatabase? = null
-        fun  setIsPlaying(playing: Boolean){
-            isPlaying = playing
-        }
 
         fun getImageLoader(): ImageLoader? {
             if (imageLoader == null) {
@@ -57,7 +53,6 @@ class MyApp : Application() {
             }
             return imageLoader
         }
-
 
         fun addToFavorites(track: NulaTrack) {
             database!!.insertTrack(track)
@@ -69,7 +64,7 @@ class MyApp : Application() {
 
 
         fun RemoveFavorit(item: NulaTrack) {
-            database!!.remoteTrack(item)
+            database?.remoteTrack(item)
         }
     }
 }

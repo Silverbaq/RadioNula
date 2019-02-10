@@ -88,7 +88,12 @@ class PlayerFragment : Fragment() {
             radioViewModel.pauseRadio()
             (activity as MainActivity).Pause()
         }
-        fragment_controls_ivTuneIn.setOnClickListener { radioViewModel.tuneIn() }
+        fragment_controls_ivTuneIn.setOnClickListener {
+            radioViewModel.tuneIn()
+            GlobalScope.launch {
+                radioViewModel.autoFetchPlaylist()
+            }
+        }
     }
 
     private fun tuneIn() {
@@ -102,13 +107,6 @@ class PlayerFragment : Fragment() {
         StartVinyl()
 
         (activity as MainActivity).TuneIn()
-    }
-
-    fun UpdateChannelLogo(imageUrl: String, skipUrl: Int) {
-        //logoUrl = imageUrl
-        //skipurl = skipUrl
-        MyApp.getImageLoader()?.displayImage(imageUrl, fragment_top_ivLogo)
-        fragment_controls_ivSkip.setImageResource(skipUrl)
     }
 
     fun setChannelLogo(channel: ChannelPresenter.Channel) {
@@ -128,8 +126,8 @@ class PlayerFragment : Fragment() {
                 fragment_controls_ivSkip.setImageResource(skipUrl)
             }
             ChannelPresenter.Channel.Smoky -> {
-                val logoUrl = "drawable://" + R.drawable.nula_logo_ch3
-                val skipUrl = R.drawable.play_button_3
+                val logoUrl = "drawable://" + R.drawable.nula_logo_ch1
+                val skipUrl = R.drawable.play_button_1
 
                 MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
                 fragment_controls_ivSkip.setImageResource(skipUrl)
@@ -214,29 +212,6 @@ class PlayerFragment : Fragment() {
 
         }
         fragment_playlist_ivShadow.bringToFront()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        try {
-            if (MyApp.tunedIn) {
-                if (playing) {
-                    fragment_top_ivRecord.startAnimation(anim)
-                    fragment_top_ivRecordImage.startAnimation(anim2)
-
-                    fragment_top_ivLogo.bringToFront()
-                }
-
-                fragment_controls_ivSkip.visibility = View.VISIBLE
-                fragment_controls_ivPause.visibility = View.VISIBLE
-                fragment_controls_ivTuneIn.visibility = View.INVISIBLE
-
-                //UpdateChannelLogo(logoUrl, skipurl)
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
     }
 
     companion object {

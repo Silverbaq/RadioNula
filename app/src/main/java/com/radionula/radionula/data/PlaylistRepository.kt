@@ -9,4 +9,5 @@ interface PlaylistRepository{
     fun getCurrentSong(): LiveData<CurrentSong>
     suspend fun fetchCurrentPlaylist()
     fun setChannel(channel: ChannelPresenter.Channel)
+    suspend fun autoFetchPlaylist()
 }

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@color/BackgroundBlue"
     android:orientation="vertical"
-    tools:context=".fragments.FavoritsFragment">
+    tools:context=".favorits.FavoritsFragment">
 
     <LinearLayout
         android:orientation="vertical"
@@ -28,13 +28,12 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"/>
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/fragment_favorites_lvFavorites"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="514dp">
+            android:layout_height="wrap_content">
 
-        </ListView>
+        </androidx.recyclerview.widget.RecyclerView>
     </LinearLayout>
 
 </LinearLayout>

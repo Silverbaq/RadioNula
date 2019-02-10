@@ -31,6 +31,10 @@ class RadioModelView(
         playlistReposetory.fetchCurrentPlaylist()
     }
 
+    suspend fun autoFetchPlaylist(){
+        playlistReposetory.autoFetchPlaylist()
+    }
+
     fun tuneIn() {
         tuneInData.value = Unit
         playing = true

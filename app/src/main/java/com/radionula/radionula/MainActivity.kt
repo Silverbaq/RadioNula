@@ -5,40 +5,26 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.PowerManager
-
-import com.google.android.material.navigation.NavigationView
-
-import androidx.fragment.app.FragmentTransaction
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.LinearLayout
-
-import com.radionula.services.MediaPlayerService
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.fragment.app.FragmentTransaction
+import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.fragments.CommentsFragment
-import com.radionula.radionula.fragments.FavoritsFragment
+import com.radionula.radionula.favorits.FavoritsFragment
 import com.radionula.radionula.fragments.NoConnectionFragment
-import com.radionula.radionula.radio.PlayerFragment
-import com.radionula.radionula.interfaces.IControls
-import com.radionula.radionula.model.Constants
 import com.radionula.radionula.model.NetworkStateReceiver
 import com.radionula.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener
-import com.radionula.radionula.model.PlaylistRepository
+import com.radionula.radionula.radio.PlayerFragment
 import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
-
-import java.util.Observable
-import java.util.Observer
 
 class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
 
@@ -75,7 +61,6 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
         transaction.commit()
 
         setupDrawerContent(nvView)
-
 
         //
         // Call State
@@ -167,17 +152,15 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
             } catch (ex: Exception) {
 
             }
-
     }
 
     fun Pause() {
-
         playerFragment.StopVinyl()
-        mediaplayerPresenter!!.pauseRadio()
+        mediaplayerPresenter?.pauseRadio()
     }
 
     fun TuneIn() {
-        mediaplayerPresenter!!.tuneIn()
+        mediaplayerPresenter?.tuneIn()
         playerFragment.StartVinyl()
     }
 
@@ -191,7 +174,6 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
-
 
     //
     // When the internet connection is reestablished
@@ -215,7 +197,6 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
 
     }
 
-
     //
     // If there is no internet connection
     override fun onNetworkUnavailable() {
@@ -232,7 +213,6 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
         }
 
     }
-
 
     //
     // Detects the call state of the phone. Will pause music if phone rings.
@@ -255,9 +235,6 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
 
     companion object {
         private val TAG = "MainActivity"
-
-        // Backend
-        private val _playlistRepository: PlaylistRepository? = null
     }
 
 }
