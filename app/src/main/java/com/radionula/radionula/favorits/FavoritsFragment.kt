@@ -29,7 +29,7 @@ class FavoritsFragment : Fragment() {
         val tracks = MyApp.LoadUserFavorites(activity!!).toMutableList()
 
         fragment_favorites_lvFavorites.apply {
-            layoutManager = LinearLayoutManager(activity) as RecyclerView.LayoutManager?
+            layoutManager = LinearLayoutManager(activity)
             adapter = MyAdapter(tracks, context = requireContext())
         }
 

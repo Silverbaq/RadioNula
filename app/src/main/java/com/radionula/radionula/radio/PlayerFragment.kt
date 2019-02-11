@@ -38,8 +38,6 @@ class PlayerFragment : Fragment() {
     private lateinit var anim: RotateAnimation
     private lateinit var anim2: RotateAnimation
 
-    private var playing = false
-
     //
     // Playlist of player
     private lateinit var adapter: PlaylistAdapter
@@ -69,9 +67,22 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        radioViewModel.observeTuneIn().observe(this, Observer { tuneIn() })
+        radioViewModel.observeTuneIn().observe(this, Observer {
+            fragment_controls_ivTuneIn.visibility = View.INVISIBLE
+            fragment_controls_ivPause.visibility = View.VISIBLE
+            fragment_controls_ivSkip.visibility = View.VISIBLE
+
+            if (it != null)
+                tuneIn()
+        })
+        radioViewModel.observePlaying().observe(this, Observer {
+            StartVinyl()
+        })
         radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
-        radioViewModel.observePause().observe(this, Observer { StopVinyl() })
+        radioViewModel.observePause().observe(this, Observer {
+            if (it != null)
+                StopVinyl()
+        })
         radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
             SetPlaylist(playlist)
@@ -82,6 +93,7 @@ class PlayerFragment : Fragment() {
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
+            radioViewModel.skip()
             (activity as MainActivity).TuneIn()
         }
         fragment_controls_ivPause.setOnClickListener {
@@ -97,14 +109,12 @@ class PlayerFragment : Fragment() {
     }
 
     private fun tuneIn() {
-        fragment_controls_ivTuneIn.visibility = View.INVISIBLE
-        fragment_controls_ivPause.visibility = View.VISIBLE
-        fragment_controls_ivSkip.visibility = View.VISIBLE
+
 
         GlobalScope.async {
             radioViewModel.fetchPlaylist()
         }
-        StartVinyl()
+        //StartVinyl()
 
         (activity as MainActivity).TuneIn()
     }
@@ -137,7 +147,6 @@ class PlayerFragment : Fragment() {
 
     fun StopVinyl() {
         try {
-            playing = false
             fragment_top_ivRecord.animation.cancel()
             fragment_top_ivRecordImage.animation.cancel()
         } catch (e: Exception) {
@@ -147,8 +156,6 @@ class PlayerFragment : Fragment() {
     }
 
     fun StartVinyl() {
-        playing = true
-
         fragment_top_ivRecord.startAnimation(anim)
         fragment_top_ivRecordImage.startAnimation(anim2)
 
