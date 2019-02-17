@@ -2,38 +2,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/BackgroundBlue"
+    android:background="@drawable/background"
     android:orientation="vertical"
     tools:context=".favorits.FavoritsFragment">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:background="@drawable/background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/fragment_favorites_tvHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="FAVORITES"
-        android:id="@+id/fragment_favorites_tvHeader"
-        android:layout_marginTop="16dp"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="16dp"
+        android:text="FAVORITES"
         android:textColor="@color/white" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/faded_white"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@color/faded_white" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/fragment_favorites_lvFavorites"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/fragment_favorites_lvFavorites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        </androidx.recyclerview.widget.RecyclerView>
-    </LinearLayout>
+    </androidx.recyclerview.widget.RecyclerView>
+
 
 </LinearLayout>
