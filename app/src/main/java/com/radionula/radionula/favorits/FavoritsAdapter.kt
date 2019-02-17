@@ -43,20 +43,7 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
 
         holder.container.setOnClickListener(View.OnClickListener {
 
-            val rlFavorit = LayoutInflater.from(context).inflate(R.layout.remove_favorit, holder.container) as RelativeLayout
-
-            /*
-            // clean selected
-            for (i in 0 until parent.getChildCount()) {
-                val tmp = parent.getChildAt(i)
-                val tmpHolder = tmp.getTag() as ViewHolder
-                if (tmpHolder.clicked) {
-                    tmpHolder.container.removeAllViews()
-                    if (i != position)
-                        tmpHolder.clicked = false
-                }
-            }
-            */
+            val rlFavorit = LayoutInflater.from(context).inflate(R.layout.remove_favorit, holder.container)
 
             if (!holder.clicked) {
 
@@ -69,7 +56,7 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
 
                     holder.container.removeAllViews()
                     myDataset.remove(myDataset[position])
-                    notifyDataSetChanged()
+                    //notifyDataSetChanged()
 
                     Toast.makeText(context, "Removed " + myDataset[position].artist, Toast.LENGTH_SHORT).show()
                 }

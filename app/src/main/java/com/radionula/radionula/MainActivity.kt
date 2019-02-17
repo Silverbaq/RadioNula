@@ -26,14 +26,12 @@ import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 
-class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
+class MainActivity : BaseActivity(), NetworkStateReceiverListener {
 
     // Fragments
     val playerFragment: PlayerFragment = PlayerFragment()
     val favoritsFragment: FavoritsFragment = FavoritsFragment()
     val commentsFragment: CommentsFragment = CommentsFragment()
-
-    lateinit var transaction: FragmentTransaction
 
     private var networkStateReceiver: NetworkStateReceiver? = null
 
@@ -50,15 +48,7 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
 
         mediaplayerPresenter = MediaplayerPresenter(this)
 
-        // Transaction to swap fragments
-        transaction = supportFragmentManager.beginTransaction()
-
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.activityMain_flFragments, playerFragment)
-
-        // Commit the transaction
-        transaction.commit()
+        replaceFragment(playerFragment)
 
         setupDrawerContent(nvView)
 
@@ -71,7 +61,7 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
         //
         // Network state
         networkStateReceiver = NetworkStateReceiver(this)
-        networkStateReceiver!!.addListener(this)
+        networkStateReceiver?.addListener(this)
         this.registerReceiver(networkStateReceiver, IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION))
 
         //
@@ -95,28 +85,19 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
         // position
         when (menuItem.itemId) {
             R.id.nav_Radio_Player -> {
-                transaction.replace(R.id.activityMain_flFragments, playerFragment)
-
-                // Commit the transaction
-                transaction.commit()
+                replaceFragment(playerFragment)
 
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Favorites -> {
-                transaction.replace(R.id.activityMain_flFragments, favoritsFragment)
-
-                // Commit the transaction
-                transaction.commit()
+                replaceFragment(favoritsFragment)
 
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Comments -> {
+                replaceFragment(commentsFragment)
+
                 drawer_layout.closeDrawer(GravityCompat.START)
-
-                transaction.replace(R.id.activityMain_flFragments, commentsFragment)
-
-                // Commit the transaction
-                transaction.commit()
             }
             else -> {
             }
@@ -125,6 +106,8 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
 
     override fun onPause() {
         super.onPause()
+
+        networkStateReceiver?.removeListener(this)
 
         // Makes sure the music keeps playing after the screen is off.
         try {
@@ -182,9 +165,7 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
             val layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             findViewById<View>(R.id.activityMain_toolbar).layoutParams = layoutParams
             //findViewById(R.id.activityMain_toolbar).setVisibility(View.VISIBLE);
-            transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.activityMain_flFragments, playerFragment)
-            transaction.commit()
+            replaceFragment(playerFragment)
 
             if (MyApp.reconnect) {
                 // Starts music player once agian.
@@ -204,10 +185,9 @@ class MainActivity : AppCompatActivity(), NetworkStateReceiverListener {
             val layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0)
             findViewById<View>(R.id.activityMain_toolbar).layoutParams = layoutParams
 
-            transaction = supportFragmentManager.beginTransaction()
             val fragment = NoConnectionFragment()
-            transaction.replace(R.id.activityMain_flFragments, fragment)
-            transaction.commit()
+            replaceFragment(fragment)
+
         } catch (ex: Exception) {
             Log.e(TAG, ex.message)
         }

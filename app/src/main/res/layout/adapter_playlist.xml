@@ -1,76 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/adapter_playlist_llPlaylist"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/adapter_playlist_ivPlaylistCover"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="12dp"
+        android:padding="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/adapter_playlist_tvPlaylistArtist"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="28dp"
+        android:text="New Text"
+        android:textColor="@color/brown"
+        android:textSize="16dp"
+        app:layout_constraintStart_toEndOf="@+id/adapter_playlist_ivPlaylistCover"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/adapter_playlist_ivPlaylistCover"
-                android:padding="2dp"
-                android:layout_width="75dp"
-                android:layout_height="75dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center_vertical">
-
-
-                <TextView
-                    android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:textColor="@color/brown"
-                    android:textSize="16dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:id="@+id/adapter_playlist_tvPlaylistArtist" />
-
-                <TextView
-                    android:layout_marginTop="1dp"
-                    android:layout_marginLeft="10dp"
-                    android:textColor="@color/white"
-                    android:textSize="16dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:id="@+id/adapter_playlist_tvPlaylistTitle" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/faded_white" />
+    <TextView
+        android:id="@+id/adapter_playlist_tvPlaylistTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="New Text"
+        android:textColor="@color/white"
+        android:textSize="16dp"
+        app:layout_constraintStart_toEndOf="@+id/adapter_playlist_ivPlaylistCover"
+        app:layout_constraintTop_toBottomOf="@+id/adapter_playlist_tvPlaylistArtist" />
 
 
-    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/faded_white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/adapter_playlist_ivPlaylistCover" />
 
-    <RelativeLayout
+
+    <FrameLayout
         android:id="@+id/adapter_playlist_rlItem"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignTop="@+id/adapter_playlist_llPlaylist"
-        android:layout_alignBottom="@+id/adapter_playlist_llPlaylist"
-        android:layout_alignLeft="@+id/adapter_playlist_llPlaylist"
+        android:layout_height="96dp">
 
-        android:layout_alignStart="@+id/adapter_playlist_llPlaylist"
-        android:layout_alignRight="@+id/adapter_playlist_llPlaylist"
-        android:layout_alignEnd="@+id/adapter_playlist_llPlaylist">
+    </FrameLayout>
 
-    </RelativeLayout>
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

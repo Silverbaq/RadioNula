@@ -12,7 +12,9 @@
         android:layout_centerVertical="true"
         android:layout_marginEnd="89dp"
         android:scaleType="fitStart"
-        android:src="@drawable/ico_search" />
+        android:src="@drawable/ico_search"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="89dp" />
 
 
     <ImageView

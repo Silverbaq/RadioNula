@@ -1,46 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <!-- The ActionBar displayed at the top -->
-    <include
-        android:id="@+id/activityMain_toolbar"
-        layout="@layout/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <!-- The ActionBar displayed at the top -->
+        <include
+            android:id="@+id/activityMain_toolbar"
+            layout="@layout/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-<FrameLayout
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activityMain_flFragments"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/brown"
-    tools:context="com.radionula.radionula.MainActivity">
+        <FrameLayout xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/activityMain_flFragments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/brown"
+            tools:context="com.radionula.radionula.MainActivity">
 
-
-
-<!--
-    <fragment
-        android:id="@+id/activityMain_fragmentPlayer"
-        android:foregroundGravity="center_vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:nacom.radionula.radionula.fragmentsents.PlayerFragment"
-        tools:layout="@layout/fragment_player"
-        android:layout_gravity="center_vertical"/>
--->
-
-    </FrameLayout>
-</LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
 
     <!-- The navigation drawer that comes from the left -->
     <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
@@ -50,20 +35,17 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/BackgroundBlue"
-        app:itemTextColor="@color/white"
         app:headerLayout="@layout/nav_header"
+        app:itemTextColor="@color/white"
         app:menu="@menu/draw_view">
-
-
-
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="radionula@gmail.com"
-            android:textColor="@color/white"
+            android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="20dp"
-            android:layout_gravity="bottom|center_horizontal"/>
+            android:text="radionula@gmail.com"
+            android:textColor="@color/white" />
 
     </com.google.android.material.navigation.NavigationView>
 

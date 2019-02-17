@@ -8,6 +8,7 @@ import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -59,7 +60,7 @@ public class PlaylistAdapter extends BaseAdapter {
         ImageView image;
         TextView artist;
         TextView title;
-        RelativeLayout container;
+        FrameLayout container;
         boolean clicked;
     }
 
@@ -82,7 +83,7 @@ public class PlaylistAdapter extends BaseAdapter {
             holder.image = (ImageView) convertView.findViewById(R.id.adapter_playlist_ivPlaylistCover);
             holder.artist = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistArtist);
             holder.title = (TextView) convertView.findViewById(R.id.adapter_playlist_tvPlaylistTitle);
-            holder.container = (RelativeLayout) convertView.findViewById(R.id.adapter_playlist_rlItem);
+            holder.container = convertView.findViewById(R.id.adapter_playlist_rlItem);
 
             convertView.setTag(holder);
         } else {
@@ -113,7 +114,7 @@ public class PlaylistAdapter extends BaseAdapter {
 
                 if (adapterType == AdapterType.ADD) {
 
-                    View rlFavorit = (RelativeLayout) activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
+                    View rlFavorit = activity.getLayoutInflater().inflate(R.layout.add_favorit, holder.container);
 
                     if (!holder.clicked) {
 
