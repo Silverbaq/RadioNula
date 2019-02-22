@@ -37,7 +37,6 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.artist.text = myDataset[position].artist
         holder.title.text = myDataset[position].titel
-        //MyApp.aquery.id(holder.cover).image(myDataset[position].image, true, true, 0, 0, null, AQuery.FADE_IN)
 
         Glide.with(context).load(myDataset[position].image).into(holder.cover)
 
@@ -56,7 +55,6 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
 
                     holder.container.removeAllViews()
                     myDataset.remove(myDataset[position])
-                    //notifyDataSetChanged()
 
                     Toast.makeText(context, "Removed " + myDataset[position].artist, Toast.LENGTH_SHORT).show()
                 }
