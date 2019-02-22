@@ -7,11 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.androidquery.AQuery
+import com.bumptech.glide.Glide
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
@@ -39,7 +37,9 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.artist.text = myDataset[position].artist
         holder.title.text = myDataset[position].titel
-        MyApp.aquery.id(holder.cover).image(myDataset[position].image, true, true, 0, 0, null, AQuery.FADE_IN)
+        //MyApp.aquery.id(holder.cover).image(myDataset[position].image, true, true, 0, 0, null, AQuery.FADE_IN)
+
+        Glide.with(context).load(myDataset[position].image).into(holder.cover)
 
         holder.container.setOnClickListener(View.OnClickListener {
 

@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import com.bumptech.glide.Glide
 import com.radionula.radionula.MainActivity
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
@@ -113,33 +114,22 @@ class PlayerFragment : Fragment() {
         GlobalScope.async {
             radioViewModel.fetchPlaylist()
         }
-        //StartVinyl()
-
         (activity as MainActivity).tuneIn()
     }
 
     fun setChannelLogo(channel: ChannelPresenter.Channel) {
         when (channel) {
             ChannelPresenter.Channel.Classic -> {
-                val logoUrl = "drawable://" + R.drawable.nula_logo_ch1
-                val skipUrl = R.drawable.play_button_1
-
-                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
-                fragment_controls_ivSkip.setImageResource(skipUrl)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch1)
+                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_1)
             }
             ChannelPresenter.Channel.Ch2 -> {
-                val logoUrl = "drawable://" + R.drawable.nula_logo_ch2
-                val skipUrl = R.drawable.play_button_2
-
-                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
-                fragment_controls_ivSkip.setImageResource(skipUrl)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch2)
+                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_2)
             }
             ChannelPresenter.Channel.Smoky -> {
-                val logoUrl = "drawable://" + R.drawable.nula_logo_ch1
-                val skipUrl = R.drawable.play_button_1
-
-                MyApp.getImageLoader()?.displayImage(logoUrl, fragment_top_ivLogo)
-                fragment_controls_ivSkip.setImageResource(skipUrl)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch3)
+                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_1)
             }
         }
     }

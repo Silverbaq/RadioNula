@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
+import com.bumptech.glide.Glide;
 import com.radionula.radionula.model.NulaTrack;
 
 
@@ -94,8 +94,9 @@ public class PlaylistAdapter extends BaseAdapter {
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
-        MyApp.Companion.getAquery().id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
+        //MyApp.Companion.getAquery().id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
         //MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
+        Glide.with(activity).load(item.getImage()).into(holder.image);
 
         Typeface artistFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Regular.ttf");
         holder.artist.setTypeface(artistFont);
