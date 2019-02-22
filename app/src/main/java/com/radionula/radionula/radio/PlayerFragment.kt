@@ -4,7 +4,6 @@ package com.radionula.radionula.radio
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -94,11 +93,11 @@ class PlayerFragment : Fragment() {
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
             radioViewModel.skip()
-            (activity as MainActivity).TuneIn()
+            (activity as MainActivity).tuneIn()
         }
         fragment_controls_ivPause.setOnClickListener {
             radioViewModel.pauseRadio()
-            (activity as MainActivity).Pause()
+            (activity as MainActivity).pause()
         }
         fragment_controls_ivTuneIn.setOnClickListener {
             radioViewModel.tuneIn()
@@ -116,7 +115,7 @@ class PlayerFragment : Fragment() {
         }
         //StartVinyl()
 
-        (activity as MainActivity).TuneIn()
+        (activity as MainActivity).tuneIn()
     }
 
     fun setChannelLogo(channel: ChannelPresenter.Channel) {

@@ -6,12 +6,11 @@ import android.content.Context
 import com.androidquery.AQuery
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
-import com.radionula.radionula.Util.NulaDatabase
+import com.radionula.radionula.util.NulaDatabase
 import com.radionula.radionula.model.NulaTrack
+import com.radionula.radionula.networkavaliable.connectionModule
 import com.radionula.radionula.radio.playlistModule
 import com.radionula.services.mediaplayer.radioPlayerModule
-
-import java.util.ArrayList
 
 import org.koin.android.ext.android.startKoin
 
@@ -34,7 +33,7 @@ class MyApp : Application() {
         //isPlaying = false
         //tunedIn = false
 
-        startKoin(this, listOf(playlistModule, radioPlayerModule))
+        startKoin(this, listOf(playlistModule, radioPlayerModule, connectionModule))
     }
 
     companion object {

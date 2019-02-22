@@ -2,41 +2,36 @@ package com.radionula.radionula
 
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.os.PowerManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
-import android.util.Log
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Observer
 import com.google.android.material.navigation.NavigationView
-import com.radionula.radionula.fragments.CommentsFragment
+import com.radionula.radionula.comments.CommentsFragment
 import com.radionula.radionula.favorits.FavoritsFragment
-import com.radionula.radionula.fragments.NoConnectionFragment
-import com.radionula.radionula.model.NetworkStateReceiver
-import com.radionula.radionula.model.NetworkStateReceiver.NetworkStateReceiverListener
+import com.radionula.radionula.networkavaliable.NoConnectionFragment
+import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.radio.PlayerFragment
 import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : BaseActivity(), NetworkStateReceiverListener {
+class MainActivity : BaseActivity(){
 
     // Fragments
     val playerFragment: PlayerFragment = PlayerFragment()
     val favoritsFragment: FavoritsFragment = FavoritsFragment()
     val commentsFragment: CommentsFragment = CommentsFragment()
 
-    private var networkStateReceiver: NetworkStateReceiver? = null
+    val connectionView: ConnectionViewModel by viewModel()
 
     // Mediaplayer
-    private var mediaplayerPresenter: MediaplayerPresenter? = null
+    private val mediaplayerPresenter: MediaplayerPresenter by inject()
     private var mWakeLock: PowerManager.WakeLock? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,10 +40,6 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
         setContentView(R.layout.activity_main)
 
         nav_Button.setOnClickListener { drawer_layout.openDrawer(GravityCompat.START) }
-
-        mediaplayerPresenter = MediaplayerPresenter(this)
-
-        replaceFragment(playerFragment)
 
         setupDrawerContent(nvView)
 
@@ -60,9 +51,13 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
 
         //
         // Network state
-        networkStateReceiver = NetworkStateReceiver(this)
-        networkStateReceiver?.addListener(this)
-        this.registerReceiver(networkStateReceiver, IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION))
+        connectionView.connectionData.observe(this, Observer { connection ->
+            if (!connection){
+                replaceFragment(NoConnectionFragment())
+            } else {
+                replaceFragment(playerFragment)
+            }
+        })
 
         //
         // WakeLock
@@ -107,11 +102,13 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
     override fun onPause() {
         super.onPause()
 
-        networkStateReceiver?.removeListener(this)
+        //networkStateReceiver?.removeListener(this)
 
         // Makes sure the music keeps playing after the screen is off.
         try {
             mWakeLock!!.acquire()
+            if (mediaplayerPresenter.isPlaying())
+                playerFragment.StartVinyl()
         } catch (ex: Exception) {
 
         }
@@ -132,18 +129,19 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
         if (MyApp.isPlaying)
             try {
                 mWakeLock!!.release()
+
             } catch (ex: Exception) {
 
             }
     }
 
-    fun Pause() {
+    fun pause() {
         playerFragment.StopVinyl()
-        mediaplayerPresenter?.pauseRadio()
+        mediaplayerPresenter.pauseRadio()
     }
 
-    fun TuneIn() {
-        mediaplayerPresenter?.tuneIn()
+    fun tuneIn() {
+        mediaplayerPresenter.tuneIn()
         playerFragment.StartVinyl()
     }
 
@@ -158,41 +156,6 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
         startActivity(intent)
     }
 
-    //
-    // When the internet connection is reestablished
-    override fun onNetworkAvailable() {
-        try {
-            val layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            findViewById<View>(R.id.activityMain_toolbar).layoutParams = layoutParams
-            //findViewById(R.id.activityMain_toolbar).setVisibility(View.VISIBLE);
-            replaceFragment(playerFragment)
-
-            if (MyApp.reconnect) {
-                // Starts music player once agian.
-                TuneIn()
-                MyApp.reconnect = false
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
-
-    }
-
-    //
-    // If there is no internet connection
-    override fun onNetworkUnavailable() {
-        try {
-            val layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0)
-            findViewById<View>(R.id.activityMain_toolbar).layoutParams = layoutParams
-
-            val fragment = NoConnectionFragment()
-            replaceFragment(fragment)
-
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message)
-        }
-
-    }
 
     //
     // Detects the call state of the phone. Will pause music if phone rings.
@@ -206,7 +169,7 @@ class MainActivity : BaseActivity(), NetworkStateReceiverListener {
                 }
                 TelephonyManager.CALL_STATE_RINGING ->
                     // Pauses music
-                    Pause()
+                    pause()
                 else -> {
                 }
             }// TODO: Needs to restart music after a phone call. (If it was playing).

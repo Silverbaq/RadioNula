@@ -22,6 +22,8 @@ class PlaylistNetworkDataSourceImpl(
             _downloadedPlaylist.postValue(fetchedPlaylist)
         } catch (e: NoConnectivityException){
             Log.e("Connectivity", "No internet")
+        } catch (e: Exception){
+            Log.e("Connectivity", "A network Exception was thrown!")
         }
     }
 }

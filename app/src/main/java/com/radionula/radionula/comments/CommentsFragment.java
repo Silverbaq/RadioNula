@@ -1,4 +1,4 @@
-package com.radionula.radionula.fragments;
+package com.radionula.radionula.comments;
 
 
 import android.os.Build;

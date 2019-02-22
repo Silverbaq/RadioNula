@@ -34,6 +34,8 @@ class MediaplayerPresenter(private val context: Context) {
         isPlaying = false
     }
 
+    fun isPlaying(): Boolean = isPlaying
+
     private fun changeChannel(channel: String){
 
     }

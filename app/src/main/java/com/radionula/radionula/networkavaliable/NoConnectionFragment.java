@@ -1,4 +1,4 @@
-package com.radionula.radionula.fragments;
+package com.radionula.radionula.networkavaliable;
 
 
 import android.graphics.Typeface;

@@ -108,12 +108,12 @@ class MediaPlayerService : Service() {
         }
         //private val mpNoize: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.radionoise)
 
-        override fun Pause() {
+        override fun pause() {
             setPlayPause(false)
         }
 
-        override fun TuneIn() {
-            // Play TuneIn noice sound
+        override fun tuneIn() {
+            // Play tuneIn noice sound
             //mpNoize!!.isLooping = true
             //radioPlayer.startRadioNoize()
 

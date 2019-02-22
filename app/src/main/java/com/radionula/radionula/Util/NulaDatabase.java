@@ -1,4 +1,4 @@
-package com.radionula.radionula.Util;
+package com.radionula.radionula.util;
 
 import android.content.ContentValues;
 import android.content.Context;
