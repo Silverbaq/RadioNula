@@ -1,4 +1,4 @@
-package com.radionula.radionula.util;
+package com.radionula.radionula.data.db;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.radionula.radionula.model.NulaTrack;
+import com.radionula.radionula.util.MyDatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;

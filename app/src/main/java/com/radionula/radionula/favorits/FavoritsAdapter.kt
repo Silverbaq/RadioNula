@@ -12,11 +12,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.R
+import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.model.NulaTrack
 import kotlinx.android.synthetic.main.adapter_playlist.view.*
 
-class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Context) :
+class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+
+    private val myDataset: MutableList<NulaTrack> = nulaDatabase.selectAllTracks()
 
     class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         // Holds the TextView that will add each animal to
@@ -51,10 +54,11 @@ class MyAdapter(private val myDataset: MutableList<NulaTrack>, val context: Cont
 
                 // Click on favorite icon
                 ivFavorit.setOnClickListener {
-                    MyApp.RemoveFavorit(myDataset[position])
+                    nulaDatabase.remoteTrack(myDataset[position])
 
                     holder.container.removeAllViews()
                     myDataset.remove(myDataset[position])
+                    notifyDataSetChanged()
 
                     Toast.makeText(context, "Removed " + myDataset[position].artist, Toast.LENGTH_SHORT).show()
                 }

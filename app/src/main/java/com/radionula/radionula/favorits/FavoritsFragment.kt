@@ -10,13 +10,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
+import com.radionula.radionula.data.db.NulaDatabase
 import kotlinx.android.synthetic.main.fragment_favorits.*
+import org.koin.android.ext.android.inject
 
 /**
  * A simple [Fragment] subclass.
  */
 class FavoritsFragment : Fragment() {
-    lateinit var adapter: PlaylistAdapter
+    val nulaDatabase: NulaDatabase by inject()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -25,11 +27,10 @@ class FavoritsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val tracks = MyApp.LoadUserFavorites(activity!!).toMutableList()
 
         fragment_favorites_lvFavorites.apply {
             layoutManager = LinearLayoutManager(activity)
-            adapter = MyAdapter(tracks, context = requireContext())
+            adapter = MyAdapter(nulaDatabase, context = requireContext())
         }
 
         val artistFont = Typeface.createFromAsset(activity!!.assets, "fonts/Roboto-Regular.ttf")

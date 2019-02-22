@@ -17,8 +17,6 @@ import org.koin.android.ext.android.inject
 class MediaPlayerService : Service() {
     private val radioPlayer: RadioPlayer by inject()
 
-    //private val audioPlayer = AudioPlayer()
-
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action == Constants.ACTION.STARTFOREGROUND_ACTION) {
             Log.i(TAG, "Received Start Foreground Intent ")
@@ -68,88 +66,6 @@ class MediaPlayerService : Service() {
         throw UnsupportedOperationException("Not yet implemented")
     }
 
-/*
-    internal inner class AudioPlayer : IControls {
-        private var exoPlayer: ExoPlayer? = null
-
-        private val eventListener = object : ExoPlayer.EventListener {
-            override fun onTimelineChanged(timeline: Timeline, manifest: Any) {}
-
-            override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {}
-
-            override fun onLoadingChanged(isLoading: Boolean) {
-                Log.i(TAG, "onLoadingChanged")
-            }
-
-            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                Log.i(TAG, "onPlayerStateChanged: playWhenReady = " + playWhenReady.toString()
-                        + " playbackState = " + playbackState)
-                when (playbackState) {
-                    ExoPlayer.STATE_ENDED -> {
-                        Log.i(TAG, "Playback ended!")
-                        //Stop playback and return to start position
-                        setPlayPause(false)
-                        exoPlayer!!.seekTo(0)
-                    }
-                    ExoPlayer.STATE_READY -> radioPlayer.stopRadioNoize()
-                    ExoPlayer.STATE_BUFFERING -> Log.i(TAG, "Playback buffering!")
-                    ExoPlayer.STATE_IDLE -> Log.i(TAG, "ExoPlayer idle!")
-                }//Log.i(TAG,"ExoPlayer ready! pos: "+exoPlayer.getCurrentPosition()
-                //        +" max: "+stringForTime((int)exoPlayer.getDuration()));
-            }
-
-            override fun onPlayerError(error: ExoPlaybackException) {
-                Log.i(TAG, "onPlaybackError: " + error.message)
-            }
-
-            override fun onPositionDiscontinuity() {
-                Log.i(TAG, "onPositionDiscontinuity")
-            }
-        }
-        //private val mpNoize: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.radionoise)
-
-        override fun pause() {
-            setPlayPause(false)
-        }
-
-        override fun tuneIn() {
-            // Play tuneIn noice sound
-            //mpNoize!!.isLooping = true
-            //radioPlayer.startRadioNoize()
-
-            // ExoPlayer
-            prepareExoPlayerFromURL(Uri.parse(getString(R.string.classic_radiostream_path)))
-            setPlayPause(true)
-            MyApp.tunedIn = true
-        }
-
-        override fun UpdatePlaylist() {
-
-        }
-
-        private fun setPlayPause(play: Boolean) {
-            exoPlayer!!.playWhenReady = play
-            MyApp.setIsPlaying(play)
-        }
-
-        private fun prepareExoPlayerFromURL(uri: Uri) {
-
-            val trackSelector = DefaultTrackSelector()
-
-            val loadControl = DefaultLoadControl()
-
-            exoPlayer = ExoPlayerFactory.newSimpleInstance(this@MediaPlayerService, trackSelector, loadControl)
-
-            val dataSourceFactory = DefaultDataSourceFactory(this@MediaPlayerService, Util.getUserAgent(this@MediaPlayerService, "exoplayer2example"), null)
-            val extractorsFactory = DefaultExtractorsFactory()
-            val audioSource = ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null)
-            exoPlayer!!.addListener(eventListener)
-
-            exoPlayer!!.prepare(audioSource)
-        }
-
-    }
-*/
     companion object {
         private val TAG = "MediaPlayerService"
         var IS_SERVICE_RUNNING = false

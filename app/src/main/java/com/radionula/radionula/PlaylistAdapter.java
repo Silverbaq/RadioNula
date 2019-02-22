@@ -2,7 +2,6 @@ package com.radionula.radionula;
 
 import android.app.Activity;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.View;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.radionula.radionula.data.db.NulaDatabase;
 import com.radionula.radionula.model.NulaTrack;
 
 
@@ -32,12 +32,13 @@ public class PlaylistAdapter extends BaseAdapter {
     List<NulaTrack> tracks;
     Activity activity;
     AdapterType adapterType;
-
+    NulaDatabase nulaDatabase;
 
     public PlaylistAdapter(Activity activity, List<NulaTrack> playlist, AdapterType type) {
         this.tracks = playlist;
         this.activity = activity;
         this.adapterType = type;
+        nulaDatabase = new NulaDatabase(activity);
     }
 
 
@@ -94,8 +95,7 @@ public class PlaylistAdapter extends BaseAdapter {
 
         holder.artist.setText(item.getArtist());
         holder.title.setText(item.getTitel());
-        //MyApp.Companion.getAquery().id(holder.image).image(item.getImage(), true, true, 0, 0, null, AQuery.FADE_IN);
-        //MyApp.getImageLoader().displayImage(item.getImage(), holder.image);
+
         Glide.with(activity).load(item.getImage()).into(holder.image);
 
         Typeface artistFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Regular.ttf");
@@ -126,7 +126,7 @@ public class PlaylistAdapter extends BaseAdapter {
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                MyApp.Companion.addToFavorites(item);
+                                nulaDatabase.insertTrack(item);
                                 holder.container.removeAllViews();
                                 Toast.makeText(activity, "Added " +  item.getTitel() + " to favorites", Toast.LENGTH_LONG).show();
                             }
@@ -161,7 +161,7 @@ public class PlaylistAdapter extends BaseAdapter {
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                MyApp.Companion.RemoveFavorit(item);
+                                //MyApp.Companion.RemoveFavorit(item);
 
                                 holder.container.removeAllViews();
                                 tracks.remove(item);
