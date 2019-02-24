@@ -1,5 +1,6 @@
 package com.radionula.services
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
@@ -13,6 +14,14 @@ import com.radionula.radionula.R
 import com.radionula.radionula.model.Constants
 import com.radionula.services.mediaplayer.RadioPlayer
 import org.koin.android.ext.android.inject
+import android.app.NotificationManager
+import android.content.Context.NOTIFICATION_SERVICE
+import android.app.NotificationChannel
+import android.content.Context
+import android.graphics.Color
+import android.os.Build
+import androidx.annotation.RequiresApi
+
 
 class MediaPlayerService : Service() {
     private val radioPlayer: RadioPlayer by inject()
@@ -35,7 +44,6 @@ class MediaPlayerService : Service() {
             radioPlayer.tuneIn(intent.getStringExtra("radioUrl"))
         }
 
-
         return Service.START_STICKY
     }
 
@@ -47,7 +55,17 @@ class MediaPlayerService : Service() {
         val icon = BitmapFactory.decodeResource(resources,
                 R.drawable.ico_favorite)
 
-        val notification = NotificationCompat.Builder(this, "my_channel")
+        val channelId =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    createNotificationChannel("my_service", "My Background Service")
+                } else {
+                    // If earlier version channel ID is not used
+                    // https://developer.android.com/reference/android/support/v4/app/NotificationCompat.Builder.html#NotificationCompat.Builder(android.content.Context)
+                    ""
+                }
+
+
+        val notification = NotificationCompat.Builder(this, channelId)
                 .setContentTitle("Radio Nula")
                 .setTicker("Radio Nula")
                 //.setContentText("My song")
@@ -59,6 +77,17 @@ class MediaPlayerService : Service() {
         startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
                 notification)
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(channelId: String, channelName: String): String{
+        val chan = NotificationChannel(channelId,
+                channelName, NotificationManager.IMPORTANCE_NONE)
+        chan.lightColor = Color.BLUE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        service.createNotificationChannel(chan)
+        return channelId
     }
 
     override fun onBind(intent: Intent): IBinder? {

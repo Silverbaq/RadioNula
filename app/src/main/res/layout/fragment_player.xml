@@ -52,10 +52,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
-                android:layout_marginLeft="30dp"
-                android:layout_marginRight="20dp"
                 android:scaleType="fitStart"
-                android:src="@drawable/nula_logo_ch1" />
+                android:src="@drawable/nula_channel1" />
 
 
         </RelativeLayout>
@@ -117,7 +115,7 @@
             android:id="@+id/fragment_controls_ivSkip"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/play_button_1"
+            android:src="@drawable/skip_channel1"
             android:visibility="invisible" />
 
         <LinearLayout
@@ -129,7 +127,7 @@
             android:layout_width="130dp"
             android:layout_height="wrap_content"
             android:visibility="invisible"
-            android:src="@drawable/pause_button" />
+            android:src="@drawable/pause_channel1" />
 
     </LinearLayout>
 
@@ -143,7 +141,7 @@
             android:id="@+id/fragment_controls_ivTuneIn"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/tunein_button"/>
+            android:src="@drawable/tune_in"/>
     </LinearLayout>
 
 

@@ -120,16 +120,19 @@ class PlayerFragment : Fragment() {
     fun setChannelLogo(channel: ChannelPresenter.Channel) {
         when (channel) {
             ChannelPresenter.Channel.Classic -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch1)
-                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_1)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel1)
+                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel1)
+                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel1)
             }
             ChannelPresenter.Channel.Ch2 -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch2)
-                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_2)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel2)
+                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel2)
+                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel2)
             }
             ChannelPresenter.Channel.Smoky -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_logo_ch3)
-                fragment_controls_ivSkip.setImageResource(R.drawable.play_button_1)
+                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel3)
+                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel3)
+                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel3)
             }
         }
     }
