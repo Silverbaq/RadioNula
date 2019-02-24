@@ -15,13 +15,14 @@ import com.radionula.radionula.favorits.FavoritsFragment
 import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.radio.PlayerFragment
+import com.radionula.radionula.util.PhoneStateLiveData
 import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : BaseActivity(){
+class MainActivity : BaseActivity() {
 
     // Fragments
     val playerFragment: PlayerFragment = PlayerFragment()
@@ -45,14 +46,14 @@ class MainActivity : BaseActivity(){
 
         //
         // Call State
-        val TelephonyMgr = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        TelephonyMgr.listen(TeleListener(),
-                PhoneStateListener.LISTEN_CALL_STATE)
+        PhoneStateLiveData(
+                getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        ).observe(this, Observer { idle -> if (!idle) pause() })
 
         //
         // Network state
         connectionView.connectionData.observe(this, Observer { connection ->
-            if (!connection){
+            if (!connection) {
                 replaceFragment(NoConnectionFragment())
             } else {
                 replaceFragment(playerFragment)
@@ -154,26 +155,6 @@ class MainActivity : BaseActivity(){
         intent.addCategory(Intent.CATEGORY_HOME)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
-    }
-
-
-    //
-    // Detects the call state of the phone. Will pause music if phone rings.
-    internal inner class TeleListener : PhoneStateListener() {
-        override fun onCallStateChanged(state: Int, incomingNumber: String) {
-            super.onCallStateChanged(state, incomingNumber)
-            when (state) {
-                TelephonyManager.CALL_STATE_IDLE -> {
-                }
-                TelephonyManager.CALL_STATE_OFFHOOK -> {
-                }
-                TelephonyManager.CALL_STATE_RINGING ->
-                    // Pauses music
-                    pause()
-                else -> {
-                }
-            }// TODO: Needs to restart music after a phone call. (If it was playing).
-        }
     }
 
     companion object {
