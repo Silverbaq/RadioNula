@@ -29,7 +29,7 @@ class MediaplayerPresenter(private val context: Context) {
     }
 
     fun pauseRadio() {
-        mediaPlayerServiceIntent.setAction(Constants.ACTION.STOPFOREGROUND_ACTION)
+        mediaPlayerServiceIntent.action = Constants.ACTION.STOPFOREGROUND_ACTION
         context.startService(mediaPlayerServiceIntent)
         isPlaying = false
     }

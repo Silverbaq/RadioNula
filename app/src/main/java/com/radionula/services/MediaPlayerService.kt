@@ -15,7 +15,6 @@ import com.radionula.radionula.model.Constants
 import com.radionula.services.mediaplayer.RadioPlayer
 import org.koin.android.ext.android.inject
 import android.app.NotificationManager
-import android.content.Context.NOTIFICATION_SERVICE
 import android.app.NotificationChannel
 import android.content.Context
 import android.graphics.Color

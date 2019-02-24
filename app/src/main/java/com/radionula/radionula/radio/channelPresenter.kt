@@ -10,7 +10,7 @@ class ChannelPresenter {
         Smoky
     }
     var currentChannel: Channel
-    val channelData =  MutableLiveData<Channel>()
+    private val channelData =  MutableLiveData<Channel>()
     fun observeChannel(): LiveData<Channel> = channelData
 
     init {

@@ -93,7 +93,6 @@ class PlayerFragment : Fragment() {
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
-            radioViewModel.skip()
             (activity as MainActivity).tuneIn()
         }
         fragment_controls_ivPause.setOnClickListener {
@@ -109,8 +108,6 @@ class PlayerFragment : Fragment() {
     }
 
     private fun tuneIn() {
-
-
         GlobalScope.async {
             radioViewModel.fetchPlaylist()
         }

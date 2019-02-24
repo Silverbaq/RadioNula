@@ -42,10 +42,6 @@ class RadioModelView(
         playingData.value = true
     }
 
-    fun skip(){
-        playingData.value = true
-    }
-
     suspend fun nextChannel() {
         if (playingData.value == true) {
             channelPresenter.nextChannel()
@@ -53,10 +49,12 @@ class RadioModelView(
             playlistReposetory.fetchCurrentPlaylist()
             channelData.postValue(channelPresenter.currentChannel)
         }
+        playingData.postValue(true)
     }
 
     fun pauseRadio() {
         pauseData.value = Unit
+        pauseData.value = null
         playingData.value = false
     }
 
