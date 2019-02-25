@@ -51,22 +51,24 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
 
                 val ivFavorit = rlFavorit.findViewById<View>(R.id.ivRemoveFavorit) as ImageView
                 val ivSearch = rlFavorit.findViewById<View>(R.id.ivSearchFavorit) as ImageView
+                val item = myDataset[position]
 
                 // Click on favorite icon
                 ivFavorit.setOnClickListener {
-                    nulaDatabase.remoteTrack(myDataset[position])
+                    nulaDatabase.remoteTrack(item)
 
                     holder.container.removeAllViews()
-                    myDataset.remove(myDataset[position])
+
+                    myDataset.remove(item)
                     notifyDataSetChanged()
 
-                    Toast.makeText(context, "Removed " + myDataset[position].artist, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Removed " + item.artist, Toast.LENGTH_SHORT).show()
                 }
 
                 // Click on search icon
                 ivSearch.setOnClickListener {
                     val intent = Intent(Intent.ACTION_WEB_SEARCH)
-                    val keyword = myDataset[position].artist + " " + myDataset[position].titel
+                    val keyword = item.artist + " " + item.titel
                     intent.putExtra(SearchManager.QUERY, keyword)
                     context.startActivity(intent)
                 }
