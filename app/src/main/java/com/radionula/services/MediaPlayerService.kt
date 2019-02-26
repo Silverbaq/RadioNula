@@ -43,7 +43,8 @@ class MediaPlayerService : Service() {
             radioPlayer.tuneIn(intent.getStringExtra("radioUrl"))
         }
 
-        return Service.START_STICKY
+        return Service.START_REDELIVER_INTENT
+        //return Service.START_NOT_STICKY
     }
 
     private fun showNotification() {
