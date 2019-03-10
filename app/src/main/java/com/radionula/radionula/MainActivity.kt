@@ -9,6 +9,9 @@ import android.telephony.TelephonyManager
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.comments.CommentsFragment
 import com.radionula.radionula.favorits.FavoritsFragment
@@ -35,6 +38,8 @@ class MainActivity : BaseActivity() {
     private val mediaplayerPresenter: MediaplayerPresenter by inject()
     private var mWakeLock: PowerManager.WakeLock? = null
 
+    private lateinit var host: NavHostFragment
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -43,6 +48,11 @@ class MainActivity : BaseActivity() {
         nav_Button.setOnClickListener { drawer_layout.openDrawer(GravityCompat.START) }
 
         setupDrawerContent(nvView)
+
+        host = NavHostFragment.create(R.navigation.nula_navigation)
+        supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
+                .setPrimaryNavigationFragment(host).commit()
+
 
         //
         // Call State
@@ -81,18 +91,17 @@ class MainActivity : BaseActivity() {
         // position
         when (menuItem.itemId) {
             R.id.nav_Radio_Player -> {
-                replaceFragment(playerFragment)
-
+                host.navController.navigateUp()
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Favorites -> {
-                replaceFragment(favoritsFragment)
-
+                host.navController.navigateUp()
+                host.navController.navigate(R.id.action_radioFragment_to_favoritesFragment, null)
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Comments -> {
-                replaceFragment(commentsFragment)
-
+                host.navController.navigateUp()
+                host.navController.navigate(R.id.action_radioFragment_to_commentsFragment, null)
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             else -> {
@@ -144,17 +153,6 @@ class MainActivity : BaseActivity() {
     fun tuneIn() {
         mediaplayerPresenter.tuneIn()
         playerFragment.StartVinyl()
-    }
-
-    /**
-     * Back button listener.
-     * Will close the application if the back button pressed twice.
-     */
-    override fun onBackPressed() {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_HOME)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
     }
 
     companion object {

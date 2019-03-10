@@ -16,18 +16,27 @@
             layout="@layout/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
+<!--
         <FrameLayout xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/activityMain_flFragments"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/brown"
             tools:context="com.radionula.radionula.MainActivity">
-
         </FrameLayout>
+-->
+
+        <fragment
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:navGraph="@navigation/nula_navigation"
+            app:defaultNavHost="true" />
+
     </LinearLayout>
 
-    <!-- The navigation drawer that comes from the left -->
+    <!-- The nula_navigation drawer that comes from the left -->
     <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nvView"

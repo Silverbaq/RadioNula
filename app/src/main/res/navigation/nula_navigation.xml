@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_nav_thingy"
+    app:startDestination="@id/radioFragment">
+
+    <fragment
+        android:id="@+id/radioFragment"
+        android:name="com.radionula.radionula.radio.PlayerFragment"
+        android:label="fragment_radio"
+        tools:layout="@layout/fragment_player">
+        <action
+            android:id="@+id/action_radioFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
+        <action
+            android:id="@+id/action_radioFragment_to_commentsFragment"
+            app:destination="@id/commentsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.radionula.radionula.favorits.FavoritsFragment"
+        android:label="fragment_favorites"
+        tools:layout="@layout/fragment_favorits">
+    </fragment>
+    <fragment
+        android:id="@+id/commentsFragment"
+        android:name="com.radionula.radionula.comments.CommentsFragment"
+        android:label="fragment_comments"
+        tools:layout="@layout/fragment_comments" />
+
+</navigation>

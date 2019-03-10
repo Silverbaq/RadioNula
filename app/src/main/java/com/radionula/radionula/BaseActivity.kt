@@ -24,7 +24,7 @@ open class BaseActivity: AppCompatActivity() {
 
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.activityMain_flFragments, fragment)
+        //transaction.replace(R.id.activityMain_flFragments, fragment)
 
         // Commit the transaction
         transaction.commit()
