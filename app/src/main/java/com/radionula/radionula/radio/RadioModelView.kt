@@ -5,10 +5,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.radionula.radionula.data.PlaylistRepository
 import com.radionula.radionula.data.db.entity.CurrentSong
+import com.radionula.services.mediaplayer.MediaplayerPresenter
 
 class RadioModelView(
         private val playlistReposetory: PlaylistRepository,
-        private val channelPresenter: ChannelPresenter
+        private val channelPresenter: ChannelPresenter,
+        private val mediaplayerPresenter: MediaplayerPresenter
 ) : ViewModel() {
     private val playingData = MutableLiveData<Boolean>()
 
@@ -23,7 +25,6 @@ class RadioModelView(
     fun observePause(): LiveData<Unit> = pauseData
     fun observeCurrentChannel(): LiveData<ChannelPresenter.Channel> = channelData
 
-
     suspend fun fetchPlaylist() {
         playlistReposetory.fetchCurrentPlaylist()
     }
@@ -34,8 +35,8 @@ class RadioModelView(
 
     fun tuneIn() {
         tuneInData.value = Unit
-        tuneInData.value = null
         playingData.value = true
+        mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
     }
 
     suspend fun nextChannel() {
@@ -46,12 +47,14 @@ class RadioModelView(
             channelData.postValue(channelPresenter.currentChannel)
         }
         playingData.postValue(true)
+        mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
     }
 
     fun pauseRadio() {
         pauseData.value = Unit
         pauseData.value = null
         playingData.value = false
+        mediaplayerPresenter.pauseRadio()
     }
 
 }

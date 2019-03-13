@@ -8,6 +8,7 @@ import com.radionula.radionula.data.network.ConnectivityInterceptor
 import com.radionula.radionula.data.network.ConnectivityInterceptorImpl
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
 import com.radionula.radionula.data.network.PlaylistNetworkDataSourceImpl
+import com.radionula.services.mediaplayer.MediaplayerPresenter
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.ext.koin.viewModel
 import org.koin.dsl.module.module
@@ -20,5 +21,5 @@ val playlistModule = module {
     single<PlaylistApiService> { PlaylistApiService(get()) }
     single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get()) }
     single<PlaylistRepository> { PlaylistRepositoryImpl(get()) }
-    viewModel { RadioModelView(get(), get()) }
+    viewModel { RadioModelView(get(), get(), get()) }
 }

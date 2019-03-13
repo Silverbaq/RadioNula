@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 class ChannelPresenter {
-    enum class Channel {
-        Classic,
-        Ch2,
-        Smoky
+    enum class Channel(val url: String) {
+        Classic("http://streaming.radionula.com:8800/classics"),
+        Ch2("http://streaming.radionula.com:8800/channel2"),
+        Smoky("http://streaming.radionula.com:8800/lounge")
     }
     var currentChannel: Channel
     private val channelData =  MutableLiveData<Channel>()

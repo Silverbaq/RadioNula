@@ -45,8 +45,6 @@ class PlayerFragment : Fragment() {
     private lateinit var adapter: PlaylistAdapter
 
     val radioViewModel: RadioModelView by viewModel()
-    private val mediaplayerPresenter: MediaplayerPresenter by inject()
-
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_player, container, false)
@@ -81,14 +79,12 @@ class PlayerFragment : Fragment() {
         radioViewModel.observePlaying().observe(this, Observer { isPlaying ->
             if (isPlaying) {
                 StartVinyl()
-                mediaplayerPresenter.tuneIn()
             }
         })
         radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
         radioViewModel.observePause().observe(this, Observer {
             if (it != null) {
                 StopVinyl()
-                mediaplayerPresenter.pauseRadio()
             }
         })
         radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
@@ -104,7 +100,6 @@ class PlayerFragment : Fragment() {
         }
         fragment_controls_ivPause.setOnClickListener {
             radioViewModel.pauseRadio()
-            mediaplayerPresenter.pauseRadio()
         }
         fragment_controls_ivTuneIn.setOnClickListener {
             radioViewModel.tuneIn()
@@ -118,7 +113,6 @@ class PlayerFragment : Fragment() {
         GlobalScope.async {
             radioViewModel.fetchPlaylist()
         }
-        mediaplayerPresenter.tuneIn()
     }
 
     fun setChannelLogo(channel: ChannelPresenter.Channel) {

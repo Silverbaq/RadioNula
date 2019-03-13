@@ -20,8 +20,6 @@ class MainActivity : BaseActivity() {
 
     val connectionView: ConnectionViewModel by viewModel()
 
-    // Mediaplayer
-
     private var mWakeLock: PowerManager.WakeLock? = null
 
     private lateinit var host: NavHostFragment
@@ -40,19 +38,20 @@ class MainActivity : BaseActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
                 .setPrimaryNavigationFragment(host).commit()
 
-        //
+        // TODO: Make player stop playing when phone rings. Properly move this to the radio fragment
         // Call State
         PhoneStateLiveData(
                 getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         ).observe(this, Observer { idle -> if (!idle) pause() })
 
-        //
         // Network state
         connectionView.connectionData.observe(this, Observer { connection ->
             if (!connection) {
-                replaceFragment(NoConnectionFragment())
+                supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, NoConnectionFragment())
+                        .commit()
             } else {
-                //replaceFragment(playerFragment)
+                supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
+                        .setPrimaryNavigationFragment(host).commit()
             }
         })
 
@@ -71,8 +70,6 @@ class MainActivity : BaseActivity() {
     }
 
     fun selectDrawerItem(menuItem: MenuItem) {
-        transaction = supportFragmentManager.beginTransaction()
-
         // Create a new fragment and specify the planet to show based on
         // position
         when (menuItem.itemId) {
@@ -97,15 +94,9 @@ class MainActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-
-        //networkStateReceiver?.removeListener(this)
-
         // Makes sure the music keeps playing after the screen is off.
         try {
             mWakeLock!!.acquire()
-            //if (mediaplayerPresenter.isPlaying()) {
-                //playerFragment.StartVinyl()
-            //}
         } catch (ex: Exception) {
 
         }

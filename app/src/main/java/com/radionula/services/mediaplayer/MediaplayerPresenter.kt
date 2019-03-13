@@ -7,21 +7,15 @@ import com.radionula.services.MediaPlayerService
 
 class MediaplayerPresenter(private val context: Context) {
     var mediaPlayerServiceIntent: Intent = Intent(context, MediaPlayerService::class.java)
-    private var currentChannel = CHANNEL1
     private var isPlaying = false
 
-    fun tuneIn() {
+    fun tuneIn(channelUrl: String) {
         if (isPlaying) {
-            when (currentChannel) {
-                CHANNEL1 -> currentChannel = CHANNEL2
-                CHANNEL2 -> currentChannel = CHANNEL3
-                CHANNEL3 -> currentChannel = CHANNEL1
-            }
             mediaPlayerServiceIntent.action = Constants.ACTION.NEXT_ACTION
-            mediaPlayerServiceIntent.putExtra("radioUrl", currentChannel)
+            mediaPlayerServiceIntent.putExtra("radioUrl", channelUrl)
         } else {
             mediaPlayerServiceIntent.action = Constants.ACTION.STARTFOREGROUND_ACTION
-            mediaPlayerServiceIntent.putExtra("radioUrl", currentChannel)
+            mediaPlayerServiceIntent.putExtra("radioUrl", channelUrl)
         }
 
         context.startService(mediaPlayerServiceIntent)
@@ -35,10 +29,4 @@ class MediaplayerPresenter(private val context: Context) {
     }
 
     fun isPlaying(): Boolean = isPlaying
-
-    companion object {
-        const val CHANNEL1 = "http://streaming.radionula.com:8800/classics"
-        const val CHANNEL2 = "http://streaming.radionula.com:8800/channel2"
-        const val CHANNEL3 = "http://streaming.radionula.com:8800/lounge"
-    }
 }
