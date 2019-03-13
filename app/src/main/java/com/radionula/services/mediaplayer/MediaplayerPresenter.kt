@@ -36,10 +36,6 @@ class MediaplayerPresenter(private val context: Context) {
 
     fun isPlaying(): Boolean = isPlaying
 
-    private fun changeChannel(channel: String){
-
-    }
-
     companion object {
         const val CHANNEL1 = "http://streaming.radionula.com:8800/classics"
         const val CHANNEL2 = "http://streaming.radionula.com:8800/channel2"

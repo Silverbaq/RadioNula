@@ -20,8 +20,10 @@ import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
+import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 import java.net.MalformedURLException
@@ -43,6 +45,7 @@ class PlayerFragment : Fragment() {
     private lateinit var adapter: PlaylistAdapter
 
     val radioViewModel: RadioModelView by viewModel()
+    private val mediaplayerPresenter: MediaplayerPresenter by inject()
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -75,13 +78,18 @@ class PlayerFragment : Fragment() {
             if (it != null)
                 tuneIn()
         })
-        radioViewModel.observePlaying().observe(this, Observer {
-            StartVinyl()
+        radioViewModel.observePlaying().observe(this, Observer { isPlaying ->
+            if (isPlaying) {
+                StartVinyl()
+                mediaplayerPresenter.tuneIn()
+            }
         })
         radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
         radioViewModel.observePause().observe(this, Observer {
-            if (it != null)
+            if (it != null) {
                 StopVinyl()
+                mediaplayerPresenter.pauseRadio()
+            }
         })
         radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
@@ -93,11 +101,10 @@ class PlayerFragment : Fragment() {
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
-            (activity as MainActivity).tuneIn()
         }
         fragment_controls_ivPause.setOnClickListener {
             radioViewModel.pauseRadio()
-            (activity as MainActivity).pause()
+            mediaplayerPresenter.pauseRadio()
         }
         fragment_controls_ivTuneIn.setOnClickListener {
             radioViewModel.tuneIn()
@@ -111,7 +118,7 @@ class PlayerFragment : Fragment() {
         GlobalScope.async {
             radioViewModel.fetchPlaylist()
         }
-        (activity as MainActivity).tuneIn()
+        mediaplayerPresenter.tuneIn()
     }
 
     fun setChannelLogo(channel: ChannelPresenter.Channel) {

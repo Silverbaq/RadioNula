@@ -1,41 +1,27 @@
 package com.radionula.radionula
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.PowerManager
-import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.google.android.material.navigation.NavigationView
-import com.radionula.radionula.comments.CommentsFragment
-import com.radionula.radionula.favorits.FavoritsFragment
-import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.radionula.networkavaliable.ConnectionViewModel
-import com.radionula.radionula.radio.PlayerFragment
+import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.radionula.util.PhoneStateLiveData
-import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
 
-    // Fragments
-    val playerFragment: PlayerFragment = PlayerFragment()
-    val favoritsFragment: FavoritsFragment = FavoritsFragment()
-    val commentsFragment: CommentsFragment = CommentsFragment()
-
     val connectionView: ConnectionViewModel by viewModel()
 
     // Mediaplayer
-    private val mediaplayerPresenter: MediaplayerPresenter by inject()
+
     private var mWakeLock: PowerManager.WakeLock? = null
 
     private lateinit var host: NavHostFragment
@@ -49,10 +35,10 @@ class MainActivity : BaseActivity() {
 
         setupDrawerContent(nvView)
 
+        // Navigation component
         host = NavHostFragment.create(R.navigation.nula_navigation)
         supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
                 .setPrimaryNavigationFragment(host).commit()
-
 
         //
         // Call State
@@ -66,7 +52,7 @@ class MainActivity : BaseActivity() {
             if (!connection) {
                 replaceFragment(NoConnectionFragment())
             } else {
-                replaceFragment(playerFragment)
+                //replaceFragment(playerFragment)
             }
         })
 
@@ -117,20 +103,14 @@ class MainActivity : BaseActivity() {
         // Makes sure the music keeps playing after the screen is off.
         try {
             mWakeLock!!.acquire()
-            if (mediaplayerPresenter.isPlaying())
-                playerFragment.StartVinyl()
+            //if (mediaplayerPresenter.isPlaying()) {
+                //playerFragment.StartVinyl()
+            //}
         } catch (ex: Exception) {
 
         }
 
     }
-
-    //
-    // Make sure this is the method with just `Bundle` as the signature
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-    }
-
 
     override fun onResume() {
         super.onResume()
@@ -146,13 +126,8 @@ class MainActivity : BaseActivity() {
     }
 
     fun pause() {
-        playerFragment.StopVinyl()
-        mediaplayerPresenter.pauseRadio()
-    }
-
-    fun tuneIn() {
-        mediaplayerPresenter.tuneIn()
-        playerFragment.StartVinyl()
+        //playerFragment.StopVinyl()
+        //mediaplayerPresenter.pauseRadio()
     }
 
     companion object {
