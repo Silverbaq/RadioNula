@@ -10,20 +10,14 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import com.bumptech.glide.Glide
-import com.radionula.radionula.MainActivity
-import com.radionula.radionula.MyApp
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
-import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
-import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 import java.net.MalformedURLException
@@ -37,8 +31,19 @@ class PlayerFragment : Fragment() {
 
     //
     // Top of player
-    private lateinit var anim: RotateAnimation
-    private lateinit var anim2: RotateAnimation
+    // Image spin animation
+    private val anim: RotateAnimation = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
+        interpolator = LinearInterpolator()
+        repeatCount = Animation.INFINITE
+        repeatMode = Animation.REVERSE
+        duration = 50
+    }
+    // Rotate animation
+    private val anim2: RotateAnimation = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
+        interpolator = LinearInterpolator()
+        repeatCount = Animation.INFINITE
+        duration = 4000
+    }
 
     //
     // Playlist of player
@@ -47,22 +52,7 @@ class PlayerFragment : Fragment() {
     val radioViewModel: RadioModelView by viewModel()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_player, container, false)
-
-        // Image spin animation
-        anim = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
-        anim.interpolator = LinearInterpolator()
-        anim.repeatCount = Animation.INFINITE
-        anim.repeatMode = Animation.REVERSE
-        anim.duration = 50
-
-        // Rotate animation
-        anim2 = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
-        anim2.interpolator = LinearInterpolator()
-        anim2.repeatCount = Animation.INFINITE
-        anim2.duration = 4000
-
-        return view
+        return inflater.inflate(R.layout.fragment_player, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -201,8 +191,6 @@ class PlayerFragment : Fragment() {
 
                 fragment_playlist_llPlaylist.addView(view)
             }
-
-            val layout = LinearLayout(context)
             val item = adapter.getView(i, null, null)
 
             fragment_playlist_llPlaylist.addView(item)
