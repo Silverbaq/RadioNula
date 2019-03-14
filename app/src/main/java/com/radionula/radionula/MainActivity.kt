@@ -38,16 +38,11 @@ class MainActivity : BaseActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
                 .setPrimaryNavigationFragment(host).commit()
 
-        // TODO: Make player stop playing when phone rings. Properly move this to the radio fragment
-        // Call State
-        PhoneStateLiveData(
-                getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        ).observe(this, Observer { idle -> if (!idle) pause() })
-
         // Network state
         connectionView.connectionData.observe(this, Observer { connection ->
             if (!connection) {
-                supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, NoConnectionFragment())
+                supportFragmentManager.beginTransaction()
+                        .replace(R.id.nav_host_fragment, NoConnectionFragment())
                         .commit()
             } else {
                 supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
@@ -105,20 +100,12 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        // If screen is backon while music is playing, release the lock
-        if (MyApp.isPlaying)
             try {
                 mWakeLock!!.release()
 
             } catch (ex: Exception) {
 
             }
-    }
-
-    fun pause() {
-        //playerFragment.StopVinyl()
-        //mediaplayerPresenter.pauseRadio()
     }
 
     companion object {

@@ -23,9 +23,4 @@ class MyApp : Application() {
 
         startKoin(this, listOf(playlistModule, radioPlayerModule, connectionModule, databaseModule))
     }
-
-    companion object {
-        var isPlaying: Boolean = false
-        var reconnect = false
-    }
 }

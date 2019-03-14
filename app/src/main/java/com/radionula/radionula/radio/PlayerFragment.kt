@@ -1,9 +1,11 @@
 package com.radionula.radionula.radio
 
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Typeface
 import android.os.Bundle
+import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +18,7 @@ import androidx.lifecycle.Observer
 import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
+import com.radionula.radionula.util.PhoneStateLiveData
 import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -97,6 +100,12 @@ class PlayerFragment : Fragment() {
                 radioViewModel.autoFetchPlaylist()
             }
         }
+
+        // TODO: Make sure if this is needed
+        // Call State
+        //PhoneStateLiveData(
+        //        requireContext().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        //).observe(this, Observer { idle -> if (!idle) radioViewModel.pauseRadio() })
     }
 
     private fun tuneIn() {
