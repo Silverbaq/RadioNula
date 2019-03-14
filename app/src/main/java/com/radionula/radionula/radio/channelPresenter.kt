@@ -9,7 +9,7 @@ class ChannelPresenter {
         Ch2("http://streaming.radionula.com:8800/channel2"),
         Smoky("http://streaming.radionula.com:8800/lounge")
     }
-    var currentChannel: Channel
+    var currentChannel: Channel = Channel.Classic
     private val channelData =  MutableLiveData<Channel>()
     fun observeChannel(): LiveData<Channel> = channelData
 
