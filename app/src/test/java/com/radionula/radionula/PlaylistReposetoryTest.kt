@@ -22,7 +22,7 @@ class PlaylistReposetoryTest {
 
     @Before
     fun before(){
-        playlistRepository = PlaylistRepositoryImpl(playlistNetworkDataSource)
+        // TODO: Setup
     }
 
 
