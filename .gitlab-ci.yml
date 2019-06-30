@@ -13,6 +13,7 @@ stages:
   - build
   - test
   - release
+  - deploy
 
 lintDebug:
   stage: build
@@ -42,3 +43,20 @@ assembleRelease:
     paths:
       - app/build/outputs/apk/release
       - CHANGELOG
+
+deployRelease:
+  image: python:3.5.2
+  stage: deploy
+  script:
+    - pip install requests
+    - git clone https://github.com/mega-arbuz/apk-release-deploy.git
+    - python apk-release-deploy/deploy.py
+      --release.dir=app/build/outputs/apk/release
+      --app.name=BestAppEver
+      --dropbox.token=$DROPBOX_TOKEN
+      --dropbox.folder=release
+      --changelog.file=CHANGELOG
+      --template.file=TEMPLATE
+      --zapier.hook=$ZAPIER_EMAIL_HOOK
+      --email.to=$EMAIL_TARGET
+  cache: {}
