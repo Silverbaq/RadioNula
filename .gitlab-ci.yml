@@ -13,7 +13,6 @@ stages:
   - build
   - test
   - release
-  - deploy
 
 lintDebug:
   stage: build
