@@ -41,7 +41,7 @@ interface PlaylistApiService {
 
             return Retrofit.Builder()
                     .client(okHttpClient)
-                    .baseUrl("http://socket.radionula.com/")
+                    .baseUrl("https://api.radionula.com/")
                     .addCallAdapterFactory(CoroutineCallAdapterFactory())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
