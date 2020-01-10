@@ -24,6 +24,7 @@ class RadioModelView(
     fun observePlaying(): LiveData<Boolean> = playingData
     fun observePause(): LiveData<Unit> = pauseData
     fun observeCurrentChannel(): LiveData<ChannelPresenter.Channel> = channelData
+    fun observeGetsNoizy(): LiveData<Unit> = mediaplayerPresenter.getsNoizy
 
     suspend fun fetchPlaylist() {
         playlistReposetory.fetchCurrentPlaylist()

@@ -87,6 +87,9 @@ class PlayerFragment : Fragment() {
         radioViewModel.observeCurrentChannel().observe(this, Observer { channel ->
             setChannelLogo(channel)
         })
+        radioViewModel.observeGetsNoizy().observe(this, Observer {
+            it?.let { radioViewModel.pauseRadio() }
+        })
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }

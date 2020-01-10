@@ -12,8 +12,10 @@ import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.radionula.util.PhoneStateLiveData
+import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
@@ -106,6 +108,12 @@ class MainActivity : BaseActivity() {
             } catch (ex: Exception) {
 
             }
+    }
+
+    override fun onDestroy() {
+        val playerPresenter: MediaplayerPresenter by inject()
+        playerPresenter.pauseRadio()
+        super.onDestroy()
     }
 
     companion object {

@@ -41,7 +41,6 @@ public class PlaylistAdapter extends BaseAdapter {
         nulaDatabase = new NulaDatabase(activity);
     }
 
-
     @Override
     public int getCount() {
         return tracks.size();
@@ -71,7 +70,6 @@ public class PlaylistAdapter extends BaseAdapter {
             tracks.notifyAll();
         }
     }
-
 
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
@@ -161,8 +159,6 @@ public class PlaylistAdapter extends BaseAdapter {
                         ivFavorit.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                //MyApp.Companion.RemoveFavorit(item);
-
                                 holder.container.removeAllViews();
                                 tracks.remove(item);
                                 notifyDataSetChanged();
@@ -190,11 +186,8 @@ public class PlaylistAdapter extends BaseAdapter {
                 }
             }
         });
-
-
         return convertView;
     }
-
 
     void resetAdapter(){
         List<NulaTrack> tmpList = new ArrayList<>();
@@ -203,5 +196,4 @@ public class PlaylistAdapter extends BaseAdapter {
         tracks.addAll(tmpList);
         notifyDataSetChanged();
     }
-
 }
