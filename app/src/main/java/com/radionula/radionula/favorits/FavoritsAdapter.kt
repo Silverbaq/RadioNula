@@ -9,8 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.radionula.radionula.MyApp
+import coil.load
 import com.radionula.radionula.R
 import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.model.NulaTrack
@@ -41,7 +40,8 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
         holder.artist.text = myDataset[position].artist
         holder.title.text = myDataset[position].titel
 
-        Glide.with(context).load(myDataset[position].image).into(holder.cover)
+        //Glide.with(context).load(myDataset[position].image).into(holder.cover)
+        holder.cover.load(myDataset[position].image)
 
         holder.container.setOnClickListener(View.OnClickListener {
 

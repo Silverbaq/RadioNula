@@ -17,5 +17,5 @@ val playlistModule = module {
     single { PlaylistApiService(get()) }
     single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get()) }
     single<PlaylistRepository> { PlaylistRepositoryImpl(get()) }
-    viewModel { RadioModelView(get(), get(), get()) }
+    viewModel { RadioModelView(get(), get(), get(), get()) }
 }

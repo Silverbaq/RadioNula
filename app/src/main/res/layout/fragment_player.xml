@@ -86,18 +86,12 @@
                     android:scaleType="fitStart"
                     android:src="@drawable/shadow" />
 
-                <ScrollView
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/playlistRecyclerView"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"/>
 
-                    <LinearLayout
-                        android:id="@+id/fragment_playlist_llPlaylist"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                    </LinearLayout>
-                </ScrollView>
 
             </RelativeLayout>
         </LinearLayout>

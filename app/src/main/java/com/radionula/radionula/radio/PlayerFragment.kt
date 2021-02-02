@@ -1,24 +1,19 @@
 package com.radionula.radionula.radio
 
 
-import android.content.Context
 import android.graphics.BitmapFactory
-import android.graphics.Typeface
 import android.os.Bundle
-import android.telephony.TelephonyManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import com.radionula.radionula.PlaylistAdapter
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
-import com.radionula.radionula.util.PhoneStateLiveData
 import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -26,11 +21,7 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 
-
-/**
- * A simple [Fragment] subclass.
- */
-class PlayerFragment : Fragment() {
+class PlayerFragment : Fragment(), FavoritesListener {
 
     //
     // Top of player
@@ -41,6 +32,7 @@ class PlayerFragment : Fragment() {
         repeatMode = Animation.REVERSE
         duration = 50
     }
+
     // Rotate animation
     private val anim2: RotateAnimation = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
         interpolator = LinearInterpolator()
@@ -50,7 +42,7 @@ class PlayerFragment : Fragment() {
 
     //
     // Playlist of player
-    private lateinit var adapter: PlaylistAdapter
+    private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
 
     val radioViewModel: RadioModelView by viewModel()
 
@@ -61,7 +53,9 @@ class PlayerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        radioViewModel.observeTuneIn().observe(this, Observer {
+        playlistRecyclerView.adapter = adapter
+
+        radioViewModel.observeTuneIn().observe(viewLifecycleOwner, Observer {
             fragment_controls_ivTuneIn.visibility = View.INVISIBLE
             fragment_controls_ivPause.visibility = View.VISIBLE
             fragment_controls_ivSkip.visibility = View.VISIBLE
@@ -69,27 +63,28 @@ class PlayerFragment : Fragment() {
             if (it != null)
                 tuneIn()
         })
-        radioViewModel.observePlaying().observe(this, Observer { isPlaying ->
+        radioViewModel.observePlaying().observe(viewLifecycleOwner, Observer { isPlaying ->
             if (isPlaying) {
                 StartVinyl()
             }
         })
-        radioViewModel.observeCurrentSong().observe(this, Observer { SetVinylImage(it.cover) })
-        radioViewModel.observePause().observe(this, Observer {
+        radioViewModel.observeCurrentSong().observe(viewLifecycleOwner, Observer { SetVinylImage(it.cover) })
+        radioViewModel.observePause().observe(viewLifecycleOwner, Observer {
             if (it != null) {
                 StopVinyl()
             }
         })
-        radioViewModel.observePlaylist().observe(this, Observer { newPlaylist ->
+        radioViewModel.observePlaylist().observe(viewLifecycleOwner, Observer { newPlaylist ->
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
-            SetPlaylist(playlist)
+            setPlaylist(playlist)
         })
-        radioViewModel.observeCurrentChannel().observe(this, Observer { channel ->
+        radioViewModel.observeCurrentChannel().observe(viewLifecycleOwner, Observer { channel ->
             setChannelLogo(channel)
         })
-        radioViewModel.observeGetsNoizy().observe(this, Observer {
+        radioViewModel.observeGetsNoizy().observe(viewLifecycleOwner, Observer {
             it?.let { radioViewModel.pauseRadio() }
         })
+        radioViewModel.favoriteAdded.observe(viewLifecycleOwner, { postFavoriteAddedToast(it) })
 
         fragment_controls_ivSkip.setOnClickListener {
             GlobalScope.async { radioViewModel.nextChannel() }
@@ -103,6 +98,7 @@ class PlayerFragment : Fragment() {
                 radioViewModel.autoFetchPlaylist()
             }
         }
+
 
         // TODO: Make sure if this is needed
         // Call State
@@ -174,44 +170,57 @@ class PlayerFragment : Fragment() {
         fragment_top_ivLogo.bringToFront()
     }
 
-    fun SetPlaylist(tracks: List<NulaTrack>) {
-        adapter = PlaylistAdapter(activity, tracks, PlaylistAdapter.AdapterType.ADD)
+    /*
+        fun SetPlaylist(tracks: List<NulaTrack>) {
+            adapter = PlaylistAdapter(requireActivity(), tracks, PlaylistAdapter.AdapterType.ADD)
 
-        fragment_playlist_llPlaylist.removeAllViews()
+            fragment_playlist_llPlaylist.removeAllViews()
 
-        for (i in 0 until adapter.count) {
-            //
-            // Set header
-            if (i == 0) {
-                val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
+            for (i in 0 until adapter.count) {
+                //
+                // Set header
+                if (i == 0) {
+                    val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
 
-                val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
-                tvHeader.text = "NOW PLAYING"
+                    val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
+                    tvHeader.text = "NOW PLAYING"
 
-                val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/Roboto-Regular.ttf")
-                tvHeader.typeface = artistFont
+                    val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/roboto_regular.ttf")
+                    tvHeader.typeface = artistFont
 
-                fragment_playlist_llPlaylist.addView(view)
-            } else if (i == 1) {
-                val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
+                    fragment_playlist_llPlaylist.addView(view)
+                } else if (i == 1) {
+                    val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
 
-                val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
-                tvHeader.text = "PLAYLIST HISTORY"
+                    val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
+                    tvHeader.text = "PLAYLIST HISTORY"
 
-                val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/Roboto-Regular.ttf")
-                tvHeader.typeface = artistFont
+                    val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/roboto_regular.ttf")
+                    tvHeader.typeface = artistFont
 
-                fragment_playlist_llPlaylist.addView(view)
+                    fragment_playlist_llPlaylist.addView(view)
+                }
+                val item = adapter.getView(i, null, null)
+
+                fragment_playlist_llPlaylist.addView(item)
+
             }
-            val item = adapter.getView(i, null, null)
-
-            fragment_playlist_llPlaylist.addView(item)
-
+            fragment_playlist_ivShadow.bringToFront()
         }
-        fragment_playlist_ivShadow.bringToFront()
+    */
+    private fun setPlaylist(tracks: List<NulaTrack>) {
+        adapter.update(tracks)
     }
 
     companion object {
         private val TAG = "PlayerFagment"
+    }
+
+    override fun onAddFavoriteClicked(track: NulaTrack) {
+        radioViewModel.addFavoriteClicked(track)
+    }
+
+    private fun postFavoriteAddedToast(title: String) {
+        Toast.makeText(activity, "Added $title to favorites", Toast.LENGTH_LONG).show()
     }
 }
