@@ -38,7 +38,7 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.artist.text = myDataset[position].artist
-        holder.title.text = myDataset[position].titel
+        holder.title.text = myDataset[position].title
 
         //Glide.with(context).load(myDataset[position].image).into(holder.cover)
         holder.cover.load(myDataset[position].image)
@@ -68,7 +68,7 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
                 // Click on search icon
                 ivSearch.setOnClickListener {
                     val intent = Intent(Intent.ACTION_WEB_SEARCH)
-                    val keyword = item.artist + " " + item.titel
+                    val keyword = item.artist + " " + item.title
                     intent.putExtra(SearchManager.QUERY, keyword)
                     context.startActivity(intent)
                 }

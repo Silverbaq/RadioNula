@@ -34,7 +34,7 @@ public class NulaDatabase {
     public long insertTrack(NulaTrack track) {
         ContentValues values = new ContentValues();
         values.put(EMP_ARTIST, track.getArtist());
-        values.put(EMP_TITLE, track.getTitel());
+        values.put(EMP_TITLE, track.getTitle());
         values.put(EMP_IMAGE, track.getImage());
         return database.insert(EMP_TABLE, null, values);
     }
@@ -50,12 +50,11 @@ public class NulaDatabase {
             if (mCursor.moveToFirst()) {
                 do {
                     int id = mCursor.getInt(0);
-                    String aritst = mCursor.getString(1);
+                    String artist = mCursor.getString(1);
                     String title = mCursor.getString(2);
                     String image = mCursor.getString(3);
 
-                    NulaTrack track = new NulaTrack(aritst, title, image);
-                    track.setId(id);
+                    NulaTrack track = new NulaTrack(artist, title, image, id);
                     result.add(track);
                 } while (mCursor.moveToNext());
             }

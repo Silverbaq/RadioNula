@@ -15,26 +15,34 @@ class PlaylistAdapter(
         private val clickListener: FavoritesListener
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == HEADER) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.list_header, parent, false)
-            PlaylistHeaderViewHolder(view)
-        } else if (viewType == BODY) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.list_header, parent, false)
-            PlaylistBodyViewHolder(view)
-        } else {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_playlist_track, parent, false)
-            NulaTrackViewHolder(view)
+        return when (viewType) {
+            HEADER -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.list_header, parent, false)
+                PlaylistHeaderViewHolder(view)
+            }
+            BODY -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.list_header, parent, false)
+                PlaylistBodyViewHolder(view)
+            }
+            else -> {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_playlist_track, parent, false)
+                NulaTrackViewHolder(view)
+            }
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        if (holder.itemViewType == HEADER) {
-            (holder as PlaylistHeaderViewHolder).bind()
-        } else if (holder.itemViewType == BODY) {
-            (holder as PlaylistBodyViewHolder).bind()
-        } else {
-            (holder as PlaylistAdapter.NulaTrackViewHolder).bind(item)
+        when (holder.itemViewType) {
+            HEADER -> {
+                (holder as PlaylistHeaderViewHolder).bind()
+            }
+            BODY -> {
+                (holder as PlaylistBodyViewHolder).bind()
+            }
+            else -> {
+                (holder as PlaylistAdapter.NulaTrackViewHolder).bind(item)
+            }
         }
     }
 
@@ -44,9 +52,9 @@ class PlaylistAdapter(
         this.items.clear()
         this.items.addAll(items)
         if (this.items.isNotEmpty())
-            this.items.add(0, NulaTrack("", "", ""))
+            this.items.add(0, NulaTrack.EMPTY)
         if (this.items.size > 2)
-            this.items.add(2, NulaTrack("", "", ""))
+            this.items.add(2, NulaTrack.EMPTY)
         notifyDataSetChanged()
     }
 
@@ -64,7 +72,7 @@ class PlaylistAdapter(
         fun bind(item: NulaTrack) {
             cover.load(item.image)
             artist.text = item.artist
-            title.text = item.titel
+            title.text = item.title
             favoriteLayout.visibility = View.GONE
             bindOnClick()
             bindOnFavoriteClicked(item)
@@ -82,7 +90,7 @@ class PlaylistAdapter(
                 favoriteLayout.visibility = View.VISIBLE
             }
             favoriteLayout.setOnClickListener {
-                //favoriteLayout.visibility = View.GONE
+                favoriteLayout.visibility = View.GONE
             }
         }
     }
@@ -91,7 +99,7 @@ class PlaylistAdapter(
         val tvHeader = view.findViewById<View>(R.id.list_header_textview) as TextView
 
         fun bind() {
-            tvHeader.text = "NOW PLAYING"
+            tvHeader.text = HEADER_TEXT
         }
     }
 
@@ -99,7 +107,7 @@ class PlaylistAdapter(
         val tvHeader = view.findViewById<View>(R.id.list_header_textview) as TextView
 
         fun bind() {
-            tvHeader.text = "PLAYLIST HISTORY"
+            tvHeader.text = BODY_TEXT
         }
     }
 
@@ -107,5 +115,8 @@ class PlaylistAdapter(
         private const val HEADER = 1
         private const val BODY = 2
         private const val NULA_TRACK = 3
+
+        private const val HEADER_TEXT = "NOW PLAYING"
+        private const val BODY_TEXT = "PLAYLIST HISTORY"
     }
 }

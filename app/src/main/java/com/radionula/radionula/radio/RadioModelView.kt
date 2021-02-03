@@ -65,7 +65,7 @@ class RadioModelView(
 
     fun addFavoriteClicked(track: NulaTrack) {
         nulaDatabase.insertTrack(track)
-        _favoriteAdded.postValue(track.titel)
+        _favoriteAdded.postValue(track.title)
     }
 
 }

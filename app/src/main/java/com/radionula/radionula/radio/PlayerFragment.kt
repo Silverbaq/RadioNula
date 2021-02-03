@@ -170,44 +170,6 @@ class PlayerFragment : Fragment(), FavoritesListener {
         fragment_top_ivLogo.bringToFront()
     }
 
-    /*
-        fun SetPlaylist(tracks: List<NulaTrack>) {
-            adapter = PlaylistAdapter(requireActivity(), tracks, PlaylistAdapter.AdapterType.ADD)
-
-            fragment_playlist_llPlaylist.removeAllViews()
-
-            for (i in 0 until adapter.count) {
-                //
-                // Set header
-                if (i == 0) {
-                    val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
-
-                    val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
-                    tvHeader.text = "NOW PLAYING"
-
-                    val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/roboto_regular.ttf")
-                    tvHeader.typeface = artistFont
-
-                    fragment_playlist_llPlaylist.addView(view)
-                } else if (i == 1) {
-                    val view = activity?.layoutInflater?.inflate(R.layout.list_header, null)
-
-                    val tvHeader = view?.findViewById<View>(R.id.list_header_textview) as TextView
-                    tvHeader.text = "PLAYLIST HISTORY"
-
-                    val artistFont = Typeface.createFromAsset(activity?.assets, "fonts/roboto_regular.ttf")
-                    tvHeader.typeface = artistFont
-
-                    fragment_playlist_llPlaylist.addView(view)
-                }
-                val item = adapter.getView(i, null, null)
-
-                fragment_playlist_llPlaylist.addView(item)
-
-            }
-            fragment_playlist_ivShadow.bringToFront()
-        }
-    */
     private fun setPlaylist(tracks: List<NulaTrack>) {
         adapter.update(tracks)
     }
