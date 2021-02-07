@@ -8,6 +8,9 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 class RadioModelView(
         private val playlistReposetory: PlaylistRepository,
@@ -31,29 +34,35 @@ class RadioModelView(
     fun observeGetsNoizy(): LiveData<Unit> = mediaplayerPresenter.getsNoizy
     val favoriteAdded: LiveData<String> = _favoriteAdded
 
-    suspend fun fetchPlaylist() {
-        playlistReposetory.fetchCurrentPlaylist()
+    fun fetchPlaylist() {
+        GlobalScope.launch {
+            playlistReposetory.fetchCurrentPlaylist()
+        }
     }
 
-    suspend fun autoFetchPlaylist(){
-        playlistReposetory.autoFetchPlaylist()
+    fun autoFetchPlaylist() {
+        GlobalScope.launch {
+            playlistReposetory.autoFetchPlaylist()
+        }
     }
 
     fun tuneIn() {
-        tuneInData.value = Unit
-        playingData.value = true
+        tuneInData.postValue(Unit)
+        playingData.postValue(true)
         mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
     }
 
-    suspend fun nextChannel() {
-        if (playingData.value == true) {
-            channelPresenter.nextChannel()
-            playlistReposetory.setChannel(channelPresenter.currentChannel)
-            playlistReposetory.fetchCurrentPlaylist()
-            channelData.postValue(channelPresenter.currentChannel)
+    fun nextChannel() {
+        GlobalScope.async {
+            if (playingData.value == true) {
+                channelPresenter.nextChannel()
+                playlistReposetory.setChannel(channelPresenter.currentChannel)
+                playlistReposetory.fetchCurrentPlaylist()
+                channelData.postValue(channelPresenter.currentChannel)
+            }
+            playingData.postValue(true)
+            mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
         }
-        playingData.postValue(true)
-        mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
     }
 
     fun pauseRadio() {

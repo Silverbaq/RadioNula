@@ -12,6 +12,7 @@ import android.view.animation.RotateAnimation
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import com.radionula.radionula.BaseFragment
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
 import kotlinx.android.synthetic.main.fragment_player.*
@@ -21,7 +22,9 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 
-class PlayerFragment : Fragment(), FavoritesListener {
+class PlayerFragment : BaseFragment(), FavoritesListener {
+    private val radioViewModel: RadioModelView by viewModel()
+    private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
 
     //
     // Top of player
@@ -40,15 +43,7 @@ class PlayerFragment : Fragment(), FavoritesListener {
         duration = 4000
     }
 
-    //
-    // Playlist of player
-    private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
-
-    val radioViewModel: RadioModelView by viewModel()
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_player, container, false)
-    }
+    override fun getLayoutId() = R.layout.fragment_player
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -65,38 +60,32 @@ class PlayerFragment : Fragment(), FavoritesListener {
         })
         radioViewModel.observePlaying().observe(viewLifecycleOwner, Observer { isPlaying ->
             if (isPlaying) {
-                StartVinyl()
+                startVinyl()
             }
         })
-        radioViewModel.observeCurrentSong().observe(viewLifecycleOwner, Observer { SetVinylImage(it.cover) })
+        radioViewModel.observeCurrentSong().observe(viewLifecycleOwner, Observer { setVinylImage(it.cover) })
         radioViewModel.observePause().observe(viewLifecycleOwner, Observer {
             if (it != null) {
-                StopVinyl()
+                stopVinyl()
             }
         })
         radioViewModel.observePlaylist().observe(viewLifecycleOwner, Observer { newPlaylist ->
             val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
             setPlaylist(playlist)
         })
-        radioViewModel.observeCurrentChannel().observe(viewLifecycleOwner, Observer { channel ->
-            setChannelLogo(channel)
-        })
-        radioViewModel.observeGetsNoizy().observe(viewLifecycleOwner, Observer {
-            it?.let { radioViewModel.pauseRadio() }
-        })
-        radioViewModel.favoriteAdded.observe(viewLifecycleOwner, { postFavoriteAddedToast(it) })
+        radioViewModel.observeCurrentChannel().onResult(::setChannelLogo)
+        radioViewModel.observeGetsNoizy().observe(viewLifecycleOwner, Observer { it?.let { radioViewModel.pauseRadio() } })
+        radioViewModel.favoriteAdded.onResult(::postFavoriteAddedToast)
 
         fragment_controls_ivSkip.setOnClickListener {
-            GlobalScope.async { radioViewModel.nextChannel() }
+            radioViewModel.nextChannel()
         }
         fragment_controls_ivPause.setOnClickListener {
             radioViewModel.pauseRadio()
         }
         fragment_controls_ivTuneIn.setOnClickListener {
             radioViewModel.tuneIn()
-            GlobalScope.launch {
-                radioViewModel.autoFetchPlaylist()
-            }
+            radioViewModel.autoFetchPlaylist()
         }
 
 
@@ -108,12 +97,10 @@ class PlayerFragment : Fragment(), FavoritesListener {
     }
 
     private fun tuneIn() {
-        GlobalScope.async {
-            radioViewModel.fetchPlaylist()
-        }
+        radioViewModel.fetchPlaylist()
     }
 
-    fun setChannelLogo(channel: ChannelPresenter.Channel) {
+    private fun setChannelLogo(channel: ChannelPresenter.Channel) {
         when (channel) {
             ChannelPresenter.Channel.Classic -> {
                 fragment_top_ivLogo.setImageResource(R.drawable.nula_channel1)
@@ -133,24 +120,14 @@ class PlayerFragment : Fragment(), FavoritesListener {
         }
     }
 
-    fun StopVinyl() {
-        try {
-            fragment_top_ivRecord.animation.cancel()
-            fragment_top_ivRecordImage.animation.cancel()
-        } catch (e: Exception) {
-
-        }
-
-    }
-
-    fun StartVinyl() {
+    private fun startVinyl() {
         fragment_top_ivRecord.startAnimation(anim)
         fragment_top_ivRecordImage.startAnimation(anim2)
 
         fragment_top_ivLogo.bringToFront()
     }
 
-    fun SetVinylImage(imageUrl: String) {
+    private fun setVinylImage(imageUrl: String) {
 
         GlobalScope.launch(Dispatchers.Main) {
             try {
@@ -172,6 +149,16 @@ class PlayerFragment : Fragment(), FavoritesListener {
 
     private fun setPlaylist(tracks: List<NulaTrack>) {
         adapter.update(tracks)
+    }
+
+    private fun stopVinyl() {
+        try {
+            fragment_top_ivRecord.animation.cancel()
+            fragment_top_ivRecordImage.animation.cancel()
+        } catch (e: Exception) {
+
+        }
+
     }
 
     companion object {
