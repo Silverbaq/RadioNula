@@ -3,14 +3,11 @@ package com.radionula.radionula.radio
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.radionula.radionula.BaseFragment
 import com.radionula.radionula.R
@@ -23,25 +20,8 @@ import java.net.MalformedURLException
 import java.net.URL
 
 class PlayerFragment : BaseFragment(), FavoritesListener {
-    private val radioViewModel: RadioModelView by viewModel()
+    private val radioViewModel: RadioViewModel by viewModel()
     private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
-
-    //
-    // Top of player
-    // Image spin animation
-    private val anim: RotateAnimation = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
-        interpolator = LinearInterpolator()
-        repeatCount = Animation.INFINITE
-        repeatMode = Animation.REVERSE
-        duration = 50
-    }
-
-    // Rotate animation
-    private val anim2: RotateAnimation = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
-        interpolator = LinearInterpolator()
-        repeatCount = Animation.INFINITE
-        duration = 4000
-    }
 
     override fun getLayoutId() = R.layout.fragment_player
 
@@ -50,31 +30,13 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
 
         playlistRecyclerView.adapter = adapter
 
-        radioViewModel.observeTuneIn().observe(viewLifecycleOwner, Observer {
-            fragment_controls_ivTuneIn.visibility = View.INVISIBLE
-            fragment_controls_ivPause.visibility = View.VISIBLE
-            fragment_controls_ivSkip.visibility = View.VISIBLE
-
-            if (it != null)
-                tuneIn()
-        })
-        radioViewModel.observePlaying().observe(viewLifecycleOwner, Observer { isPlaying ->
-            if (isPlaying) {
-                startVinyl()
-            }
-        })
-        radioViewModel.observeCurrentSong().observe(viewLifecycleOwner, Observer { setVinylImage(it.cover) })
-        radioViewModel.observePause().observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                stopVinyl()
-            }
-        })
-        radioViewModel.observePlaylist().observe(viewLifecycleOwner, Observer { newPlaylist ->
-            val playlist = newPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
-            setPlaylist(playlist)
-        })
-        radioViewModel.observeCurrentChannel().onResult(::setChannelLogo)
-        radioViewModel.observeGetsNoizy().observe(viewLifecycleOwner, Observer { it?.let { radioViewModel.pauseRadio() } })
+        radioViewModel.tunedIn.onResult { setTunedIn() }
+        radioViewModel.isPlaying.onResult { isPlaying -> if (isPlaying) { startVinyl() } }
+        radioViewModel.currentSong.onResult { setVinylImage(it.cover) }
+        radioViewModel.pause.onResult{ stopVinyl() }
+        radioViewModel.playlist.onResult(::setPlaylist)
+        radioViewModel.currentChannelResources.onResult(::setChannelLogo)
+        radioViewModel.getsNoizy.onResult{ radioViewModel.pauseRadio() }
         radioViewModel.favoriteAdded.onResult(::postFavoriteAddedToast)
 
         fragment_controls_ivSkip.setOnClickListener {
@@ -96,28 +58,16 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
         //).observe(this, Observer { idle -> if (!idle) radioViewModel.pauseRadio() })
     }
 
-    private fun tuneIn() {
-        radioViewModel.fetchPlaylist()
+    private fun setTunedIn() {
+        fragment_controls_ivTuneIn.visibility = View.INVISIBLE
+        fragment_controls_ivPause.visibility = View.VISIBLE
+        fragment_controls_ivSkip.visibility = View.VISIBLE
     }
 
-    private fun setChannelLogo(channel: ChannelPresenter.Channel) {
-        when (channel) {
-            ChannelPresenter.Channel.Classic -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel1)
-                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel1)
-                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel1)
-            }
-            ChannelPresenter.Channel.Ch2 -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel2)
-                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel2)
-                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel2)
-            }
-            ChannelPresenter.Channel.Smoky -> {
-                fragment_top_ivLogo.setImageResource(R.drawable.nula_channel3)
-                fragment_controls_ivSkip.setImageResource(R.drawable.skip_channel3)
-                fragment_controls_ivPause.setImageResource(R.drawable.pause_channel3)
-            }
-        }
+    private fun setChannelLogo(channelResources: Triple<Int, Int, Int>) {
+        fragment_top_ivLogo.setImageResource(channelResources.first)
+        fragment_controls_ivSkip.setImageResource(channelResources.second)
+        fragment_controls_ivPause.setImageResource(channelResources.third)
     }
 
     private fun startVinyl() {
@@ -128,7 +78,6 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
     }
 
     private fun setVinylImage(imageUrl: String) {
-
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 val url = URL(imageUrl.replace(" ", "%20"))
@@ -158,7 +107,23 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
         } catch (e: Exception) {
 
         }
+    }
 
+    //
+    // Top of player
+    // Image spin animation
+    private val anim: RotateAnimation = RotateAnimation(0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
+        interpolator = LinearInterpolator()
+        repeatCount = Animation.INFINITE
+        repeatMode = Animation.REVERSE
+        duration = 50
+    }
+
+    // Rotate animation
+    private val anim2: RotateAnimation = RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f).apply {
+        interpolator = LinearInterpolator()
+        repeatCount = Animation.INFINITE
+        duration = 4000
     }
 
     companion object {
