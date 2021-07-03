@@ -10,7 +10,6 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
-import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch

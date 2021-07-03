@@ -3,7 +3,6 @@ package com.radionula.radionula
 import android.content.Context
 import android.os.Bundle
 import android.os.PowerManager
-import android.telephony.TelephonyManager
 import android.view.MenuItem
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.Observer
@@ -11,7 +10,6 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.networkavaliable.NoConnectionFragment
-import com.radionula.radionula.util.PhoneStateLiveData
 import com.radionula.services.mediaplayer.MediaplayerPresenter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -85,6 +83,7 @@ class MainActivity : BaseActivity() {
                 drawer_layout.closeDrawer(GravityCompat.START)
             }
             else -> {
+                // Do nothing
             }
         }
     }
@@ -93,7 +92,7 @@ class MainActivity : BaseActivity() {
         super.onPause()
         // Makes sure the music keeps playing after the screen is off.
         try {
-            mWakeLock!!.acquire()
+            mWakeLock?.acquire()
         } catch (ex: Exception) {
 
         }
@@ -103,7 +102,7 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
             try {
-                mWakeLock!!.release()
+                mWakeLock?.release()
 
             } catch (ex: Exception) {
 

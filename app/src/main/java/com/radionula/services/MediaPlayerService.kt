@@ -29,7 +29,7 @@ class MediaPlayerService : Service() {
         if (intent.action == Constants.ACTION.STARTFOREGROUND_ACTION) {
             Log.i(TAG, "Received Start Foreground Intent ")
             showNotification()
-            radioPlayer.tuneIn(intent.getStringExtra("radioUrl"))
+            radioPlayer.tuneIn(intent.getStringExtra("radioUrl") ?: "")
         } else if (intent.action == Constants.ACTION.STOPFOREGROUND_ACTION) {
             Log.i(TAG, "Received Stop Foreground Intent")
             stopForeground(true)
@@ -40,7 +40,7 @@ class MediaPlayerService : Service() {
             Log.i(TAG, "Received Play next Foreground Intent")
             showNotification()
             radioPlayer.pauseRadio()
-            radioPlayer.tuneIn(intent.getStringExtra("radioUrl"))
+            radioPlayer.tuneIn(intent.getStringExtra("radioUrl") ?: "")
         }
 
         return Service.START_REDELIVER_INTENT

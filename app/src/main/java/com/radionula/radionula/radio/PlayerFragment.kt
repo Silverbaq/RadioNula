@@ -1,6 +1,5 @@
 package com.radionula.radionula.radio
 
-
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
@@ -8,7 +7,6 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import com.radionula.radionula.BaseFragment
 import com.radionula.radionula.R
 import com.radionula.radionula.model.NulaTrack
