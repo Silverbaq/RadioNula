@@ -89,7 +89,7 @@ dependencies {
     // Koin for Jetpack Compose
     //implementation "io.insert-koin:koin-androidx-compose:$koin_version"
 
-    implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
+    implementation 'com.google.android.exoplayer:exoplayer:2.14.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     // Firebase crashlytics
