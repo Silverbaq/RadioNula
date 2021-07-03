@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 apply plugin: "kotlin-kapt"
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 30
@@ -89,6 +91,10 @@ dependencies {
 
     implementation 'com.google.android.exoplayer:exoplayer:r2.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // Firebase crashlytics
+    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.1.0'
+    implementation 'com.google.firebase:firebase-analytics:19.0.0'
 
     // Core library
     androidTestImplementation 'androidx.test:core:1.4.0'
