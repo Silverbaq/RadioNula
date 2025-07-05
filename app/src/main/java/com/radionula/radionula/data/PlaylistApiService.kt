@@ -13,7 +13,7 @@ import retrofit2.http.GET
 interface PlaylistApiService {
 
     @GET("playlist/")
-    fun getPlaylist(): Deferred<PlaylistResponse>
+    suspend fun getPlaylist(): PlaylistResponse
 
     companion object {
         operator fun invoke(

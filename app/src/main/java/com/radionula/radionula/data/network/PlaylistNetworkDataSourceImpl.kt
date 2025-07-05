@@ -16,7 +16,7 @@ class PlaylistNetworkDataSourceImpl(
 
     override suspend fun fetchPlaylist(): PlaylistResponse? {
         try {
-            val fetchedPlaylist = apiPlaylistApiService.getPlaylist().await()
+            val fetchedPlaylist = apiPlaylistApiService.getPlaylist()
             return fetchedPlaylist
         } catch (e: NoConnectivityException){
             Log.e("Connectivity", "No internet")
