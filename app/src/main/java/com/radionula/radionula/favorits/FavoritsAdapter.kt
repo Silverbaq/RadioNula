@@ -12,40 +12,42 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.radionula.radionula.R
 import com.radionula.radionula.data.db.NulaDatabase
+import com.radionula.radionula.databinding.AdapterPlaylistBinding
 import com.radionula.radionula.model.NulaTrack
-import kotlinx.android.synthetic.main.adapter_playlist.view.*
 
 class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     private val myDataset: MutableList<NulaTrack> = nulaDatabase.selectAllTracks()
 
-    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class MyViewHolder(binding: AdapterPlaylistBinding) : RecyclerView.ViewHolder(binding.root) {
         // Holds the TextView that will add each animal to
-        val cover = view.adapter_playlist_ivPlaylistCover
-        val artist = view.adapter_playlist_tvPlaylistArtist
-        val title = view.adapter_playlist_tvPlaylistTitle
-        val container = view.adapter_playlist_rlItem
+        val cover = binding.adapterPlaylistIvPlaylistCover
+        val artist = binding.adapterPlaylistTvPlaylistArtist
+        val title = binding.adapterPlaylistTvPlaylistTitle
+        val container = binding.adapterPlaylistRlItem
         var clicked = false
     }
 
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(parent: ViewGroup,
                                     viewType: Int): MyAdapter.MyViewHolder {
-        return MyViewHolder(LayoutInflater.from(context).inflate(R.layout.adapter_playlist, parent, false))
+        val binding = AdapterPlaylistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return MyViewHolder(binding)
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+
         holder.artist.text = myDataset[position].artist
         holder.title.text = myDataset[position].title
 
         //Glide.with(context).load(myDataset[position].image).into(holder.cover)
         holder.cover.load(myDataset[position].image)
 
-        holder.container.setOnClickListener(View.OnClickListener {
-
-            val rlFavorit = LayoutInflater.from(context).inflate(R.layout.remove_favorit, holder.container)
+        holder.container.setOnClickListener {
+            val rlFavorit =
+                LayoutInflater.from(context).inflate(R.layout.remove_favorit, holder.container)
 
             if (!holder.clicked) {
 
@@ -79,8 +81,7 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
                 holder.container.removeAllViews()
                 holder.clicked = false
             }
-
-        })
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)

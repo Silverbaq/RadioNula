@@ -50,7 +50,7 @@ class MediaPlayerService : Service() {
     private fun showNotification() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0)
+                notificationIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val icon = BitmapFactory.decodeResource(resources,
                 R.drawable.ico_favorite)

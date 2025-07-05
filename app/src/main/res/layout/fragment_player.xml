@@ -35,7 +35,6 @@
                     android:clipChildren="false"
                     android:src="@drawable/record" />
 
-
                 <com.mikhaellopez.circularimageview.CircularImageView
                     android:id="@+id/fragment_top_ivRecordImage"
                     android:layout_width="250dp"
@@ -61,40 +60,42 @@
 
 
         <!-- Playlist -->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="@color/BackgroundBlue">
 
-            <RelativeLayout
+            <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/background"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                android:orientation="vertical">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/playlistRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/background" />
-
-                <ImageView
-                    android:id="@+id/fragment_playlist_ivShadow"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:scaleType="fitStart"
-                    android:src="@drawable/shadow" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/playlistRecyclerView"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
-
-
-            </RelativeLayout>
-        </LinearLayout>
+            <ImageView
+                android:id="@+id/fragment_playlist_ivShadow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:scaleType="fitStart"
+                android:src="@drawable/shadow"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
 

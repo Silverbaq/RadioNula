@@ -2,15 +2,16 @@ package com.radionula.radionula.radio
 
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import android.widget.Toast
 import com.radionula.radionula.BaseFragment
-import com.radionula.radionula.R
+import com.radionula.radionula.databinding.FragmentPlayerBinding
 import com.radionula.radionula.model.NulaTrack
-import kotlinx.android.synthetic.main.fragment_player.*
 import kotlinx.coroutines.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
@@ -18,15 +19,23 @@ import java.net.MalformedURLException
 import java.net.URL
 
 class PlayerFragment : BaseFragment(), FavoritesListener {
+    private lateinit var binding: FragmentPlayerBinding
+
     private val radioViewModel: RadioViewModel by viewModel()
     private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
 
-    override fun getLayoutId() = R.layout.fragment_player
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentPlayerBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        playlistRecyclerView.adapter = adapter
+        binding.playlistRecyclerView.adapter = adapter
 
         radioViewModel.tunedIn.onResult { setTunedIn() }
         radioViewModel.isPlaying.onResult { isPlaying -> if (isPlaying) { startVinyl() } }
@@ -37,17 +46,16 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
         radioViewModel.getsNoizy.onResult{ radioViewModel.pauseRadio() }
         radioViewModel.favoriteAdded.onResult(::postFavoriteAddedToast)
 
-        fragment_controls_ivSkip.setOnClickListener {
+        binding.fragmentControlsIvSkip.setOnClickListener {
             radioViewModel.nextChannel()
         }
-        fragment_controls_ivPause.setOnClickListener {
+        binding.fragmentControlsIvPause.setOnClickListener {
             radioViewModel.pauseRadio()
         }
-        fragment_controls_ivTuneIn.setOnClickListener {
+        binding.fragmentControlsIvTuneIn.setOnClickListener {
             radioViewModel.tuneIn()
             radioViewModel.autoFetchPlaylist()
         }
-
 
         // TODO: Make sure if this is needed
         // Call State
@@ -57,22 +65,22 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
     }
 
     private fun setTunedIn() {
-        fragment_controls_ivTuneIn.visibility = View.INVISIBLE
-        fragment_controls_ivPause.visibility = View.VISIBLE
-        fragment_controls_ivSkip.visibility = View.VISIBLE
+        binding.fragmentControlsIvTuneIn.visibility = View.INVISIBLE
+        binding.fragmentControlsIvPause.visibility = View.VISIBLE
+        binding.fragmentControlsIvSkip.visibility = View.VISIBLE
     }
 
     private fun setChannelLogo(channelResources: Triple<Int, Int, Int>) {
-        fragment_top_ivLogo.setImageResource(channelResources.first)
-        fragment_controls_ivSkip.setImageResource(channelResources.second)
-        fragment_controls_ivPause.setImageResource(channelResources.third)
+        binding.fragmentTopIvLogo.setImageResource(channelResources.first)
+        binding.fragmentControlsIvSkip.setImageResource(channelResources.second)
+        binding.fragmentControlsIvPause.setImageResource(channelResources.third)
     }
 
     private fun startVinyl() {
-        fragment_top_ivRecord.startAnimation(anim)
-        fragment_top_ivRecordImage.startAnimation(anim2)
+        binding.fragmentTopIvRecord.startAnimation(anim)
+        binding.fragmentTopIvRecordImage.startAnimation(anim2)
 
-        fragment_top_ivLogo.bringToFront()
+        binding.fragmentTopIvLogo.bringToFront()
     }
 
     private fun setVinylImage(imageUrl: String) {
@@ -83,7 +91,7 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
                 val image = withContext(Dispatchers.IO) {
                     BitmapFactory.decodeStream(url.openConnection().getInputStream())
                 }
-                fragment_top_ivRecordImage.setImageBitmap(image)
+                binding.fragmentTopIvRecordImage.setImageBitmap(image)
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
             } catch (e: IOException) {
@@ -91,7 +99,7 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
             }
         }
 
-        fragment_top_ivLogo.bringToFront()
+        binding.fragmentTopIvLogo.bringToFront()
     }
 
     private fun setPlaylist(tracks: List<NulaTrack>) {
@@ -100,8 +108,8 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
 
     private fun stopVinyl() {
         try {
-            fragment_top_ivRecord.animation.cancel()
-            fragment_top_ivRecordImage.animation.cancel()
+            binding.fragmentTopIvRecord.animation.cancel()
+            binding.fragmentTopIvRecordImage.animation.cancel()
         } catch (e: Exception) {
 
         }

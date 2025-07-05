@@ -21,14 +21,8 @@ interface PlaylistApiService {
         ): PlaylistApiService {
             val requestInterceptor = Interceptor { chain ->
 
-                val url = chain.request()
-                        .url()
-                        .newBuilder()
-                        .build()
-
                 val request = chain.request()
                         .newBuilder()
-                        .url(url)
                         .build()
 
                 return@Interceptor chain.proceed(request)
@@ -46,7 +40,6 @@ interface PlaylistApiService {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(PlaylistApiService::class.java)
-
         }
     }
 }

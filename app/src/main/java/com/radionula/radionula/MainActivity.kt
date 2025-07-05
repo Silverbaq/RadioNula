@@ -4,19 +4,22 @@ import android.content.Context
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.MenuItem
+import androidx.activity.enableEdgeToEdge
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
+import com.radionula.radionula.databinding.ActivityMainBinding
 import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.services.mediaplayer.MediaplayerPresenter
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.toolbar.*
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
+    private lateinit var binding: ActivityMainBinding
 
     val connectionView: ConnectionViewModel by viewModel()
 
@@ -26,12 +29,14 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        nav_Button.setOnClickListener { drawer_layout.openDrawer(GravityCompat.START) }
+        binding.activityMainToolbar.navButton.setOnClickListener { binding.drawerLayout.openDrawer(GravityCompat.START) }
 
-        setupDrawerContent(nvView)
+        setupDrawerContent(binding.nvView)
 
         // Navigation component
         host = NavHostFragment.create(R.navigation.nula_navigation)
@@ -70,17 +75,17 @@ class MainActivity : BaseActivity() {
         when (menuItem.itemId) {
             R.id.nav_Radio_Player -> {
                 host.navController.navigateUp()
-                drawer_layout.closeDrawer(GravityCompat.START)
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Favorites -> {
                 host.navController.navigateUp()
                 host.navController.navigate(R.id.action_radioFragment_to_favoritesFragment, null)
-                drawer_layout.closeDrawer(GravityCompat.START)
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
             R.id.nav_Comments -> {
                 host.navController.navigateUp()
                 host.navController.navigate(R.id.action_radioFragment_to_commentsFragment, null)
-                drawer_layout.closeDrawer(GravityCompat.START)
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
             else -> {
                 // Do nothing

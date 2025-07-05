@@ -47,13 +47,12 @@ public class CommentsFragment extends Fragment {
         parentLayout =(LinearLayout)view.findViewById(R.id.parentLayout);
 
 
-        webView = new WebView(getActivity());
+        webView = new WebView(requireActivity());
         webView.setLayoutParams(getLayoutParams());
 
         webView.setWebViewClient(new FaceBookClient());
         webView.setWebChromeClient(new MyChromeClient());
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setAppCacheEnabled(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setSupportMultipleWindows(true);
         //webView.getSettings().setSupportZoom(true);

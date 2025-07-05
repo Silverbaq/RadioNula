@@ -2,16 +2,15 @@ package com.radionula.radionula.radio
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.radionula.radionula.R
 import com.radionula.radionula.data.PlaylistRepository
 import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class RadioViewModel(
@@ -28,7 +27,7 @@ class RadioViewModel(
     private val _favoriteAdded = MutableLiveData<String>()
 
     val currentSong: LiveData<CurrentSong> = playlistReposetory.getCurrentSong()
-    val playlist: LiveData<List<NulaTrack>> = Transformations.map(playlistReposetory.getCurrentPlaylist()) { it -> it.map { NulaTrack(it.artist, it.title, it.cover) } }
+    val playlist: LiveData<List<NulaTrack>> = playlistReposetory.getCurrentPlaylist().map { it -> it.map { NulaTrack(it.artist, it.title, it.cover) } }
     val tunedIn: LiveData<Unit> = tuneInData
     val isPlaying: LiveData<Boolean> = playingData
     val pause: LiveData<Unit> = pauseData
@@ -37,7 +36,7 @@ class RadioViewModel(
     val favoriteAdded: LiveData<String> = _favoriteAdded
 
     fun autoFetchPlaylist() {
-        GlobalScope.launch {
+        viewModelScope.launch {
             playlistReposetory.autoFetchPlaylist()
         }
     }
@@ -50,7 +49,7 @@ class RadioViewModel(
     }
 
     fun nextChannel() {
-        GlobalScope.async {
+        viewModelScope.launch {
             if (playingData.value == true) {
                 channelPresenter.nextChannel()
                 playlistReposetory.setChannel(channelPresenter.currentChannel)
@@ -74,7 +73,7 @@ class RadioViewModel(
     }
 
     private fun fetchPlaylist() {
-        GlobalScope.launch {
+        viewModelScope.launch {
             playlistReposetory.fetchCurrentPlaylist()
         }
     }
