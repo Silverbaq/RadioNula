@@ -1,6 +1,6 @@
 package com.radionula.radionula
 
-import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.MenuItem
@@ -10,16 +10,15 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.databinding.ActivityMainBinding
-import com.radionula.radionula.networkavaliable.ConnectionViewModel
 import com.radionula.radionula.networkavaliable.NoConnectionFragment
+import com.radionula.radionula.util.ConnectivityLiveData
 import com.radionula.services.mediaplayer.MediaplayerPresenter
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    val connectionView: ConnectionViewModel by viewModel()
+    private lateinit var connectionData: ConnectivityLiveData
 
     private var wakeLock: PowerManager.WakeLock? = null
 
@@ -36,13 +35,15 @@ class MainActivity : BaseActivity() {
 
         setupDrawerContent(binding.nvView)
 
+        connectionData = ConnectivityLiveData(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
+
         // Navigation component
         host = NavHostFragment.create(R.navigation.nula_navigation)
         supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
                 .setPrimaryNavigationFragment(host).commit()
 
         // Network state
-        connectionView.connectionData.observe(this, Observer { connection ->
+        connectionData.observe(this, Observer { connection ->
             if (!connection) {
                 supportFragmentManager.beginTransaction()
                         .replace(R.id.nav_host_fragment, NoConnectionFragment())
@@ -130,9 +131,5 @@ class MainActivity : BaseActivity() {
         val playerPresenter: MediaplayerPresenter by inject()
         playerPresenter.pauseRadio()
         super.onDestroy()
-    }
-
-    companion object {
-        private const val TAG = "MainActivity"
     }
 }

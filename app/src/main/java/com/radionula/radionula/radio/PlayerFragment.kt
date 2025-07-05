@@ -135,10 +135,6 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
         duration = 4000
     }
 
-    companion object {
-        private val TAG = "PlayerFagment"
-    }
-
     override fun onAddFavoriteClicked(track: NulaTrack) {
         radioViewModel.addFavoriteClicked(track)
     }

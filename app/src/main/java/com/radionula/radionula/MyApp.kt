@@ -2,7 +2,6 @@ package com.radionula.radionula
 
 import android.app.Application
 import com.radionula.radionula.data.db.databaseModule
-import com.radionula.radionula.networkavaliable.connectionModule
 import com.radionula.radionula.radio.playlistModule
 import com.radionula.services.mediaplayer.radioPlayerModule
 import org.koin.android.ext.koin.androidContext
@@ -21,7 +20,7 @@ class MyApp : Application() {
         startKoin{
             androidLogger()
             androidContext(this@MyApp)
-            modules(appModule, playlistModule, radioPlayerModule, connectionModule, databaseModule)
+            modules(appModule, playlistModule, radioPlayerModule, databaseModule)
         }
     }
 }

@@ -8,7 +8,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.radionula.radionula.R
 import androidx.core.net.toUri
 
-class RadioPlayer(private val context: Context) {
+class RadioPlayer(context: Context) {
 
     private val mpNoize: MediaPlayer = MediaPlayer.create(context, R.raw.radionoise)
     private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
@@ -46,9 +46,5 @@ class RadioPlayer(private val context: Context) {
 
     fun stopRadioNoize() {
         mpNoize.stop()
-    }
-
-    companion object {
-        const val TAG = "RadioPlayer"
     }
 }

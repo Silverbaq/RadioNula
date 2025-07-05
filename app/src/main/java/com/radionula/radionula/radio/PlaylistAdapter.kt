@@ -3,11 +3,11 @@ package com.radionula.radionula.radio
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.radionula.radionula.R
+import com.radionula.radionula.databinding.ItemPlaylistTrackBinding
 import com.radionula.radionula.model.NulaTrack
 
 class PlaylistAdapter(
@@ -26,7 +26,8 @@ class PlaylistAdapter(
             }
             else -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_playlist_track, parent, false)
-                NulaTrackViewHolder(view)
+                val binding = ItemPlaylistTrackBinding.bind(view)
+                NulaTrackViewHolder(binding)
             }
         }
     }
@@ -62,35 +63,29 @@ class PlaylistAdapter(
         return if (position == 0) HEADER else if (position == 2) BODY else NULA_TRACK
     }
 
-    inner class NulaTrackViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val cover = view.findViewById<ImageView>(R.id.adapter_playlist_ivPlaylistCover)
-        val artist = view.findViewById<TextView>(R.id.adapter_playlist_tvPlaylistArtist)
-        val title = view.findViewById<TextView>(R.id.adapter_playlist_tvPlaylistTitle)
-        val favoriteLayout = view.findViewById<View>(R.id.addFavoriteLayout)
-        val addFavorite = view.findViewById<ImageView>(R.id.ivAddFavorit)
-
+    inner class NulaTrackViewHolder(val binding: ItemPlaylistTrackBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: NulaTrack) {
-            cover.load(item.image)
-            artist.text = item.artist
-            title.text = item.title
-            favoriteLayout.visibility = View.GONE
+            binding.adapterPlaylistIvPlaylistCover.load(item.image)
+            binding.adapterPlaylistTvPlaylistArtist.text = item.artist
+            binding.adapterPlaylistTvPlaylistTitle.text = item.title
+            binding.addFavoriteLayout.root.visibility = View.GONE
             bindOnClick()
             bindOnFavoriteClicked(item)
         }
 
         fun bindOnFavoriteClicked(item: NulaTrack) {
-            addFavorite.setOnClickListener {
+            binding.addFavoriteLayout.ivAddFavorit.setOnClickListener {
                 clickListener.onAddFavoriteClicked(item)
-                favoriteLayout.visibility = View.GONE
+                binding.addFavoriteLayout.root.visibility = View.GONE
             }
         }
 
         fun bindOnClick() {
-            view.setOnClickListener {
-                favoriteLayout.visibility = View.VISIBLE
+            binding.root.setOnClickListener {
+                binding.addFavoriteLayout.root.visibility = View.VISIBLE
             }
-            favoriteLayout.setOnClickListener {
-                favoriteLayout.visibility = View.GONE
+            binding.addFavoriteLayout.root.setOnClickListener {
+                binding.addFavoriteLayout.root.visibility = View.GONE
             }
         }
     }

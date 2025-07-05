@@ -18,10 +18,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.koin.test.KoinTest
 
 @RunWith(JUnit4::class)
-class RadioViewModelTest : KoinTest {
+class RadioViewModelTest  {
 
     @get:Rule
     val instantTaskRule = InstantTaskExecutorRule()

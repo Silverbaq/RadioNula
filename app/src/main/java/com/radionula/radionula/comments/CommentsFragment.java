@@ -25,8 +25,8 @@ public class CommentsFragment extends Fragment {
 
     WebView myWebView;
 
-    public static String APP_KEY = "330582393726734";
-    public static String BASE_DOMAIN = "http://radionula.com";
+    final public static String APP_KEY = "330582393726734";
+    final public static String BASE_DOMAIN = "http://radionula.com";
 
 
     private WebView webView,childView =null;
@@ -55,8 +55,6 @@ public class CommentsFragment extends Fragment {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
         webView.getSettings().setSupportMultipleWindows(true);
-        //webView.getSettings().setSupportZoom(true);
-        //webView.getSettings().setBuiltInZoomControls(true);
 
         if (Build.VERSION.SDK_INT >= 21) {
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -65,42 +63,6 @@ public class CommentsFragment extends Fragment {
 
         parentLayout.addView(webView);
 
-
-
-/*
-        myWebView = (WebView) view.findViewById(R.id.fragment_comments_webview);
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setSupportMultipleWindows(true);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-
-
-
-        myWebView.setWebViewClient(new WebViewClient());
-
-        myWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-                // myWebView.removeAllViews();
-
-                WebView newView = new WebView(getContext());
-                newView.setWebViewClient(new WebViewClient());
-
-                // Create dynamically a new view
-                newView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-                myWebView.addView(newView);
-
-                WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-                transport.setWebView(newView);
-                resultMsg.sendToTarget();
-                return true;
-            }
-
-
-        });
-*/
         webView.loadDataWithBaseURL(BASE_DOMAIN,
                 "<html>" +
                         "<head></head>" +
@@ -132,7 +94,7 @@ public class CommentsFragment extends Fragment {
 
 
     private LinearLayout.LayoutParams getLayoutParams(){
-        return new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.FILL_PARENT);
+        return new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
     }
 
 
@@ -142,11 +104,9 @@ public class CommentsFragment extends Fragment {
                                       boolean userGesture, Message resultMsg) {
             childView = new WebView(getActivity());
             childView.getSettings().setJavaScriptEnabled(true);
-            //childView.getSettings().setSupportZoom(true);
-            //childView.getSettings().setBuiltInZoomControls(false);
             childView.setWebViewClient(new FaceBookClient());
             childView.setWebChromeClient(this);
-            childView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.FILL_PARENT));
+            childView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT));
 
 
             parentLayout.addView(childView);
@@ -177,7 +137,7 @@ public class CommentsFragment extends Fragment {
         }
     }
 
-    private class FaceBookClient extends WebViewClient{
+    private static class FaceBookClient extends WebViewClient{
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Log.i("REQUEST URL", url);

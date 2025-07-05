@@ -1,14 +1,10 @@
 package com.radionula.radionula.util
 
-import android.app.Application
-import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkInfo
 import android.net.NetworkRequest
 import android.os.Build
-import androidx.annotation.RequiresPermission
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 
 
@@ -20,12 +16,8 @@ import androidx.lifecycle.LiveData
  * See https://developer.android.com/reference/android/net/ConnectivityManager
  * See https://developer.android.com/reference/android/net/ConnectivityManager#CONNECTIVITY_ACTION
  */
-class ConnectivityLiveData @VisibleForTesting internal constructor(private val connectivityManager: ConnectivityManager)
+class ConnectivityLiveData internal constructor(private val connectivityManager: ConnectivityManager)
     : LiveData<Boolean>() {
-
-    @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
-    constructor(application: Application) : this(application.getSystemService(Context.CONNECTIVITY_SERVICE)
-            as ConnectivityManager)
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {

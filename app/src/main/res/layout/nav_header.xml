@@ -11,6 +11,7 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:importantForAccessibility="no"
         android:scaleType="fitCenter"
         android:src="@drawable/nula_logo_info"/>
 </LinearLayout>

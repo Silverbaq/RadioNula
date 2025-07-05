@@ -8,8 +8,9 @@
         android:id="@+id/adapter_playlist_ivPlaylistCover"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
+        android:contentDescription="Cover image"
         android:padding="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -20,11 +21,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:layout_marginTop="28dp"
         android:text="New Text"
         android:textColor="@color/brown"
-        android:textSize="16dp"
+        android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/adapter_playlist_ivPlaylistCover"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -33,10 +33,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:text="New Text"
         android:textColor="@color/white"
-        android:textSize="16dp"
+        android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/adapter_playlist_ivPlaylistCover"
         app:layout_constraintTop_toBottomOf="@+id/adapter_playlist_tvPlaylistArtist" />
 

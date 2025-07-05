@@ -22,9 +22,7 @@ public class NulaDatabase {
     public final static String EMP_TITLE = "title";  // title of track
     public final static String EMP_IMAGE = "image";  // image of track
 
-    /**
-     * @param context
-     */
+
     public NulaDatabase(Context context) {
         databaseHelper = new MyDatabaseHelper(context);
         database = databaseHelper.getWritableDatabase();

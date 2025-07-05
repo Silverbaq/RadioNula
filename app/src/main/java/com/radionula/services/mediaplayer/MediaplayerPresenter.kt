@@ -41,6 +41,4 @@ class MediaplayerPresenter(
         //context.unregisterReceiver(noizyReceiver)
         isPlaying = false
     }
-
-    fun isPlaying(): Boolean = isPlaying
 }

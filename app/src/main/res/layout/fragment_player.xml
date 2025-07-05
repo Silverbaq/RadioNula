@@ -24,15 +24,16 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="-275dp"
                 android:layout_marginLeft="-75dp"
-                android:layout_marginRight="-75dp">
+                android:layout_marginRight="-75dp"
+                android:layout_marginBottom="-275dp">
 
                 <ImageView
                     android:id="@+id/fragment_top_ivRecord"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipChildren="false"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/record" />
 
                 <com.mikhaellopez.circularimageview.CircularImageView
@@ -52,6 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
+                android:importantForAccessibility="no"
                 android:scaleType="fitStart"
                 android:src="@drawable/nula_channel1" />
 
@@ -69,6 +71,7 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:importantForAccessibility="no"
                 android:scaleType="centerCrop"
                 android:src="@drawable/background"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -90,6 +93,7 @@
                 android:id="@+id/fragment_playlist_ivShadow"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
                 android:scaleType="fitStart"
                 android:src="@drawable/shadow"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -97,7 +101,6 @@
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
-
 
 
     <!-- Controls -->
@@ -111,6 +114,7 @@
             android:id="@+id/fragment_controls_ivSkip"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
+            android:contentDescription="Skip to next"
             android:src="@drawable/skip_channel1"
             android:visibility="invisible" />
 
@@ -122,8 +126,9 @@
             android:id="@+id/fragment_controls_ivPause"
             android:layout_width="130dp"
             android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:src="@drawable/pause_channel1" />
+            android:contentDescription="Pause"
+            android:src="@drawable/pause_channel1"
+            android:visibility="invisible" />
 
     </LinearLayout>
 
@@ -137,7 +142,8 @@
             android:id="@+id/fragment_controls_ivTuneIn"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:src="@drawable/tune_in"/>
+            android:contentDescription="Tune in"
+            android:src="@drawable/tune_in" />
     </LinearLayout>
 
 

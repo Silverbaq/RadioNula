@@ -10,8 +10,9 @@
         android:id="@+id/adapter_playlist_ivPlaylistCover"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
+        android:contentDescription="Album cover"
         android:padding="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -35,7 +36,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:fontFamily="@font/roboto_light"
         android:text="New Text"
         android:textColor="@color/white"

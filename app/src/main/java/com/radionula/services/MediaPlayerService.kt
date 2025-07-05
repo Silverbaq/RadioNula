@@ -16,7 +16,6 @@ import com.radionula.services.mediaplayer.RadioPlayer
 import org.koin.android.ext.android.inject
 import android.app.NotificationManager
 import android.app.NotificationChannel
-import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -97,7 +96,6 @@ class MediaPlayerService : Service() {
 
     companion object {
         private val TAG = "MediaPlayerService"
-        var IS_SERVICE_RUNNING = false
     }
 
 }

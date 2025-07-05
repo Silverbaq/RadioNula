@@ -2,18 +2,14 @@ package com.radionula.radionula
 
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-
-import com.radionula.radionula.util.ConnectivityLiveData
 import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.doNothing
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import com.radionula.radionula.util.ConnectivityLiveData
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -148,13 +144,4 @@ class ConnectionLiveDataTest {
         verify(connectivityManager).unregisterNetworkCallback(any<ConnectivityManager.NetworkCallback>())
     }
 
-    private fun captureNetworkCallback() {
-        val captor = argumentCaptor<ConnectivityManager.NetworkCallback>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            verify(connectivityManager).registerDefaultNetworkCallback(captor.capture())
-        } else {
-            verify(connectivityManager).registerNetworkCallback(any(), captor.capture())
-        }
-        networkCallback = captor.firstValue
-    }
 }

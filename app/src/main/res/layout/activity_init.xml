@@ -18,6 +18,7 @@
         android:id="@+id/activity_init_ivlogo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Logo"
         android:src="@drawable/nula_intro_logo"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
