@@ -13,7 +13,9 @@ import com.radionula.radionula.BaseFragment
 import com.radionula.radionula.databinding.FragmentPlayerBinding
 import com.radionula.radionula.model.NulaTrack
 import kotlinx.coroutines.*
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.qualifier.named
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
@@ -22,6 +24,7 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
     private lateinit var binding: FragmentPlayerBinding
 
     private val radioViewModel: RadioViewModel by viewModel()
+    private val coroutineScope: CoroutineScope by inject(named("main"))
     private val adapter: PlaylistAdapter = PlaylistAdapter(clickListener = this)
 
     override fun onCreateView(
@@ -84,7 +87,7 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
     }
 
     private fun setVinylImage(imageUrl: String) {
-        GlobalScope.launch(Dispatchers.Main) {
+        coroutineScope.launch(Dispatchers.Main) {
             try {
                 val url = URL(imageUrl.replace(" ", "%20"))
 

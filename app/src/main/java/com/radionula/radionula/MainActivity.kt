@@ -6,8 +6,6 @@ import android.os.PowerManager
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
@@ -23,7 +21,7 @@ class MainActivity : BaseActivity() {
 
     val connectionView: ConnectionViewModel by viewModel()
 
-    private var mWakeLock: PowerManager.WakeLock? = null
+    private var wakeLock: PowerManager.WakeLock? = null
 
     private lateinit var host: NavHostFragment
 
@@ -55,11 +53,12 @@ class MainActivity : BaseActivity() {
             }
         })
 
-        //
-        // WakeLock
+        // Setup WakeLock for keeping the CPU running when screen is off
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE, "$TAG:$TAG")
-
+        wakeLock = pm.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "RadioNula:PlaybackWakeLock"
+        )
     }
 
     private fun setupDrawerContent(navigationView: NavigationView) {
@@ -97,31 +96,43 @@ class MainActivity : BaseActivity() {
         super.onPause()
         // Makes sure the music keeps playing after the screen is off.
         try {
-            mWakeLock?.acquire()
+            // Only acquire if not already held
+            if (wakeLock?.isHeld == false) {
+                wakeLock?.acquire(10*60*1000L) // 10 minutes timeout as a safety measure
+            }
         } catch (ex: Exception) {
-
+            // Log the exception
         }
-
     }
 
     override fun onResume() {
         super.onResume()
-            try {
-                mWakeLock?.release()
-
-            } catch (ex: Exception) {
-
+        try {
+            // Only release if held
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
             }
+        } catch (ex: Exception) {
+            // Log the exception
+        }
     }
 
     override fun onDestroy() {
+        // Make sure to release the wake lock if it's still held
+        try {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        } catch (ex: Exception) {
+            // Log the exception
+        }
+        
         val playerPresenter: MediaplayerPresenter by inject()
         playerPresenter.pauseRadio()
         super.onDestroy()
     }
 
     companion object {
-        private val TAG = "MainActivity"
+        private const val TAG = "MainActivity"
     }
-
 }

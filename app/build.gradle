@@ -35,6 +35,10 @@ android {
         targetCompatibility JavaVersion.VERSION_21
     }
 
+    kotlin {
+        jvmToolchain(21)
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
@@ -94,6 +98,10 @@ dependencies {
 
     implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'androidx.media3:media3-exoplayer:1.7.1'
+    implementation 'androidx.media3:media3-ui:1.7.1'
+    implementation 'androidx.media3:media3-common:1.7.1'
 
     // Firebase crashlytics
     implementation 'com.google.firebase:firebase-crashlytics-ktx:19.4.4'

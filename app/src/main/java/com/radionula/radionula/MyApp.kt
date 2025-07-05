@@ -21,7 +21,7 @@ class MyApp : Application() {
         startKoin{
             androidLogger()
             androidContext(this@MyApp)
-            modules(playlistModule, radioPlayerModule, connectionModule, databaseModule)
+            modules(appModule, playlistModule, radioPlayerModule, connectionModule, databaseModule)
         }
     }
 }

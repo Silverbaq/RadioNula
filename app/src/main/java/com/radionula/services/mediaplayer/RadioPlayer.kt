@@ -3,14 +3,15 @@ package com.radionula.services.mediaplayer
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import com.radionula.radionula.R
+import androidx.core.net.toUri
 
 class RadioPlayer(private val context: Context) {
 
     private val mpNoize: MediaPlayer = MediaPlayer.create(context, R.raw.radionoise)
-    private val exoPlayer: SimpleExoPlayer = SimpleExoPlayer.Builder(context).build();
+    private val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
 
     init {
         mpNoize.isLooping = true
@@ -26,7 +27,7 @@ class RadioPlayer(private val context: Context) {
         startRadioNoize()
 
         // ExoPlayer
-        prepareExoPlayerFromURL(Uri.parse(radioUrl))
+        prepareExoPlayerFromURL(radioUrl.toUri())
         playRadio()
     }
 

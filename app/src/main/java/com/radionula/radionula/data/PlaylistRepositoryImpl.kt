@@ -5,13 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
 import com.radionula.radionula.radio.ChannelPresenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class PlaylistRepositoryImpl(
-        private val playlistNetworkDataSource: PlaylistNetworkDataSource
+        private val playlistNetworkDataSource: PlaylistNetworkDataSource,
+        private val coroutineScope: CoroutineScope,
 ) : PlaylistRepository {
 
     private var currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
@@ -55,13 +55,13 @@ class PlaylistRepositoryImpl(
     }
 
     override suspend fun fetchCurrentPlaylist() {
-        GlobalScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             playlistNetworkDataSource.fetchPlaylist()
         }
     }
 
     override suspend fun autoFetchPlaylist(){
-        GlobalScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             while(true){
                 playlistNetworkDataSource.fetchPlaylist()
 
