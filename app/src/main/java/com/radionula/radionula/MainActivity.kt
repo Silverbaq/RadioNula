@@ -54,7 +54,7 @@ class MainActivity : BaseActivity() {
         })
 
         // Setup WakeLock for keeping the CPU running when screen is off
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(
             PowerManager.PARTIAL_WAKE_LOCK,
             "RadioNula:PlaybackWakeLock"

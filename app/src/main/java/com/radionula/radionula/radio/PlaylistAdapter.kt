@@ -41,7 +41,7 @@ class PlaylistAdapter(
                 (holder as PlaylistBodyViewHolder).bind()
             }
             else -> {
-                (holder as PlaylistAdapter.NulaTrackViewHolder).bind(item)
+                (holder as NulaTrackViewHolder).bind(item)
             }
         }
     }

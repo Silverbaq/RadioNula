@@ -31,7 +31,7 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
 
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(parent: ViewGroup,
-                                    viewType: Int): MyAdapter.MyViewHolder {
+                                    viewType: Int): MyViewHolder {
         val binding = AdapterPlaylistBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyViewHolder(binding)
     }

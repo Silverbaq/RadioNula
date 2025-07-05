@@ -44,7 +44,7 @@ public class CommentsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_comments, container, false);
 
 
-        parentLayout =(LinearLayout)view.findViewById(R.id.parentLayout);
+        parentLayout = view.findViewById(R.id.parentLayout);
 
 
         webView = new WebView(requireActivity());

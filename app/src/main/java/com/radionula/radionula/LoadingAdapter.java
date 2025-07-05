@@ -36,7 +36,7 @@ public class LoadingAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = activity.getLayoutInflater().inflate(R.layout.adapter_loading, parent);
 
-        TextView textView = (TextView) convertView.findViewById(R.id.adapter_loading_textview);
+        TextView textView = convertView.findViewById(R.id.adapter_loading_textview);
         Typeface artistFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Roboto-Regular.ttf");
         textView.setTypeface(artistFont);
 

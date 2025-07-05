@@ -25,8 +25,8 @@ public class NoConnectionFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_no_connection, container, false);
 
-        TextView textview1 = (TextView) view.findViewById(R.id.fragment_no_connection_textview1);
-        TextView textview2 = (TextView) view.findViewById(R.id.fragment_no_connection_textview2);
+        TextView textview1 = view.findViewById(R.id.fragment_no_connection_textview1);
+        TextView textview2 = view.findViewById(R.id.fragment_no_connection_textview2);
 
         Typeface artistFont = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Roboto-Regular.ttf");
 

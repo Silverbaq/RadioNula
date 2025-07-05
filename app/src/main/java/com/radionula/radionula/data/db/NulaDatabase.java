@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NulaDatabase {
-    private MyDatabaseHelper databaseHelper;
-    private SQLiteDatabase database;
+    private final MyDatabaseHelper databaseHelper;
+    private final SQLiteDatabase database;
 
     public final static String EMP_TABLE = "NulaTracks"; // name of table
 

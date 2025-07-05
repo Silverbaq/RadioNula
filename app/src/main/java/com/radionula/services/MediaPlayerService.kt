@@ -43,7 +43,7 @@ class MediaPlayerService : Service() {
             radioPlayer.tuneIn(intent.getStringExtra("radioUrl") ?: "")
         }
 
-        return Service.START_REDELIVER_INTENT
+        return START_REDELIVER_INTENT
         //return Service.START_NOT_STICKY
     }
 
@@ -85,7 +85,7 @@ class MediaPlayerService : Service() {
                 channelName, NotificationManager.IMPORTANCE_NONE)
         chan.lightColor = Color.BLUE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val service = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         service.createNotificationChannel(chan)
         return channelId
     }
