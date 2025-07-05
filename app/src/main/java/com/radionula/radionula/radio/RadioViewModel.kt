@@ -3,6 +3,7 @@ package com.radionula.radionula.radio
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.radionula.radionula.R
@@ -11,6 +12,8 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class RadioViewModel(
@@ -26,8 +29,8 @@ class RadioViewModel(
     private val channelData = MutableLiveData<Triple<Int, Int, Int>>()
     private val _favoriteAdded = MutableLiveData<String>()
 
-    val currentSong: LiveData<CurrentSong> = playlistReposetory.getCurrentSong()
-    val playlist: LiveData<List<NulaTrack>> = playlistReposetory.getCurrentPlaylist().map { it -> it.map { NulaTrack(it.artist, it.title, it.cover) } }
+    val currentSong: LiveData<CurrentSong> = playlistReposetory.currentSong().asLiveData()
+    val playlist: LiveData<List<NulaTrack>> = playlistReposetory.currentPlaylist().asLiveData()
     val tunedIn: LiveData<Unit> = tuneInData
     val isPlaying: LiveData<Boolean> = playingData
     val pause: LiveData<Unit> = pauseData

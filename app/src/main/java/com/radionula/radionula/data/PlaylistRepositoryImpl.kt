@@ -1,80 +1,82 @@
 package com.radionula.radionula.data
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
+import com.radionula.radionula.data.network.response.PlaylistResponse
+import com.radionula.radionula.model.NulaTrack
 import com.radionula.radionula.radio.ChannelPresenter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 
 class PlaylistRepositoryImpl(
-        private val playlistNetworkDataSource: PlaylistNetworkDataSource,
-        private val coroutineScope: CoroutineScope,
+    private val playlistNetworkDataSource: PlaylistNetworkDataSource,
+    private val coroutineScope: CoroutineScope,
 ) : PlaylistRepository {
+    private var _currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
+    private var _currentSong: CurrentSong? = null
 
-    private var currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
+    private val _currentSongFlow = MutableSharedFlow<CurrentSong>()
+    private val _cachedPlaylist = mutableListOf<CurrentSong>()
 
-    private val currentSong = MutableLiveData<CurrentSong>()
-    private val playlist = MutableLiveData<MutableList<CurrentSong>>().apply { postValue(mutableListOf()) }
+    private val _playlist = MutableSharedFlow<PlaylistResponse?>()
 
-    init {
-        playlistNetworkDataSource.downloadedPlaylist.observeForever { newPlaylist ->
-            when (currentChannel) {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val playlistFlow: Flow<List<NulaTrack>> =
+        _playlist.mapLatest { newPlaylist: PlaylistResponse? ->
+            val song: CurrentSong? = when (_currentChannel) {
                 ChannelPresenter.Channel.Classic -> {
-                    if (currentSong.value != newPlaylist.classics.currentSong) {
-                        currentSong.value = newPlaylist.classics.currentSong
-                        val temp = playlist.value
-                        temp?.add(0, newPlaylist.classics.currentSong)
-                        playlist.value = temp
-                    }
+                    newPlaylist?.classics?.currentSong
                 }
+
                 ChannelPresenter.Channel.Ch2 -> {
-                    if (currentSong.value != newPlaylist.ch2.currentSong) {
-                        currentSong.value = newPlaylist.ch2.currentSong
-                        val temp = playlist.value
-                        temp?.add(0, newPlaylist.ch2.currentSong)
-                        playlist.value = temp
-                    }
+                    newPlaylist?.ch2?.currentSong
                 }
+
                 ChannelPresenter.Channel.Smoky -> {
-                    if (currentSong.value != newPlaylist.smoky.currentSong) {
-                        currentSong.value = newPlaylist.smoky.currentSong
-                        val temp = playlist.value
-                        temp?.add(0, newPlaylist.smoky.currentSong)
-                        playlist.value = temp
-                    }
+                    newPlaylist?.smoky?.currentSong
                 }
             }
-        }
-    }
 
-    override fun getCurrentSong(): LiveData<CurrentSong> {
-        return currentSong
+            if (song != _currentSong) {
+                _currentSong = song
+                _currentSong?.let { currentSong ->
+                    _currentSongFlow.emit(currentSong)
+                    _cachedPlaylist.add(0, currentSong)
+                }
+            }
+
+            _cachedPlaylist.map { NulaTrack(it.artist, it.title, it.cover) }
+        }
+
+    override fun currentSong(): Flow<CurrentSong> {
+        return _currentSongFlow
     }
 
     override suspend fun fetchCurrentPlaylist() {
-        coroutineScope.launch {
-            playlistNetworkDataSource.fetchPlaylist()
-        }
+        val playlist = playlistNetworkDataSource.fetchPlaylist()
+        _playlist.emit(playlist)
     }
 
-    override suspend fun autoFetchPlaylist(){
+    override fun autoFetchPlaylist() {
         coroutineScope.launch {
-            while(true){
-                playlistNetworkDataSource.fetchPlaylist()
-
+            while (true) {
+                val playlist = playlistNetworkDataSource.fetchPlaylist()
+                _playlist.emit(playlist)
                 delay(20_000)
             }
         }
     }
 
-    override fun getCurrentPlaylist(): LiveData<MutableList<CurrentSong>> {
-        return playlist
+    override fun currentPlaylist(): Flow<List<NulaTrack>> {
+        return playlistFlow
     }
 
     override fun setChannel(channel: ChannelPresenter.Channel) {
-        currentChannel = channel
+        _currentChannel = channel
     }
 }
