@@ -31,26 +31,31 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.activityMainToolbar.navButton.setOnClickListener { binding.drawerLayout.openDrawer(GravityCompat.START) }
+        binding.activityMainToolbar.navButton.setOnClickListener {
+            binding.drawerLayout.openDrawer(
+                GravityCompat.START
+            )
+        }
 
         setupDrawerContent(binding.nvView)
 
-        connectionData = ConnectivityLiveData(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
+        connectionData =
+            ConnectivityLiveData(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
 
         // Navigation component
         host = NavHostFragment.create(R.navigation.nula_navigation)
-        supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
-                .setPrimaryNavigationFragment(host).commit()
+        supportFragmentManager.beginTransaction().replace(binding.navHostFragment.id, host)
+            .setPrimaryNavigationFragment(host).commit()
 
         // Network state
         connectionData.observe(this, Observer { connection ->
             if (!connection) {
                 supportFragmentManager.beginTransaction()
-                        .replace(R.id.nav_host_fragment, NoConnectionFragment())
-                        .commit()
+                    .replace(binding.navHostFragment.id, NoConnectionFragment())
+                    .commit()
             } else {
-                supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, host)
-                        .setPrimaryNavigationFragment(host).commit()
+                supportFragmentManager.beginTransaction().replace(binding.navHostFragment.id, host)
+                    .setPrimaryNavigationFragment(host).commit()
             }
         })
 
@@ -77,16 +82,19 @@ class MainActivity : BaseActivity() {
                 host.navController.navigateUp()
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
+
             R.id.nav_Favorites -> {
                 host.navController.navigateUp()
                 host.navController.navigate(R.id.action_radioFragment_to_favoritesFragment, null)
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
+
             R.id.nav_Comments -> {
                 host.navController.navigateUp()
                 host.navController.navigate(R.id.action_radioFragment_to_commentsFragment, null)
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             }
+
             else -> {
                 // Do nothing
             }
@@ -99,7 +107,7 @@ class MainActivity : BaseActivity() {
         try {
             // Only acquire if not already held
             if (wakeLock?.isHeld == false) {
-                wakeLock?.acquire(10*60*1000L) // 10 minutes timeout as a safety measure
+                wakeLock?.acquire(10 * 60 * 1000L) // 10 minutes timeout as a safety measure
             }
         } catch (ex: Exception) {
             // Log the exception
@@ -127,7 +135,7 @@ class MainActivity : BaseActivity() {
         } catch (ex: Exception) {
             // Log the exception
         }
-        
+
         val playerPresenter: MediaplayerPresenter by inject()
         playerPresenter.pauseRadio()
         super.onDestroy()
