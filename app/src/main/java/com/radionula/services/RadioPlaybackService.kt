@@ -76,6 +76,9 @@ class RadioPlaybackService : MediaSessionService() {
     /** Swiping the app away stops the radio, which is what the old service did. */
     override fun onTaskRemoved(rootIntent: Intent?) {
         mediaSession?.player?.stop()
+        // The process can outlive the task, and the feed poll would otherwise
+        // carry on hitting the network every 30 seconds with nobody listening.
+        playlistRepository.clearSession()
         stopSelf()
     }
 

@@ -55,7 +55,13 @@ class RadioViewModel(
     }
 
     fun tuneIn() {
-        tunedIn.value = true
+        if (!tunedIn.value) {
+            tunedIn.value = true
+            // A fresh ViewModel means a fresh listening session. The repository
+            // is a Koin single that survives the activity, so anything left from
+            // last time is dropped before the first fetch rather than shown.
+            playlistReposetory.clearSession()
+        }
         mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.ordinal)
     }
 
