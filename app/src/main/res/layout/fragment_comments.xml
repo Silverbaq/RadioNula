@@ -1,21 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     tools:context=".comments.CommentsFragment">
 
-   <LinearLayout
-       android:orientation="vertical"
-       android:layout_width="match_parent"
-       android:layout_height="match_parent"
-       android:id="@+id/parentLayout"></LinearLayout>
-
-
     <!--
-    <WebView  xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/fragment_comments_webview"
+         Same treatment as the no-connection screen: the artwork alone is too
+         busy to read text over, so it sits behind a scrim. The WebView stays
+         transparent so both show through.
+    -->
+    <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
--->
+        android:background="@color/faded_black" />
+
+    <WebView
+        android:id="@+id/commentsWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </FrameLayout>

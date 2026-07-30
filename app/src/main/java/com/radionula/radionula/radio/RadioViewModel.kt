@@ -11,6 +11,8 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class RadioViewModel(
@@ -19,63 +21,76 @@ class RadioViewModel(
         private val mediaplayerPresenter: MediaplayerPresenter,
         private val nulaDatabase: NulaDatabase
 ) : ViewModel() {
-    private val playingData = MutableLiveData<Boolean>()
-
-    private val tuneInData = MutableLiveData<Unit>()
-    private val pauseData = MutableLiveData<Unit>()
     private val channelData = MutableLiveData<Triple<Int, Int, Int>>()
     private val _favoriteAdded = MutableLiveData<String>()
 
     val currentSong: LiveData<CurrentSong> = playlistReposetory.currentSong().asLiveData()
     val playlist: LiveData<List<NulaTrack>> = playlistReposetory.currentPlaylist().asLiveData()
-    val tunedIn: LiveData<Unit> = tuneInData
-    val isPlaying: LiveData<Boolean> = playingData
-    val pause: LiveData<Unit> = pauseData
+
+    /** Comes from the player, so audio focus and notification pauses show up here too. */
+    val isPlaying: LiveData<Boolean> = mediaplayerPresenter.isPlaying.asLiveData()
     val currentChannelResources: LiveData<Triple<Int, Int, Int>> = channelData
-    val getsNoizy: LiveData<Unit> = mediaplayerPresenter.getsNoizy
     val favoriteAdded: LiveData<String> = _favoriteAdded
 
-    fun autoFetchPlaylist() {
+    private val tunedIn = MutableStateFlow(false)
+
+    /**
+     * Sticky. The tune-in button belongs to a cold start only - pausing or
+     * skipping a channel must never bring it back.
+     */
+    val showTuneInButton: LiveData<Boolean> = tunedIn.map { !it }.asLiveData()
+
+    init {
         viewModelScope.launch {
-            playlistReposetory.autoFetchPlaylist()
+            // Playback resumed from the notification counts as tuned in as well.
+            mediaplayerPresenter.isPlaying.collect { if (it) tunedIn.value = true }
+        }
+        viewModelScope.launch {
+            mediaplayerPresenter.channelIndex.collect(::onChannelChanged)
         }
     }
 
-    fun tuneIn() {
-        tuneInData.postValue(Unit)
-        playingData.postValue(true)
-        mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
-        fetchPlaylist()
+    fun autoFetchPlaylist() {
+        playlistReposetory.autoFetchPlaylist()
     }
 
+    fun tuneIn() {
+        tunedIn.value = true
+        mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.ordinal)
+    }
+
+    /**
+     * Skips channel while playing, and starts the current channel while stopped
+     * - which is also the way back from a pause, since the tune-in button is
+     * gone for good after the first tap.
+     */
     fun nextChannel() {
-        viewModelScope.launch {
-            if (playingData.value == true) {
-                channelPresenter.nextChannel()
-                playlistReposetory.setChannel(channelPresenter.currentChannel)
-                playlistReposetory.fetchCurrentPlaylist()
-                channelData.postValue(getChannelLogo(channelPresenter.currentChannel))
-            }
-            playingData.postValue(true)
-            mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.url)
+        if (mediaplayerPresenter.isPlaying.value) {
+            mediaplayerPresenter.nextChannel()
+        } else {
+            mediaplayerPresenter.tuneIn(channelPresenter.currentChannel.ordinal)
         }
     }
 
     fun pauseRadio() {
-        pauseData.postValue(Unit)
-        playingData.postValue(false)
         mediaplayerPresenter.pauseRadio()
     }
 
     fun addFavoriteClicked(track: NulaTrack) {
-        nulaDatabase.insertTrack(track)
-        _favoriteAdded.postValue(track.title)
+        viewModelScope.launch {
+            nulaDatabase.insertTrack(track)
+            _favoriteAdded.postValue(track.title)
+        }
     }
 
-    private fun fetchPlaylist() {
-        viewModelScope.launch {
-            playlistReposetory.fetchCurrentPlaylist()
-        }
+    private suspend fun onChannelChanged(index: Int) {
+        val channel = channelPresenter.select(index)
+        playlistReposetory.setChannel(channel)
+        channelData.postValue(getChannelLogo(channel))
+
+        // Nothing is fetched until the radio has been started, so a cold start
+        // shows no playlist rather than tracks this session never heard.
+        if (tunedIn.value) playlistReposetory.fetchCurrentPlaylist()
     }
 
     private fun getChannelLogo(channel: ChannelPresenter.Channel): Triple<Int, Int, Int> {

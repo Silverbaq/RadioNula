@@ -1,42 +1,38 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'com.google.devtools.ksp'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+}
 
 android {
-    compileSdkVersion 36
-    buildToolsVersion '36.0.0'
+    compileSdk = 36
+    buildToolsVersion = '36.0.0'
 
     defaultConfig {
-        applicationId "com.radionula.nula"
-        minSdkVersion 21
-        targetSdkVersion 36
-        versionCode 23
-        versionName "2.2.7"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        applicationId = "com.radionula.nula"
+        minSdk = 21
+        targetSdk = 36
+        versionCode = 24
+        versionName = "2.3.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
-    namespace "com.radionula.radionula"
+    namespace = "com.radionula.radionula"
 
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
-    }
-
-    kotlin {
-        jvmToolchain(21)
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     testOptions {
@@ -47,60 +43,30 @@ android {
 dependencies {
     ext.koin_version = "4.1.0"
 
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.12.0'
 
     //implementation 'com.android.support:multidex:2.0.1'
 
-    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
-
-    implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'com.mikhaellopez:circularimageview:4.3.1'
 
     implementation 'com.squareup.retrofit2:retrofit:3.0.0'
-    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
-    // Room
-    implementation "androidx.room:room-runtime:2.7.2"
-    implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.1'
-    ksp "androidx.room:room-compiler:2.7.2"
 
     implementation("io.coil-kt:coil:2.7.0")
-
-    implementation 'com.github.bumptech.glide:glide:4.16.0'
 
     // Navigation
     implementation 'androidx.core:core-ktx:1.16.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation "androidx.navigation:navigation-fragment-ktx:2.9.1"
-    // For Kotlin use navigation-fragment-ktx
-    implementation "androidx.navigation:navigation-ui-ktx:2.9.1" // For Kotlin use navigation-ui-ktx
 
-
-    // Koin main features for Android (Scope,ViewModel ...)
     implementation "io.insert-koin:koin-android:$koin_version"
-    // Koin Java Compatibility
-    implementation "io.insert-koin:koin-android-compat:$koin_version"
-    // Koin for Jetpack WorkManager
-    implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
-    // Koin for Android - Scope feature
-    // include koin-android-scope & koin-android
-    //implementation "io.insert-koin:koin-android-viewmodel:$koin_version"
-    // Koin for Jetpack Compose
-    //implementation "io.insert-koin:koin-androidx-compose:$koin_version"
-
-    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.media3:media3-exoplayer:1.7.1'
-    implementation 'androidx.media3:media3-ui:1.7.1'
+    implementation 'androidx.media3:media3-session:1.7.1'
     implementation 'androidx.media3:media3-common:1.7.1'
 
     // Firebase crashlytics
@@ -115,12 +81,11 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.6.1'
 
 
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
     testImplementation 'org.mockito:mockito-core:5.18.0'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation 'junit:junit:4.13.2'
 
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test:rules:1.0.2'
     androidTestImplementation 'org.mockito:mockito-android:5.18.0'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'

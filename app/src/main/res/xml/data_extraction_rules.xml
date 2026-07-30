@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Backup rules for API 31 and above.
+
+     cloud-backup excludes the WebView data store so the Remark42 session
+     cookie stays on the device. device-transfer is left unrestricted: that
+     path is a direct, user-initiated device-to-device copy, so keeping the
+     comment login is a convenience rather than an exposure.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude
+            domain="root"
+            path="app_webview" />
+    </cloud-backup>
+</data-extraction-rules>
