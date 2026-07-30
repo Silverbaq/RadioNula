@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Auto Backup rules for API 30 and below.
+
+     Favourites (the NulaDB database) are worth carrying to a new device. The
+     WebView data store is not: it holds the Remark42 session cookie, and a
+     login token has no business being copied into a cloud backup.
+-->
+<full-backup-content>
+    <exclude
+        domain="root"
+        path="app_webview" />
+</full-backup-content>
