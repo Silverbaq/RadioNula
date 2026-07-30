@@ -59,6 +59,17 @@ class PlaylistRepositoryImpl(
         }
     }
 
+    override fun clearSession() {
+        autoFetchJob?.cancel()
+        autoFetchJob = null
+        sessionHistory.clear()
+        _currentSong = null
+        // Without this the flows keep replaying the last track and playlist to
+        // the next subscriber, which is what made a reopened app look busy.
+        _currentSongFlow.resetReplayCache()
+        _playlist.resetReplayCache()
+    }
+
     override fun setChannel(channel: ChannelPresenter.Channel) {
         // _currentSong is deliberately kept: it is the de-duplication key, and
         // clearing it would re-add the same track to the session history when
