@@ -18,6 +18,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <!--
+             The no-connection view is an overlay rather than a replacement for
+             the nav host: swapping the host out destroys the NavController and
+             it cannot be put back.
+        -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/nav_host_fragment"
                 android:name="androidx.navigation.fragment.NavHostFragment"
@@ -25,6 +34,14 @@
                 android:layout_height="match_parent"
                 app:defaultNavHost="true"
                 app:navGraph="@navigation/nula_navigation" />
+
+            <include
+                android:id="@+id/noConnectionOverlay"
+                layout="@layout/fragment_no_connection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </FrameLayout>
     </LinearLayout>
 
     <!-- The nula_navigation drawer that comes from the left -->

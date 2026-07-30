@@ -40,13 +40,11 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
         super.onViewCreated(view, savedInstanceState)
         binding.playlistRecyclerView.adapter = adapter
 
-        radioViewModel.tunedIn.onResult { setTunedIn() }
-        radioViewModel.isPlaying.onResult { isPlaying -> if (isPlaying) { startVinyl() } }
+        radioViewModel.showTuneInButton.onResult(::setControls)
+        radioViewModel.isPlaying.onResult { if (it) startVinyl() else stopVinyl() }
         radioViewModel.currentSong.onResult { setVinylImage(it.cover) }
-        radioViewModel.pause.onResult{ stopVinyl() }
         radioViewModel.playlist.onResult(::setPlaylist)
         radioViewModel.currentChannelResources.onResult(::setChannelLogo)
-        radioViewModel.getsNoizy.onResult{ radioViewModel.pauseRadio() }
         radioViewModel.favoriteAdded.onResult(::postFavoriteAddedToast)
 
         binding.fragmentControlsIvSkip.setOnClickListener {
@@ -59,18 +57,13 @@ class PlayerFragment : BaseFragment(), FavoritesListener {
             radioViewModel.tuneIn()
             radioViewModel.autoFetchPlaylist()
         }
-
-        // TODO: Make sure if this is needed
-        // Call State
-        //PhoneStateLiveData(
-        //        requireContext().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        //).observe(this, Observer { idle -> if (!idle) radioViewModel.pauseRadio() })
     }
 
-    private fun setTunedIn() {
-        binding.fragmentControlsIvTuneIn.visibility = View.INVISIBLE
-        binding.fragmentControlsIvPause.visibility = View.VISIBLE
-        binding.fragmentControlsIvSkip.visibility = View.VISIBLE
+    /** Tune-in on a cold start, playback controls from the first tap onwards. */
+    private fun setControls(showTuneIn: Boolean) {
+        binding.fragmentControlsIvTuneIn.visibility = if (showTuneIn) View.VISIBLE else View.INVISIBLE
+        binding.fragmentControlsIvPause.visibility = if (showTuneIn) View.INVISIBLE else View.VISIBLE
+        binding.fragmentControlsIvSkip.visibility = if (showTuneIn) View.INVISIBLE else View.VISIBLE
     }
 
     private fun setChannelLogo(channelResources: Triple<Int, Int, Int>) {

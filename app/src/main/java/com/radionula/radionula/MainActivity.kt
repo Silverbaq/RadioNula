@@ -2,27 +2,24 @@ package com.radionula.radionula
 
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.os.PowerManager
 import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.GravityCompat
-import androidx.lifecycle.Observer
+import androidx.core.view.isVisible
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
 import com.radionula.radionula.databinding.ActivityMainBinding
-import com.radionula.radionula.networkavaliable.NoConnectionFragment
 import com.radionula.radionula.util.ConnectivityLiveData
-import com.radionula.services.mediaplayer.MediaplayerPresenter
-import org.koin.android.ext.android.inject
 
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var connectionData: ConnectivityLiveData
 
-    private var wakeLock: PowerManager.WakeLock? = null
-
-    private lateinit var host: NavHostFragment
+    private val navController: NavController
+        get() = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment)
+            .navController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,29 +39,12 @@ class MainActivity : BaseActivity() {
         connectionData =
             ConnectivityLiveData(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
 
-        // Navigation component
-        host = NavHostFragment.create(R.navigation.nula_navigation)
-        supportFragmentManager.beginTransaction().replace(binding.navHostFragment.id, host)
-            .setPrimaryNavigationFragment(host).commit()
-
-        // Network state
-        connectionData.observe(this, Observer { connection ->
-            if (!connection) {
-                supportFragmentManager.beginTransaction()
-                    .replace(binding.navHostFragment.id, NoConnectionFragment())
-                    .commit()
-            } else {
-                supportFragmentManager.beginTransaction().replace(binding.navHostFragment.id, host)
-                    .setPrimaryNavigationFragment(host).commit()
-            }
-        })
-
-        // Setup WakeLock for keeping the CPU running when screen is off
-        val pm = getSystemService(POWER_SERVICE) as PowerManager
-        wakeLock = pm.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            "RadioNula:PlaybackWakeLock"
-        )
+        // The nav host is declared in the layout and stays mounted for the life
+        // of the activity: the no-connection state is only an overlay on top of
+        // it, so the NavController and the back stack survive going offline.
+        connectionData.observe(this) { connected ->
+            binding.noConnectionOverlay.root.isVisible = !connected
+        }
     }
 
     private fun setupDrawerContent(navigationView: NavigationView) {
@@ -75,69 +55,15 @@ class MainActivity : BaseActivity() {
     }
 
     fun selectDrawerItem(menuItem: MenuItem) {
-        // Create a new fragment and specify the planet to show based on
-        // position
+        // Navigating by destination works from any current destination. The
+        // actions do not - they are declared on radioFragment only, so using
+        // them from e.g. the favourites screen throws.
         when (menuItem.itemId) {
-            R.id.nav_Radio_Player -> {
-                host.navController.navigateUp()
-                binding.drawerLayout.closeDrawer(GravityCompat.START)
-            }
-
-            R.id.nav_Favorites -> {
-                host.navController.navigateUp()
-                host.navController.navigate(R.id.action_radioFragment_to_favoritesFragment, null)
-                binding.drawerLayout.closeDrawer(GravityCompat.START)
-            }
-
-            R.id.nav_Comments -> {
-                host.navController.navigateUp()
-                host.navController.navigate(R.id.action_radioFragment_to_commentsFragment, null)
-                binding.drawerLayout.closeDrawer(GravityCompat.START)
-            }
-
-            else -> {
-                // Do nothing
-            }
+            R.id.nav_Radio_Player -> navController.popBackStack(R.id.radioFragment, false)
+            R.id.nav_Favorites -> navController.navigate(R.id.favoritesFragment)
+            R.id.nav_Comments -> navController.navigate(R.id.commentsFragment)
+            else -> Unit
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Makes sure the music keeps playing after the screen is off.
-        try {
-            // Only acquire if not already held
-            if (wakeLock?.isHeld == false) {
-                wakeLock?.acquire(10 * 60 * 1000L) // 10 minutes timeout as a safety measure
-            }
-        } catch (ex: Exception) {
-            // Log the exception
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        try {
-            // Only release if held
-            if (wakeLock?.isHeld == true) {
-                wakeLock?.release()
-            }
-        } catch (ex: Exception) {
-            // Log the exception
-        }
-    }
-
-    override fun onDestroy() {
-        // Make sure to release the wake lock if it's still held
-        try {
-            if (wakeLock?.isHeld == true) {
-                wakeLock?.release()
-            }
-        } catch (ex: Exception) {
-            // Log the exception
-        }
-
-        val playerPresenter: MediaplayerPresenter by inject()
-        playerPresenter.pauseRadio()
-        super.onDestroy()
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
     }
 }

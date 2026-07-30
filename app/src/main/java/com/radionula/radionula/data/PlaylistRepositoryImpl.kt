@@ -5,6 +5,7 @@ import com.radionula.radionula.data.network.PlaylistNetworkDataSource
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.radionula.radio.ChannelPresenter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,6 +17,10 @@ class PlaylistRepositoryImpl(
 ) : PlaylistRepository {
     private var _currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
     private var _currentSong: CurrentSong? = null
+    private var autoFetchJob: Job? = null
+
+    /** Only what has actually been heard since the app was opened. */
+    private val sessionHistory = mutableListOf<NulaTrack>()
 
     // replay = 1 so observers attaching after a fetch still see the latest feed.
     private val _currentSongFlow = MutableSharedFlow<CurrentSong>(replay = 1)
@@ -27,18 +32,26 @@ class PlaylistRepositoryImpl(
 
     override suspend fun fetchCurrentPlaylist() {
         val tracks = playlistNetworkDataSource.fetchPlaylist(_currentChannel) ?: return
-        _playlist.emit(tracks)
 
-        // The feed's first item is what is playing right now, the rest is history.
-        val song = tracks.firstOrNull()?.let { CurrentSong(it.artist, it.image, it.title) } ?: return
-        if (song != _currentSong) {
-            _currentSong = song
-            _currentSongFlow.emit(song)
-        }
+        // Only the feed's first item is used: the ten history entries it carries
+        // were played before the app was even open, and the playlist is meant to
+        // be what this session has heard.
+        val current = tracks.firstOrNull() ?: return
+        val song = CurrentSong(current.artist, current.image, current.title)
+        if (song == _currentSong) return
+
+        _currentSong = song
+        _currentSongFlow.emit(song)
+
+        sessionHistory.add(0, current)
+        _playlist.emit(sessionHistory.toList())
     }
 
     override fun autoFetchPlaylist() {
-        coroutineScope.launch {
+        // Tune-in is reachable more than once now, and every call used to start
+        // another endless poll loop.
+        if (autoFetchJob?.isActive == true) return
+        autoFetchJob = coroutineScope.launch {
             while (true) {
                 fetchCurrentPlaylist()
                 delay(30_000)
@@ -47,8 +60,9 @@ class PlaylistRepositoryImpl(
     }
 
     override fun setChannel(channel: ChannelPresenter.Channel) {
-        if (channel == _currentChannel) return
+        // _currentSong is deliberately kept: it is the de-duplication key, and
+        // clearing it would re-add the same track to the session history when
+        // two channels happen to be playing it.
         _currentChannel = channel
-        _currentSong = null
     }
 }
