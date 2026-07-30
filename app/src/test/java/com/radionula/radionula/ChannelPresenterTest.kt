@@ -58,6 +58,15 @@ class ChannelPresenterTest {
     }
 
     @Test
+    fun comments_urls_match_the_website_threads(){
+        // These are the exact remark_config.url values radionula.com sends. Change
+        // one and the app silently opens a different, empty conversation.
+        assertEquals("https://radionula.com/", ChannelPresenter.Channel.Classic.commentsUrl)
+        assertEquals("https://radionula.com/organic", ChannelPresenter.Channel.Ch2.commentsUrl)
+        assertEquals("https://radionula.com/beatz", ChannelPresenter.Channel.Smoky.commentsUrl)
+    }
+
+    @Test
     fun channel_ordinals_match_the_player_playlist_order(){
         // The service queues Channel.entries as media items, so the ordinal is
         // the media item index the controller seeks to.
