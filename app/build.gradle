@@ -53,12 +53,9 @@ dependencies {
 
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
 
-    implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'com.mikhaellopez:circularimageview:4.3.1'
 
     implementation 'com.squareup.retrofit2:retrofit:3.0.0'
-    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
@@ -111,6 +108,7 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.6.1'
 
 
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
     testImplementation 'org.mockito:mockito-core:5.18.0'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation 'junit:junit:4.13.2'

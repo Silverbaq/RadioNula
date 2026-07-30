@@ -11,7 +11,14 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.radio.ChannelPresenter
 import com.radionula.radionula.radio.RadioViewModel
 import com.radionula.services.mediaplayer.MediaplayerPresenter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -19,6 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(JUnit4::class)
 class RadioViewModelTest  {
 
@@ -33,8 +41,21 @@ class RadioViewModelTest  {
 
     @Before
     fun before() {
+        // viewModelScope runs on Dispatchers.Main, which does not exist on the JVM.
+        // Unconfined so the launched blocks finish before the assertions run.
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
         whenever(channelPresenter.currentChannel).thenReturn(ChannelPresenter.Channel.Classic)
+        // The ViewModel wraps both repository flows in asLiveData() on construction,
+        // so they have to be stubbed before it is built.
+        whenever(playlistRepository.currentSong()).thenReturn(emptyFlow())
+        whenever(playlistRepository.currentPlaylist()).thenReturn(emptyFlow())
         radioViewModel = RadioViewModel(playlistRepository, channelPresenter, mediaplayerPresenter, nulaDatabase)
+    }
+
+    @After
+    fun after() {
+        Dispatchers.resetMain()
     }
 
     @Test

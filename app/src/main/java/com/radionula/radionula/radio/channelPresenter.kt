@@ -4,10 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
 class ChannelPresenter {
-    enum class Channel(val url: String) {
-        Classic("http://streaming.radionula.com:8800/classics"),
-        Ch2("http://streaming.radionula.com:8800/channel2"),
-        Smoky("http://streaming.radionula.com:8800/lounge")
+    /**
+     * [xmlPath] is the channel's "recently played" RSS feed, relative to
+     * https://radionula.com/ - the old api.radionula.com JSON API is gone.
+     */
+    enum class Channel(val url: String, val xmlPath: String) {
+        Classic("https://strm.radionula.com/channel4", "recently_played_ch4.xml"),
+        Ch2("https://strm.radionula.com/channel5", "recently_played_ch5.xml"),
+        Smoky("https://strm.radionula.com/channel6", "recently_played_ch6.xml")
     }
     var currentChannel: Channel = Channel.Classic
     private val channelData =  MutableLiveData<Channel>()

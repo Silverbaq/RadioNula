@@ -1,43 +1,36 @@
 package com.radionula.radionula.data
 
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.radionula.radionula.data.network.ConnectivityInterceptorImpl
-import com.radionula.radionula.data.network.response.PlaylistResponse
-import kotlinx.coroutines.Deferred
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Headers
+import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface PlaylistApiService {
 
-    @GET("playlist/")
-    suspend fun getPlaylist(): PlaylistResponse
+    /**
+     * Fetches a "recently played" RSS feed, e.g. "recently_played_ch4.xml".
+     * [cacheBuster] mirrors what radionula.com itself sends - the feeds are
+     * static files and get cached aggressively otherwise.
+     */
+    @Headers("Cache-Control: no-store")
+    @GET
+    suspend fun getPlaylist(@Url xmlPath: String, @Query("t") cacheBuster: Long): ResponseBody
 
     companion object {
         operator fun invoke(
                 connectivityInterceptor: ConnectivityInterceptorImpl
         ): PlaylistApiService {
-            val requestInterceptor = Interceptor { chain ->
-
-                val request = chain.request()
-                        .newBuilder()
-                        .build()
-
-                return@Interceptor chain.proceed(request)
-            }
-
             val okHttpClient = OkHttpClient.Builder()
-                    .addInterceptor(requestInterceptor)
                     .addInterceptor(connectivityInterceptor)
                     .build()
 
             return Retrofit.Builder()
                     .client(okHttpClient)
-                    .baseUrl("https://api.radionula.com/")
-                    .addCallAdapterFactory(CoroutineCallAdapterFactory())
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .baseUrl("https://radionula.com/")
                     .build()
                     .create(PlaylistApiService::class.java)
         }
