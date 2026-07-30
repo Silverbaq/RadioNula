@@ -1,42 +1,39 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'com.google.devtools.ksp'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+plugins {
+    id 'com.android.application'
+    id 'com.google.devtools.ksp'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+}
 
 android {
-    compileSdkVersion 36
-    buildToolsVersion '36.0.0'
+    compileSdk = 36
+    buildToolsVersion = '36.0.0'
 
     defaultConfig {
-        applicationId "com.radionula.nula"
-        minSdkVersion 21
-        targetSdkVersion 36
-        versionCode 23
-        versionName "2.2.7"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        applicationId = "com.radionula.nula"
+        minSdk = 21
+        targetSdk = 36
+        versionCode = 23
+        versionName = "2.2.7"
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         //multiDexEnabled true
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
-    namespace "com.radionula.radionula"
+    namespace = "com.radionula.radionula"
 
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
-    }
-
-    kotlin {
-        jvmToolchain(21)
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     testOptions {
@@ -97,7 +94,6 @@ dependencies {
     //implementation "io.insert-koin:koin-androidx-compose:$koin_version"
 
     implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.media3:media3-exoplayer:1.7.1'
     implementation 'androidx.media3:media3-ui:1.7.1'

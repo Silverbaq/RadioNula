@@ -1,19 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '2.2.0'
     repositories {
-//        jcenter()
         mavenCentral()
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
-        }
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.11.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:9.3.1'
         classpath 'com.google.gms:google-services:4.4.3'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.4'
 
@@ -23,35 +16,12 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '2.2.0'
-    id 'com.google.devtools.ksp' version '2.2.0-2.0.2' apply false
+    id 'com.google.devtools.ksp' version '2.3.6' apply false
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        maven {
-            url 'https://maven.google.com'
-        }
-//        jcenter()
-        maven { url 'https://maven.fabric.io/public' }
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
-        }
+        google()
     }
-}
-
-
-/*
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-*/
-
-repositories {
-    mavenCentral()
-}
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
