@@ -1,8 +1,5 @@
 package com.radionula.radionula.radio
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-
 class ChannelPresenter {
     /**
      * [xmlPath] is the channel's "recently played" RSS feed, relative to
@@ -44,21 +41,12 @@ class ChannelPresenter {
     var currentChannel: Channel = Channel.Classic
         private set
 
-    private val channelData = MutableLiveData<Channel>()
-    fun observeChannel(): LiveData<Channel> = channelData
-
-    init {
-        select(Channel.Classic.ordinal)
-    }
-
     /**
      * The player owns which channel is live - it can be changed from the
      * notification or a headset - so the index comes from there.
      */
     fun select(index: Int): Channel {
-        val channel = Channel.entries.getOrElse(index) { Channel.Classic }
-        currentChannel = channel
-        channelData.postValue(channel)
-        return channel
+        currentChannel = Channel.entries.getOrElse(index) { Channel.Classic }
+        return currentChannel
     }
 }
