@@ -11,14 +11,19 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.radionula.radionula.R
-import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.databinding.AdapterPlaylistBinding
 import com.radionula.radionula.model.NulaTrack
 
-class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
-        RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-
-    private val myDataset: MutableList<NulaTrack> = nulaDatabase.selectAllTracks()
+/**
+ * [myDataset] is loaded by the fragment and [onRemove] hands the deletion back
+ * to it: the adapter used to query and delete straight from the database, on the
+ * main thread, from its own initialiser.
+ */
+class MyAdapter(
+        private val myDataset: MutableList<NulaTrack>,
+        private val onRemove: (NulaTrack) -> Unit,
+        val context: Context
+) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     class MyViewHolder(binding: AdapterPlaylistBinding) : RecyclerView.ViewHolder(binding.root) {
         // Holds the TextView that will add each animal to
@@ -57,7 +62,7 @@ class MyAdapter(private val nulaDatabase: NulaDatabase, val context: Context) :
 
                 // Click on favorite icon
                 ivFavorit.setOnClickListener {
-                    nulaDatabase.remoteTrack(item)
+                    onRemove(item)
 
                     holder.container.removeAllViews()
 

@@ -207,9 +207,11 @@ class RadioViewModelTest  {
     }
 
     @Test
-    fun addFavoriteClicked_does_not_touch_the_player() {
+    fun addFavoriteClicked_stores_the_track_off_the_main_thread() = runTest {
         radioViewModel.addFavoriteClicked(NulaTrack.EMPTY)
 
+        // insertTrack is suspend now, so this only verifies once the coroutine
+        // the ViewModel launched has run.
         verify(nulaDatabase).insertTrack(NulaTrack.EMPTY)
         verify(mediaplayerPresenter, never()).tuneIn(anyInt())
     }

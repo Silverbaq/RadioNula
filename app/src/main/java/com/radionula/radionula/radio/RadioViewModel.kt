@@ -77,8 +77,10 @@ class RadioViewModel(
     }
 
     fun addFavoriteClicked(track: NulaTrack) {
-        nulaDatabase.insertTrack(track)
-        _favoriteAdded.postValue(track.title)
+        viewModelScope.launch {
+            nulaDatabase.insertTrack(track)
+            _favoriteAdded.postValue(track.title)
+        }
     }
 
     private suspend fun onChannelChanged(index: Int) {
