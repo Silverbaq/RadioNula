@@ -6,7 +6,7 @@
 
 **Architecture:** A new `:shared` KMP library module (`com.android.kotlin.multiplatform.library`) holds domain, data, repository and ViewModel code in `commonMain`, with a thin `androidMain` for the Ktor engine and two platform functions. `:app` stays a plain `com.android.application` module owning all Compose UI, media3 playback, Firebase and the WebView comments screen, and depends on `:shared`. Android-locked libraries are swapped for multiplatform equivalents: Retrofit→Ktor, `javax.xml` DOM→xmlutil, `SQLiteOpenHelper`→the multiplatform `androidx.sqlite` driver.
 
-**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 0.91.3, `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.11.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
+**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 0.91.3, `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.10.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
 
 **Spec:** `docs/superpowers/specs/2026-07-31-kmp-migration-design.md`
 
@@ -1795,14 +1795,16 @@ proves the rows and their ids survive.
 In `gradle/libs.versions.toml`, bump lifecycle and add the base artifact:
 
 ```toml
-lifecycle = "2.11.0"
+lifecycle = "2.10.0"
 ```
 
 ```toml
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
 ```
 
-All four lifecycle artifacts share the `lifecycle` ref, so `-ktx`, `-compose` and `-runtime-compose` move to 2.11.0 together. Mixing lifecycle versions produces duplicate-class and `NoSuchMethodError` failures.
+All four lifecycle artifacts share the `lifecycle` ref, so `-ktx`, `-compose` and `-runtime-compose` move to 2.10.0 together. Mixing lifecycle versions produces duplicate-class and `NoSuchMethodError` failures.
+
+**2.10.0, not 2.11.0.** 2.11.0's `-compose` artifacts declare `minCompileSdk=37` and this project is on `compileSdk 36`; 2.10.0 needs 35 at most and is fully KMP. Bumping `compileSdk` to satisfy a lifecycle patch is out of scope and a far wider blast radius than a version pin.
 
 In `shared/build.gradle.kts`, add to `commonMain.dependencies`:
 
@@ -2056,7 +2058,7 @@ around twenty verify assertions, two on final classes, and rewriting it as
 hand-rolled spies risks weakening them for no coverage gain while the only
 target is Android. Rewrite it to fakes when an iOS target needs it.
 
-All lifecycle artifacts go to 2.11.0 together for the KMP viewmodel."
+All lifecycle artifacts go to 2.10.0 together for the KMP viewmodel."
 ```
 
 ---

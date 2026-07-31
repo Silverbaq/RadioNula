@@ -133,7 +133,7 @@ it removes the large majority of the diff.
 | — | Ktor `client-okhttp` | androidMain |
 | `javax.xml` DOM | **xmlutil 0.91.3** `core`, pull reader | commonMain |
 | `SQLiteOpenHelper` + hand-rolled SQL | **`androidx.sqlite:sqlite-bundled 2.7.0`** (driver only, no Room) | commonMain |
-| `lifecycle-viewmodel-ktx` 2.9.1 | `androidx.lifecycle:lifecycle-viewmodel` **2.11.0** (KMP) | commonMain |
+| `lifecycle-viewmodel-ktx` 2.9.1 | `androidx.lifecycle:lifecycle-viewmodel` **2.10.0** (KMP) | commonMain |
 | Koin 4.1.0 (`koin-android`) | `koin-core` **4.2.2** + `koin-android` 4.2.2 | common / androidMain |
 | `android.util.Log` | `expect`/`actual` `logError` | split |
 | Coil 2.7 | unchanged | `:app` |
