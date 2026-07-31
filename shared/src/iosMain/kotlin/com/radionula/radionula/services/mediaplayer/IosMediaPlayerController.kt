@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
@@ -19,7 +20,10 @@ import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.currentItem
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
+import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
+import platform.AVFoundation.AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
 import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.timeControlStatus
 import platform.Foundation.NSNotificationCenter
 import platform.Foundation.NSURL
 import platform.MediaPlayer.MPMediaItemPropertyArtist
@@ -39,11 +43,10 @@ import platform.MediaPlayer.MPRemoteCommandHandlerStatusSuccess
  * mode in the app's Info.plist), and the lock screen comes from the remote
  * command centre - the two things media3's MediaSession gave us for free.
  *
- * ponytail: isPlaying is tracked from our own calls and from the remote
- * commands rather than observed on AVPlayer, because KVO from Kotlin/Native
- * needs an ObjC observer class for one boolean. A stall or a failed stream will
- * therefore still read as playing; observe timeControlStatus if that matters.
- * There is also no tuning noise and no lock-screen artwork yet.
+ * ponytail: timeControlStatus is polled every 250ms rather than observed,
+ * because KVO from Kotlin/Native needs an ObjC observer class for one enum.
+ * That is also what decides when the tuning noise plays, so a burst of static
+ * can start up to a quarter second late. Still no lock-screen artwork.
  */
 @OptIn(ExperimentalForeignApi::class)
 class IosMediaPlayerController(
@@ -51,6 +54,7 @@ class IosMediaPlayerController(
 ) : MediaPlayerController {
 
     private val player = AVPlayer()
+    private val tuningNoise = IosTuningNoise()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     private val _isPlaying = MutableStateFlow(false)
@@ -64,6 +68,7 @@ class IosMediaPlayerController(
         registerRemoteCommands()
         observeInterruptions()
         observeNowPlaying()
+        observePlaybackState()
     }
 
     override fun tuneIn(channelIndex: Int) {
@@ -72,7 +77,6 @@ class IosMediaPlayerController(
         val url = NSURL.URLWithString(channel.url) ?: return
         player.replaceCurrentItemWithPlayerItem(AVPlayerItem(uRL = url))
         player.play()
-        _isPlaying.value = true
     }
 
     override fun nextChannel() {
@@ -84,14 +88,12 @@ class IosMediaPlayerController(
 
     override fun pauseRadio() {
         player.pause()
-        _isPlaying.value = false
     }
 
     private fun resume() {
         // Nothing queued yet means the listener has not tuned in at all, so
         // there is no channel to resume - start the one the UI is showing.
         if (player.currentItem == null) tuneIn(_channelIndex.value) else player.play()
-        _isPlaying.value = true
     }
 
     private fun configureAudioSession() {
@@ -114,16 +116,45 @@ class IosMediaPlayerController(
     private fun success(): MPRemoteCommandHandlerStatus = MPRemoteCommandHandlerStatusSuccess
 
     /**
-     * A phone call or a Siri request pauses playback without going through us,
-     * and the screen has to show that - the same reason isPlaying is reported by
-     * the player rather than set by the UI on Android.
+     * A phone call or a Siri request pauses playback without going through us.
+     * The poll below would notice on its own; this stops the static immediately
+     * rather than a quarter second later.
      */
     private fun observeInterruptions() {
         NSNotificationCenter.defaultCenter.addObserverForName(
             name = AVAudioSessionInterruptionNotification,
             `object` = null,
             queue = null,
-        ) { _ -> _isPlaying.value = false }
+        ) { _ ->
+            _isPlaying.value = false
+            tuningNoise.stop()
+        }
+    }
+
+    /**
+     * isPlaying comes from the player, not from whoever called us - that is what
+     * makes an interruption or a dead stream show up on the screen. Waiting to
+     * play at the requested rate is AVPlayer's buffering, so it is when the
+     * static belongs: exactly the STATE_BUFFERING && playWhenReady check the
+     * Android service makes.
+     */
+    private fun observePlaybackState() {
+        scope.launch {
+            while (true) {
+                val status = player.timeControlStatus
+                _isPlaying.value = status == AVPlayerTimeControlStatusPlaying
+                if (status == AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate) {
+                    tuningNoise.start()
+                } else {
+                    tuningNoise.stop()
+                }
+                delay(POLL_INTERVAL_MILLIS)
+            }
+        }
+    }
+
+    private companion object {
+        const val POLL_INTERVAL_MILLIS = 250L
     }
 
     /** The feed's track, on the lock screen. */

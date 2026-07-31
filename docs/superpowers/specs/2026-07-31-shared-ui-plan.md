@@ -103,5 +103,21 @@ and showed cover art, transport controls and a live "NOW PLAYING" row.
   set up. AVPlayer, the audio session, the lock-screen controls and the
   interruption handling are all unexercised.
 - **`IosMediaPlayerController` shortcuts**, marked `ponytail:` in the file:
-  `isPlaying` is inferred from our own calls rather than observed on AVPlayer, and
-  there is no tuning noise and no lock-screen artwork.
+  `timeControlStatus` is polled every 250ms instead of observed through KVO, so a
+  burst of static can start up to a quarter second late. No lock-screen artwork.
+
+### The tuning noise, on both platforms
+
+`radionoise.mp3` moved from `app/src/main/res/raw` to
+`commonMain/composeResources/files`, so there is one copy of it. iOS reads it
+with `Res.readBytes` into an `AVAudioPlayer` and plays it while
+`timeControlStatus` is `WaitingToPlayAtSpecifiedRate` - AVPlayer's buffering,
+which is the same condition as the Android service's
+`STATE_BUFFERING && playWhenReady`. Polling `timeControlStatus` also means
+`isPlaying` now comes from the player rather than from whoever called it, so an
+interruption or a dead stream reaches the screen.
+
+Android now reaches the file as an asset file descriptor rather than a raw
+resource. That depends on AAPT leaving `.mp3` uncompressed and on the asset path
+matching `packageOfResClass`, neither of which fails at build time -
+`TuningNoiseTest` is the instrumented test that would.
