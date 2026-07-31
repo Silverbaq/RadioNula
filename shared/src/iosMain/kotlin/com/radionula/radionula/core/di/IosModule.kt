@@ -31,7 +31,7 @@ val iosModule = module {
     }
     single<ConnectivityMonitor> { IosConnectivityMonitor() }
     single<WebSearch> { IosWebSearch() }
-    single<MediaPlayerController> { IosMediaPlayerController(get()) }
+    single<MediaPlayerController> { IosMediaPlayerController(get(), get()) }
 }
 
 /** Called from Swift at app start - Koin's DSL is not usable from Objective-C. */

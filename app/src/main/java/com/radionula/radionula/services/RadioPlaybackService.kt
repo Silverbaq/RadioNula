@@ -8,6 +8,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -17,6 +18,8 @@ import com.radionula.radionula.MainActivity
 import com.radionula.radionula.domain.repository.PlaylistRepository
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.core.util.ConnectivityMonitor
+import com.radionula.radionula.services.mediaplayer.StreamReconnect
 import com.radionula.radionula.services.mediaplayer.TuningNoise
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,9 +41,23 @@ class RadioPlaybackService : MediaSessionService() {
 
     private val tuningNoise: TuningNoise by inject()
     private val playlistRepository: PlaylistRepository by inject()
+    private val connectivityMonitor: ConnectivityMonitor by inject()
 
     private var mediaSession: MediaSession? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    /**
+     * ExoPlayer stays in its error state until someone prepares it again, so
+     * without this a dropped stream is silent until the listener taps something.
+     */
+    private val reconnect by lazy {
+        StreamReconnect(connectivityMonitor.isOnline, serviceScope) {
+            mediaSession?.player?.run {
+                prepare()
+                play()
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -75,6 +92,7 @@ class RadioPlaybackService : MediaSessionService() {
 
     /** Swiping the app away stops the radio, which is what the old service did. */
     override fun onTaskRemoved(rootIntent: Intent?) {
+        reconnect.cancel()
         mediaSession?.player?.stop()
         // The process can outlive the task, and the feed poll would otherwise
         // carry on hitting the network every 30 seconds with nobody listening.
@@ -138,7 +156,20 @@ class RadioPlaybackService : MediaSessionService() {
     private inner class PlayerStateListener : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) = syncTuningNoise()
 
-        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) = syncTuningNoise()
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            // Pausing - by hand, by audio focus, or by pulling the headphones -
+            // means a pending retry must not start the stream back up.
+            if (!playWhenReady) reconnect.cancel()
+            syncTuningNoise()
+        }
+
+        /**
+         * A dropped stream. playWhenReady is untouched by the error, so the
+         * listener still wants audio: retry as soon as there is a network.
+         */
+        override fun onPlayerError(error: PlaybackException) {
+            if (mediaSession?.player?.playWhenReady == true) reconnect.schedule()
+        }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             // Keeps the feed in step when the channel is switched from the
