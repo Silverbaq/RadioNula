@@ -27,6 +27,7 @@ media3 = "1.7.1"
 firebaseCrashlytics = "19.4.4"
 firebaseAnalytics = "22.5.0"
 xmlutil = "0.91.3"
+androidxSqlite = "2.7.0"
 
 junit = "4.13.2"
 mockito = "5.18.0"
@@ -87,6 +88,8 @@ firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 
 xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
+
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidxSqlite" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }

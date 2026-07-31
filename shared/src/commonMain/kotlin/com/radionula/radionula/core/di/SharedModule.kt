@@ -1,7 +1,10 @@
 package com.radionula.radionula.core.di
 
+import androidx.sqlite.SQLiteDriver
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.radionula.radionula.core.util.ChannelPresenter
 import com.radionula.radionula.data.PlaylistApiService
+import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
 import com.radionula.radionula.data.network.PlaylistNetworkDataSourceImpl
 import com.radionula.radionula.data.nulaHttpClient
@@ -36,4 +39,8 @@ val sharedModule = module {
             coroutineScope = get(named("ioScope")),
         )
     }
+
+    single<SQLiteDriver> { BundledSQLiteDriver() }
+    // The database path comes from :app - it needs a Context.
+    single { NulaDatabase(get(), get(named("databasePath"))) }
 }

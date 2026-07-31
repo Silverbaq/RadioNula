@@ -38,6 +38,9 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
             implementation(libs.xmlutil.core)
+            // api, not implementation: SQLiteDriver is a constructor parameter of
+            // NulaDatabase, which :app instantiates through Koin.
+            api(libs.androidx.sqlite.bundled)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
