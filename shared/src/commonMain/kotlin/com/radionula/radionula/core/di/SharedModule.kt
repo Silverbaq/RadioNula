@@ -24,8 +24,6 @@ import org.koin.dsl.module
  * consuming it yet.
  */
 val sharedModule = module {
-    factory<CoroutineScope>(named("default")) { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
-    factory<CoroutineScope>(named("main")) { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
     factory<CoroutineScope>(named("ioScope")) { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
 
     single { nulaHttpClient() }
