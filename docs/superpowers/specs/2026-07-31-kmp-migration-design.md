@@ -92,7 +92,10 @@ it removes the large majority of the diff.
 
 ### shared/androidMain
 
-- `actual` Room database builder (needs `Context`)
+- Nothing Room-specific. The `RoomDatabase.Builder` needs a `Context`, so `:app` supplies it as a
+  Koin binding and `commonMain` consumes it — Koin already performs the platform split, and an
+  `expect`/`actual` pair with one implementation buys nothing. An iOS target supplies its own
+  builder from `iosMain` the same way.
 - Ktor `client-okhttp` dependency. `PlaylistApiService` constructs `HttpClient { }` in `commonMain`
   with **no engine argument** — Ktor resolves the single engine on the classpath via `ServiceLoader`,
   so no `expect`/`actual` is needed. Adding `client-darwin` to a future `iosMain` works the same way.
@@ -212,9 +215,30 @@ The existing database is created by `MyDatabaseHelper` (`SQLiteOpenHelper`):
 Room refuses to open a database it did not create: there is no `room_master_table`, so identity
 verification throws *"Room cannot verify the data integrity"*.
 
-**Solution:** declare `@Database(version = 2)` with a no-op `Migration(1, 2)`. Room runs the
-migration on existing installs, then writes its identity hash and adopts the database in place.
-Fresh installs are created at version 2 directly.
+**Solution:** declare `@Database(version = 2)` with a `Migration(1, 2)`. Room runs the migration on
+existing installs, then writes its identity hash and adopts the database in place. Fresh installs
+are created at version 2 directly.
+
+**The migration must rebuild the table — a no-op is not sufficient.** Verified with `sqlite3`:
+
+| DDL | `pragma table_info` → `notnull` for `_id` |
+| --- | --- |
+| legacy `_id INTEGER PRIMARY KEY AUTOINCREMENT` | `0` |
+| Room `_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL` | `1` |
+
+Room's `TableInfo` validation compares `notNull`, so a no-op migration fails with *"Migration didn't
+properly handle NulaTracks"* on every existing install. The migration therefore creates a table with
+Room's exact generated DDL, copies the rows across, drops the original and renames:
+
+```
+CREATE TABLE IF NOT EXISTS NulaTracks_new (<Room's createSql, verbatim from schemas/.../2.json>);
+INSERT INTO NulaTracks_new (_id, artist, title, image) SELECT _id, artist, title, image FROM NulaTracks;
+DROP TABLE NulaTracks;
+ALTER TABLE NulaTracks_new RENAME TO NulaTracks;
+```
+
+The `CREATE` statement is copied from Room's generated schema JSON rather than hand-written — any
+difference in backticks, column order or `NOT NULL` placement reproduces the same validation failure.
 
 The entity must generate DDL identical to the legacy table:
 
@@ -247,21 +271,35 @@ the ids are unchanged. It lives in `app/src/androidTest`, which already has a ru
 | `ChannelPresenterTest` | `shared/src/commonTest` | JUnit → `kotlin.test` |
 | `RecentlyPlayedParserTest` | `shared/src/commonTest` | JUnit → `kotlin.test` |
 | `PlaylistRepositoryImplTest` | `shared/src/commonTest` | Mockito → hand-written fake |
-| `RadioViewModelTest` | `shared/src/commonTest` | Mockito → hand-written fakes |
+| `RadioViewModelTest` | **stays `app/src/test`** | `MediaplayerPresenter` → `MediaPlayerController` only |
 | `ConnectionLiveDataTest` | stays `app/src/test` | none |
-| `PlayerScreenTest` | stays `app/src/androidTest` | drawable assertions follow `ChannelArt` move |
+| `PlayerScreenTest` | stays `app/src/androidTest` | **none** |
 | legacy-DB migration test | `app/src/androidTest` | new |
 
-Mockito and mockito-kotlin are JVM-only and cannot be used from `commonTest`. Each migrating test
-fakes exactly one or two interfaces (`PlaylistNetworkDataSource`, `MediaPlayerController`,
-`PlaylistRepository`, `NulaDatabase`), so hand-written fakes replace them without a mocking library.
-`kotlinx-coroutines-test` is multiplatform and stays.
+Mockito and mockito-kotlin are JVM-only and cannot be used from `commonTest`.
+`PlaylistRepositoryImplTest` fakes exactly one interface, so a hand-written fake is smaller than the
+library it replaces. `kotlinx-coroutines-test` is multiplatform and stays.
+
+`RadioViewModelTest` stays on Mockito in `app/src/test`. It has four mocks and roughly twenty
+`verify` assertions, two of them against final classes (`ChannelPresenter`, `NulaDatabase`), and
+rewriting it as hand-rolled spies risks weakening assertions — which this section forbids. `:app`
+depends on `:shared`, so the test still exercises the moved ViewModel and coverage is unchanged.
+Rewrite it to fakes when an iOS target needs it to run on Native.
+
+`PlayerScreenTest` needs no edits: it only constructs `PlayerUiState()` with defaults and named
+arguments and never references `channelArt`, so replacing that property is source-compatible.
+
+Backticked test method names are replaced with underscores in everything that moves to `commonTest` —
+names containing spaces do not compile on Kotlin/Native.
 
 Assertion semantics must not change: these tests are the regression net for the whole migration.
 
 ## Migration order
 
 Each phase ends with a project that builds, installs and runs. No phase leaves the app broken.
+
+The implementation plan splits phase 4 into two tasks — Ktor, then xmlutil — so each is
+independently reviewable and revertible. Eight tasks, same order and same gates.
 
 1. **Build plumbing.** `settings.gradle` and both `build.gradle` files → Kotlin DSL. Introduce
    `gradle/libs.versions.toml`. Correct the KSP pin to `2.2.10-2.0.2`. No source changes.
