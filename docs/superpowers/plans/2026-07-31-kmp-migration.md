@@ -80,7 +80,7 @@ Pure build-file conversion. **No source file changes and no dependency version c
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: catalog accessors used by every later task — `libs.plugins.kotlinMultiplatform`, `libs.plugins.androidKotlinMultiplatformLibrary`, `libs.plugins.ksp`, `libs.plugins.room`, `libs.versions.compileSdk`, `libs.versions.minSdk`, and the library aliases listed below.
+- Produces: the catalog itself, plus the accessors later tasks build on — `libs.versions.compileSdk`, `libs.versions.minSdk`, `libs.versions.kotlin`, `libs.versions.agp`, `libs.plugins.ksp`, and the library aliases listed in Step 2. Each later task adds the catalog entries it introduces: Task 2 adds `kotlinMultiplatform` and `androidKotlinMultiplatformLibrary`, Task 6 adds `room`. Task 1 does not declare them.
 
 - [ ] **Step 1: Record the current test baseline**
 
