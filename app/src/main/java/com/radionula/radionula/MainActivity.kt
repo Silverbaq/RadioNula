@@ -9,9 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.radionula.radionula.ui.NulaApp
-import com.radionula.radionula.ui.theme.NulaTheme
-import com.radionula.radionula.util.ConnectivityLiveData
+import com.radionula.radionula.core.ui.NulaApp
+import com.radionula.radionula.core.ui.theme.NulaTheme
+import com.radionula.radionula.core.util.ConnectivityLiveData
 
 class MainActivity : AppCompatActivity() {
 

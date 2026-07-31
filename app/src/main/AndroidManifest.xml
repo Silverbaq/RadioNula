@@ -41,7 +41,7 @@
              media controls, Bluetooth and Android Auto can discover the session.
         -->
         <service
-            android:name="com.radionula.services.RadioPlaybackService"
+            android:name=".services.RadioPlaybackService"
             android:foregroundServiceType="mediaPlayback"
             android:enabled="true"
             android:exported="true">

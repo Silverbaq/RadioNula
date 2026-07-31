@@ -1,6 +1,6 @@
 package com.radionula.radionula.data.network
 
-import com.radionula.radionula.model.NulaTrack
+import com.radionula.radionula.domain.model.NulaTrack
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
 import java.io.StringReader
@@ -14,7 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 object RecentlyPlayedParser {
 
-    fun parse(xml: String): List<NulaTrack> {
+    fun parse(xml: String): List<com.radionula.radionula.domain.model.NulaTrack> {
         val factory = DocumentBuilderFactory.newInstance().apply {
             // Feed is remote: never let it pull in external content.
             isExpandEntityReferences = false
@@ -27,10 +27,10 @@ object RecentlyPlayedParser {
             val item = items.item(index) as? Element ?: return@mapNotNull null
             val title = item.firstText("title")?.stripCdata() ?: return@mapNotNull null
             val parts = title.split(" - ", limit = 2)
-            NulaTrack(
-                    artist = parts[0].trim(),
-                    title = parts.getOrElse(1) { "" }.trim(),
-                    image = item.cover().orEmpty()
+            _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+                artist = parts[0].trim(),
+                title = parts.getOrElse(1) { "" }.trim(),
+                image = item.cover().orEmpty()
             )
         }
     }

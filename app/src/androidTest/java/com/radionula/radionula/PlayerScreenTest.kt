@@ -6,10 +6,10 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.radionula.radionula.model.NulaTrack
-import com.radionula.radionula.radio.PlayerUiState
-import com.radionula.radionula.ui.player.PlayerScreen
-import com.radionula.radionula.ui.theme.NulaTheme
+import com.radionula.radionula.domain.model.NulaTrack
+import com.radionula.radionula.features.player.PlayerUiState
+import com.radionula.radionula.features.player.PlayerScreen
+import com.radionula.radionula.core.ui.theme.NulaTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +29,7 @@ class PlayerScreenTest {
     private fun setContent(
         state: PlayerUiState,
         onTuneIn: () -> Unit = {},
-        onAddFavorite: (NulaTrack) -> Unit = {},
+        onAddFavorite: (com.radionula.radionula.domain.model.NulaTrack) -> Unit = {},
     ) = composeRule.setContent {
         NulaTheme {
             PlayerScreen(
@@ -93,7 +93,7 @@ class PlayerScreenTest {
 
     @Test
     fun a_row_reveals_the_favourite_button_only_once_tapped() {
-        val added = mutableListOf<NulaTrack>()
+        val added = mutableListOf<com.radionula.radionula.domain.model.NulaTrack>()
         setContent(
             state = PlayerUiState(showTuneIn = false, tracks = listOf(track("Session Victim"))),
             onAddFavorite = { added += it },
@@ -119,5 +119,11 @@ class PlayerScreenTest {
         assertEquals(1, tuned)
     }
 
-    private fun track(artist: String) = NulaTrack(artist, "$artist title", "", id = artist.hashCode())
+    private fun track(artist: String) =
+        _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+            artist,
+            "$artist title",
+            "",
+            id = artist.hashCode()
+        )
 }

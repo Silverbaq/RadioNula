@@ -9,7 +9,7 @@ import com.nhaarman.mockitokotlin2.doNothing
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import com.radionula.radionula.util.ConnectivityLiveData
+import com.radionula.radionula.core.util.ConnectivityLiveData
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

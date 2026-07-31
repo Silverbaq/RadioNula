@@ -4,13 +4,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import com.radionula.internal.NoConnectivityException
+import com.radionula.radionula.core.exceptions.NoConnectivityException
 import okhttp3.Interceptor
 import okhttp3.Response
 
 class ConnectivityInterceptorImpl(
         context: Context
-) : ConnectivityInterceptor {
+) : com.radionula.radionula.data.network.ConnectivityInterceptor {
     private val appContext = context.applicationContext
 
     override fun intercept(chain: Interceptor.Chain): Response {

@@ -1,6 +1,6 @@
 package com.radionula.radionula
 
-import com.radionula.radionula.radio.ChannelPresenter
+import com.radionula.radionula.core.util.ChannelPresenter
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

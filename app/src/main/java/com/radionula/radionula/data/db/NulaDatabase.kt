@@ -2,8 +2,8 @@ package com.radionula.radionula.data.db
 
 import android.content.ContentValues
 import android.content.Context
-import com.radionula.radionula.model.NulaTrack
-import com.radionula.radionula.util.MyDatabaseHelper
+import com.radionula.radionula.domain.model.NulaTrack
+import com.radionula.radionula.core.util.MyDatabaseHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -19,7 +19,7 @@ class NulaDatabase(context: Context) {
 
     private val helper = MyDatabaseHelper(context)
 
-    suspend fun insertTrack(track: NulaTrack): Long = withContext(Dispatchers.IO) {
+    suspend fun insertTrack(track: com.radionula.radionula.domain.model.NulaTrack): Long = withContext(Dispatchers.IO) {
         val values = ContentValues().apply {
             put(COLUMN_ARTIST, track.artist)
             put(COLUMN_TITLE, track.title)
@@ -28,7 +28,7 @@ class NulaDatabase(context: Context) {
         helper.writableDatabase.insert(TABLE, null, values)
     }
 
-    suspend fun selectAllTracks(): List<NulaTrack> = withContext(Dispatchers.IO) {
+    suspend fun selectAllTracks(): List<com.radionula.radionula.domain.model.NulaTrack> = withContext(Dispatchers.IO) {
         helper.readableDatabase.query(
             TABLE,
             arrayOf(COLUMN_ID, COLUMN_ARTIST, COLUMN_TITLE, COLUMN_IMAGE),
@@ -37,7 +37,7 @@ class NulaDatabase(context: Context) {
             buildList {
                 while (cursor.moveToNext()) {
                     add(
-                        NulaTrack(
+                        _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
                             artist = cursor.getString(1),
                             title = cursor.getString(2),
                             image = cursor.getString(3),
@@ -49,7 +49,7 @@ class NulaDatabase(context: Context) {
         }
     }
 
-    suspend fun removeTrack(track: NulaTrack): Int = withContext(Dispatchers.IO) {
+    suspend fun removeTrack(track: com.radionula.radionula.domain.model.NulaTrack): Int = withContext(Dispatchers.IO) {
         helper.writableDatabase.delete(TABLE, "$COLUMN_ID = ?", arrayOf(track.id.toString()))
     }
 
