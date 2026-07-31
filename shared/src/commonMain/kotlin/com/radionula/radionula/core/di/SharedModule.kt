@@ -3,6 +3,7 @@ package com.radionula.radionula.core.di
 import androidx.sqlite.SQLiteDriver
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.core.util.ioDispatcher
 import com.radionula.radionula.data.PlaylistApiService
 import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.network.PlaylistNetworkDataSource
@@ -11,7 +12,6 @@ import com.radionula.radionula.data.nulaHttpClient
 import com.radionula.radionula.data.repository.PlaylistRepositoryImpl
 import com.radionula.radionula.domain.repository.PlaylistRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -24,7 +24,7 @@ import org.koin.dsl.module
  * consuming it yet.
  */
 val sharedModule = module {
-    factory<CoroutineScope>(named("ioScope")) { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
+    factory<CoroutineScope>(named("ioScope")) { CoroutineScope(SupervisorJob() + ioDispatcher) }
 
     single { nulaHttpClient() }
     single { PlaylistApiService(get()) }

@@ -396,3 +396,64 @@ guards the property correctly and will fail once the property becomes breakable.
 Kept as-is: asserting the reader's type would be brittle, and forcing a StAX
 factory into `commonTest` would add a non-multiplatform dependency to prove a
 negative.
+
+---
+
+## iOS enablement: steps 1-2 (shared target + wiring proof)
+
+Done, and verified on an iPhone 17 simulator (iOS 26.5, Xcode 26.5): the
+placeholder app shows a real track title from the live feed, so the framework,
+Koin, the Darwin Ktor engine and xmlutil all work from Swift.
+
+### What landed
+
+- `:shared` declares `iosArm64()` and `iosSimulatorArm64()`, exporting a static
+  `Shared.framework`. `iosX64` is deliberately absent - it would only matter on
+  an Intel Mac, and its absence means an all-arch simulator build (a `generic/
+  platform=iOS Simulator` destination) fails to link. Build against a concrete
+  arm64 simulator.
+- `Platform.ios.kt`: `logError` (`NSLog`, with `%s` so a `%` in a track title is
+  not read as a format specifier) and `epochMillis` (`NSDate`).
+- `IosModule.kt`: the `databasePath` binding (Documents/NulaDB) plus `initKoin()`
+  for Swift, which the ObjC exporter renames to `doInitKoin`.
+- `iosApp/` - a hand-written Xcode project (no CocoaPods, no xcodegen) with one
+  shared scheme, `-framework Shared`, and a build phase running
+  `:shared:embedAndSignAppleFrameworkForXcode`.
+- `SmokeTest.kt`'s `latestTrackTitle()` and `ContentView` are marked temporary
+  and go away with the real UI.
+
+### Two things the earlier notes got wrong
+
+- **`Dispatchers.IO` is not usable from `commonMain`.** It is JVM-only; on
+  Kotlin/Native it is `internal` (checked in coroutines 1.10.2 *and* 1.11.0), so
+  the iOS target would not compile. Now an `expect val ioDispatcher` next to the
+  other two actuals - `Dispatchers.IO` on Android, `Dispatchers.Default` on iOS,
+  which is a real thread pool there.
+- **Three dependencies had to come down, and this is the binding constraint for
+  the whole iOS effort.** Kotlin/Native klibs carry an ABI version, and the
+  2.2.10 compiler AGP 9.3.1 embeds reads at most 2.2.0 - the same wall xmlutil
+  1.0.x hit, but for JVM-transparent dependencies that were fine until an iOS
+  target existed. Newest usable versions, each found by building:
+  - ktor 3.5.2 → **3.2.3** (3.5.2 klibs built by 2.3.21)
+  - androidx.sqlite 2.7.0 → **2.6.2** (2.7.0 built by 2.3.20)
+  - koin 4.2.2 → **4.1.1** (4.2.2 built by 2.3.20)
+
+  Android is unaffected (`:app:assembleDebug` and its unit tests pass on all
+  three), but every future native dependency is capped this way until Kotlin
+  moves past AGP's embedded version. Compose Multiplatform is the next thing to
+  hit it.
+- `commonTest` used `kotlin.assert`, which needs an opt-in on native. Now
+  `assertTrue`, which is also honest on the JVM without `-ea`.
+
+### Verified commands
+
+```
+./gradlew :shared:iosSimulatorArm64Test :shared:test        # 26 shared tests, both platforms
+./gradlew :app:assembleDebug :app:testDebugUnitTest         # Android unaffected
+cd iosApp && xcodebuild -scheme iosApp -destination 'id=<arm64 sim>' build
+```
+
+### Next, unchanged
+
+Step 3 is the `MediaPlayerController` actual on AVPlayer (plus `AVAudioSession`
+and `MPNowPlayingInfoCenter`); step 4 is the UI-route decision.

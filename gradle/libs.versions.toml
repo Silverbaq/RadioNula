@@ -17,14 +17,14 @@ composeBom = "2026.03.00"
 navigationCompose = "2.9.1"
 lifecycle = "2.10.0"
 coroutines = "1.10.2"
-koin = "4.2.2"
-ktor = "3.5.2"
+koin = "4.1.1"
+ktor = "3.2.3"
 coil = "2.7.0"
 media3 = "1.7.1"
 firebaseCrashlytics = "19.4.4"
 firebaseAnalytics = "22.5.0"
 xmlutil = "0.91.3"
-androidxSqlite = "2.7.0"
+androidxSqlite = "2.6.2"
 
 junit = "4.13.2"
 mockito = "5.18.0"
@@ -70,6 +70,7 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", versi
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }

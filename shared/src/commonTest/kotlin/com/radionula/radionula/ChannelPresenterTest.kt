@@ -3,6 +3,7 @@ package com.radionula.radionula
 import com.radionula.radionula.core.util.ChannelPresenter
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertTrue
 import kotlin.test.assertEquals
 
 class ChannelPresenterTest {
@@ -16,14 +17,14 @@ class ChannelPresenterTest {
 
     @Test
     fun classic_is_default_channel_test(){
-        assert(channelPresenter.currentChannel == ChannelPresenter.Channel.Classic)
+        assertTrue(channelPresenter.currentChannel == ChannelPresenter.Channel.Classic)
     }
 
     @Test
     fun select_switches_to_the_channel_at_that_index(){
         channelPresenter.select(ChannelPresenter.Channel.Ch2.ordinal)
 
-        assert(channelPresenter.currentChannel == ChannelPresenter.Channel.Ch2)
+        assertTrue(channelPresenter.currentChannel == ChannelPresenter.Channel.Ch2)
     }
 
     @Test
@@ -40,7 +41,7 @@ class ChannelPresenterTest {
 
         channelPresenter.select(99)
 
-        assert(channelPresenter.currentChannel == ChannelPresenter.Channel.Classic)
+        assertTrue(channelPresenter.currentChannel == ChannelPresenter.Channel.Classic)
     }
 
     @Test

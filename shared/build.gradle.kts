@@ -38,6 +38,15 @@ kotlin {
         }
     }
 
+    // Device and simulator only - iosX64 would need an Intel Mac to be useful.
+    // Framework is static so the iOS app links it with no embed-and-sign step.
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+        target.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
+
     sourceSets {
         commonMain.dependencies {
             // api, not implementation: Flow and StateFlow appear in the public
@@ -60,6 +69,9 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

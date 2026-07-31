@@ -4,9 +4,9 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteDriver
 import androidx.sqlite.SQLiteException
 import androidx.sqlite.execSQL
+import com.radionula.radionula.core.util.ioDispatcher
 import com.radionula.radionula.core.util.logError
 import com.radionula.radionula.domain.model.NulaTrack
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
@@ -93,7 +93,7 @@ class NulaDatabase(
      * gets the same schema it always had.
      */
     private suspend fun <T> withConnection(block: (SQLiteConnection) -> T): T =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             val connection = driver.open(databasePath)
             try {
                 connection.execSQL(CREATE_TRACKS)
