@@ -1,9 +1,7 @@
 package com.radionula.radionula.radio
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.radionula.radionula.R
 import com.radionula.radionula.data.PlaylistRepository
@@ -11,9 +9,33 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.model.NulaTrack
 import com.radionula.services.mediaplayer.MediaplayerPresenter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** The three per-channel drawables the player swaps together. */
+data class ChannelArt(
+    @param:DrawableRes val logo: Int,
+    @param:DrawableRes val skip: Int,
+    @param:DrawableRes val pause: Int,
+)
+
+data class PlayerUiState(
+    val showTuneIn: Boolean = true,
+    val isPlaying: Boolean = false,
+    val cover: String = "",
+    val tracks: List<NulaTrack> = emptyList(),
+    val channelArt: ChannelArt = CLASSIC_ART,
+)
+
+val CLASSIC_ART =
+    ChannelArt(R.drawable.nula_channel1, R.drawable.skip_channel1, R.drawable.pause_channel1)
 
 class RadioViewModel(
         private val playlistReposetory: PlaylistRepository,
@@ -21,24 +43,39 @@ class RadioViewModel(
         private val mediaplayerPresenter: MediaplayerPresenter,
         private val nulaDatabase: NulaDatabase
 ) : ViewModel() {
-    private val channelData = MutableLiveData<Triple<Int, Int, Int>>()
-    private val _favoriteAdded = MutableLiveData<String>()
-
-    val currentSong: LiveData<CurrentSong> = playlistReposetory.currentSong().asLiveData()
-    val playlist: LiveData<List<NulaTrack>> = playlistReposetory.currentPlaylist().asLiveData()
-
-    /** Comes from the player, so audio focus and notification pauses show up here too. */
-    val isPlaying: LiveData<Boolean> = mediaplayerPresenter.isPlaying.asLiveData()
-    val currentChannelResources: LiveData<Triple<Int, Int, Int>> = channelData
-    val favoriteAdded: LiveData<String> = _favoriteAdded
-
-    private val tunedIn = MutableStateFlow(false)
+    private val channelArt = MutableStateFlow(CLASSIC_ART)
 
     /**
      * Sticky. The tune-in button belongs to a cold start only - pausing or
      * skipping a channel must never bring it back.
      */
-    val showTuneInButton: LiveData<Boolean> = tunedIn.map { !it }.asLiveData()
+    private val tunedIn = MutableStateFlow(false)
+
+    /** One-shot, so a rotation does not re-show the toast. */
+    private val _favoriteAdded = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val favoriteAdded: Flow<String> = _favoriteAdded
+
+    val uiState: StateFlow<PlayerUiState> = combine(
+        // Both repository flows are replay-1 SharedFlows that stay empty until
+        // the first fetch, and combine waits for every source. Without a seed
+        // the screen would have no state at all before the first track lands.
+        playlistReposetory.currentSong().onStart { emit(EMPTY_SONG) },
+        playlistReposetory.currentPlaylist().onStart { emit(emptyList()) },
+        // Comes from the player, so audio focus and notification pauses show up here too.
+        mediaplayerPresenter.isPlaying,
+        channelArt,
+        tunedIn,
+    ) { song, playlist, playing, art, tuned ->
+        PlayerUiState(
+            showTuneIn = !tuned,
+            isPlaying = playing,
+            cover = song.cover,
+            tracks = playlist,
+            channelArt = art,
+        )
+        // Eagerly, not WhileSubscribed: the sticky tune-in state has to survive
+        // the screen going away, and it is the ViewModel that owns it.
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, PlayerUiState())
 
     init {
         viewModelScope.launch {
@@ -85,31 +122,33 @@ class RadioViewModel(
     fun addFavoriteClicked(track: NulaTrack) {
         viewModelScope.launch {
             nulaDatabase.insertTrack(track)
-            _favoriteAdded.postValue(track.title)
+            _favoriteAdded.emit(track.title)
         }
     }
 
     private suspend fun onChannelChanged(index: Int) {
         val channel = channelPresenter.select(index)
         playlistReposetory.setChannel(channel)
-        channelData.postValue(getChannelLogo(channel))
+        channelArt.value = getChannelLogo(channel)
 
         // Nothing is fetched until the radio has been started, so a cold start
         // shows no playlist rather than tracks this session never heard.
         if (tunedIn.value) playlistReposetory.fetchCurrentPlaylist()
     }
 
-    private fun getChannelLogo(channel: ChannelPresenter.Channel): Triple<Int, Int, Int> {
+    private fun getChannelLogo(channel: ChannelPresenter.Channel): ChannelArt {
         return when (channel) {
-            ChannelPresenter.Channel.Classic -> {
-                Triple(R.drawable.nula_channel1, R.drawable.skip_channel1, R.drawable.pause_channel1)
-            }
-            ChannelPresenter.Channel.Ch2 -> {
-                Triple(R.drawable.nula_channel2, R.drawable.skip_channel2, R.drawable.pause_channel2)
-            }
-            ChannelPresenter.Channel.Smoky -> {
-                Triple(R.drawable.nula_channel3, R.drawable.skip_channel3, R.drawable.pause_channel3)
-            }
+            ChannelPresenter.Channel.Classic -> CLASSIC_ART
+            ChannelPresenter.Channel.Ch2 -> ChannelArt(
+                R.drawable.nula_channel2, R.drawable.skip_channel2, R.drawable.pause_channel2
+            )
+            ChannelPresenter.Channel.Smoky -> ChannelArt(
+                R.drawable.nula_channel3, R.drawable.skip_channel3, R.drawable.pause_channel3
+            )
         }
+    }
+
+    private companion object {
+        val EMPTY_SONG = CurrentSong(artist = "", cover = "", title = "")
     }
 }

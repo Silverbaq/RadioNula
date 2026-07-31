@@ -21,18 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--
-             Only ever started explicitly, by InitActivity and by the playback
-             service's PendingIntent, so it does not need to be exported. The
-             intent filter it used to carry had no data and no BROWSABLE
-             category, so nothing could reach it anyway.
+             SplashTheme is only the cold-start window background; onCreate
+             swaps it for the real theme before any content is drawn.
         -->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
-        <activity
-            android:name=".InitActivity"
             android:exported="true"
             android:theme="@style/SplashTheme">
             <intent-filter>

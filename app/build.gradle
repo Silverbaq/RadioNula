@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
 }
@@ -10,7 +11,9 @@ android {
 
     defaultConfig {
         applicationId = "com.radionula.nula"
-        minSdk = 21
+        // 23 is Compose's floor - androidx.compose.material ships minSdk 23.
+        // This drops Android 5.0 and 5.1.
+        minSdk = 23
         targetSdk = 36
         versionCode = 24
         versionName = "2.3.0"
@@ -27,7 +30,7 @@ android {
     namespace = "com.radionula.radionula"
 
     buildFeatures {
-        viewBinding = true
+        compose = true
     }
 
     compileOptions {
@@ -48,8 +51,6 @@ dependencies {
 
     //implementation 'com.android.support:multidex:2.0.1'
 
-    implementation 'com.mikhaellopez:circularimageview:4.3.1'
-
     implementation 'com.squareup.retrofit2:retrofit:3.0.0'
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
@@ -57,13 +58,32 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.1'
 
     implementation("io.coil-kt:coil:2.7.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Compose
+    def composeBom = platform('androidx.compose:compose-bom:2026.03.00')
+    implementation composeBom
+    androidTestImplementation composeBom
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation 'androidx.activity:activity-compose:1.11.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1'
+    // collectAsStateWithLifecycle
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.9.1'
+    // ConnectivityLiveData drives its callback off onActive/onInactive, which
+    // observeAsState honours - so it stays a LiveData rather than being rewritten.
+    implementation 'androidx.compose.runtime:runtime-livedata'
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     // Navigation
     implementation 'androidx.core:core-ktx:1.16.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation "androidx.navigation:navigation-fragment-ktx:2.9.1"
+    implementation "androidx.navigation:navigation-compose:2.9.1"
 
     implementation "io.insert-koin:koin-android:$koin_version"
+    implementation "io.insert-koin:koin-androidx-compose:$koin_version"
 
     implementation 'androidx.media3:media3-exoplayer:1.7.1'
     implementation 'androidx.media3:media3-session:1.7.1'
@@ -87,8 +107,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     androidTestImplementation 'org.mockito:mockito-android:5.18.0'
-    androidTestImplementation 'androidx.test:runner:1.6.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    // 3.6.1 calls InputManager.getInstance(), which newer Android removed, so
+    // every Compose test died in Espresso.onIdle before reaching an assertion.
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }
 repositories {
     mavenCentral()
