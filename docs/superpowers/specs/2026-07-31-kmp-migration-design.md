@@ -330,3 +330,69 @@ independently reviewable and revertible. Eight tasks, same order and same gates.
 - **Firebase.** `google-services` and the Crashlytics plugin stay on `:app` only; `google-services.json` does not move.
 - **No annotation processing in `:shared`.** KSP cannot run in a KMP module on this toolchain (see Constraints), so anything needing codegen — Room, a serialization processor, a DI processor — cannot live in `commonMain` until that changes. Koin's runtime DSL and hand-written SQL are chosen partly for this reason.
 - **xmlutil is pinned to 0.91.3, not the 1.0.x line.** 1.0.x is built against Kotlin 2.4.0 and its metadata cannot be read by the 2.2.10 compiler AGP 9.3.1 embeds (`compiler version 2.2.0 can read versions up to 2.3.0`). 0.91.3 is the newest usable release — verified by building each candidate. The accessor is `XmlStreaming.newGenericReader`; the lowercase `xmlStreaming` rename belongs to the 1.0 line and does not apply here.
+
+---
+
+## Post-migration status
+
+The migration shipped across 8 tasks. Recorded here because these outlive the
+scratch workspace the execution ran in.
+
+### Verified
+
+`commonMain` contains no `java.*`, `javax.*` or `android.*` usage, and every
+dependency it relies on publishes iOS artifacts (coroutines `Dispatchers.IO` via
+`concurrentMain`, xmlutil `XmlStreaming` via `commonMain`, lifecycle-viewmodel,
+androidx.sqlite, Koin, Ktor). A minified release build succeeds with **no new R8
+keep rules**, and the sqlite driver, Ktor and xmlutil all survive minification
+with real feed data reaching the media session.
+
+Tests: 36 unit (26 `:shared`, 17 `:app` — 26+17 counts one shared `PlatformTest`
+added by the migration) and 11 instrumented. All 35 pre-migration tests are
+accounted for: 18 moved to `commonTest`, 17 stayed in `:app`, none dropped.
+
+### Deliberate decisions worth knowing
+
+- **`BundledSQLiteDriver` costs 4.24 MB** of native libraries — 36% of the release
+  APK, where the pre-migration build shipped none. Kept deliberately, for a SQLite
+  version identical across all devices and OS versions. Revisit alongside ABI
+  splits or an app bundle if download size becomes a concern; `.gitlab-ci.yml`
+  currently publishes an APK, so every user gets all four ABIs.
+- **`:shared` declares only an Android target**, so the compiler does not enforce
+  the "no Android APIs in `commonMain`" property — it was hand-audited. Adding
+  `iosArm64()` would make it compiler-enforced, and is the single highest-value
+  follow-up. It needs four small pieces: `actual fun logError`, `actual fun
+  epochMillis`, a `ktor-client-darwin` dependency, and a `databasePath` binding.
+- **The spec's claim that iOS needs "only UI and a player implementation"
+  understates it** by those four items. All four live inside `:shared` or the iOS
+  app — no module moves and no code migration — which is the substance of the
+  claim, but the sentence is optimistic.
+
+### Known gaps, not introduced by this migration
+
+- **No auto-reconnect when connectivity returns.** `ConnectivityLiveData` drives
+  only the offline overlay, and `RadioPlaybackService` has no `onPlayerError`
+  handler, so ExoPlayer sits in an error state after airplane-mode-off until the
+  next manual player action. The *feed poll* does recover within 30 s; the *audio
+  stream* does not resume. `RadioPlaybackService` is touched by zero migration
+  commits.
+- **No release signing config** — `:app:installRelease` does not exist.
+- **`android.r8.strictFullModeForKeepRules=false`** in `gradle.properties` says it
+  is worth revisiting "once a minified release has been shipped and verified".
+  That condition is now met, and nothing tracks it.
+- **Substantial dead resources** orphaned by the earlier Fragments→Compose
+  migration: ~60 files across drawables, mipmaps, assets, and 8 of 9 strings
+  (including three dead stream URLs pointing at the retired
+  `streaming.radionula.com:8800`). No `R.string.` reference exists anywhere.
+
+### One parked review finding
+
+The test pinning `RecentlyPlayedParser`'s external-entity protection asserts the
+*property* (entities are not resolved) rather than the call site. It cannot
+currently distinguish `newGenericReader` from `newReader`, because xmlutil 0.91.3
+resolves only `core-jvmcommon` here with no StAX or Android factory on the
+classpath, so both overloads land on `GenericFactory` and both are safe. The test
+guards the property correctly and will fail once the property becomes breakable.
+Kept as-is: asserting the reader's type would be brittle, and forcing a StAX
+factory into `commonTest` would add a non-multiplatform dependency to prove a
+negative.
