@@ -5,5 +5,5 @@ import org.koin.dsl.module
 
 val radioPlayerModule = module {
     single { TuningNoise(androidContext()) }
-    single { MediaplayerPresenter(androidContext()) }
+    single<MediaPlayerController> { MediaplayerPresenter(androidContext()) }
 }

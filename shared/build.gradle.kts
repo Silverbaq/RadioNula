@@ -35,6 +35,9 @@ kotlin {
             // api, not implementation: Flow and StateFlow appear in the public
             // API that :app consumes.
             api(libs.kotlinx.coroutines.core)
+            // api, not implementation: RadioViewModel extends ViewModel and
+            // :app resolves it through koinViewModel().
+            api(libs.androidx.lifecycle.viewmodel)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
             implementation(libs.xmlutil.core)

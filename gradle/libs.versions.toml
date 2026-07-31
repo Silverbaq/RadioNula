@@ -17,7 +17,7 @@ coreKtx = "1.16.0"
 activityCompose = "1.11.0"
 composeBom = "2026.03.00"
 navigationCompose = "2.9.1"
-lifecycle = "2.9.1"
+lifecycle = "2.10.0"
 coroutines = "1.10.2"
 kotlinxCoroutinesCore = "1.10.2"
 koin = "4.2.2"
@@ -53,6 +53,7 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }

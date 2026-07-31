@@ -21,18 +21,18 @@ import kotlinx.coroutines.flow.StateFlow
  * service stays bound for the process lifetime. Move connect/release into the
  * Activity's onStart/onStop if the service needs to die sooner.
  */
-class MediaplayerPresenter(private val context: Context) {
+class MediaplayerPresenter(private val context: Context) : MediaPlayerController {
 
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
 
     private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying
+    override val isPlaying: StateFlow<Boolean> = _isPlaying
 
     private val _channelIndex = MutableStateFlow(0)
-    val channelIndex: StateFlow<Int> = _channelIndex
+    override val channelIndex: StateFlow<Int> = _channelIndex
 
-    fun tuneIn(channelIndex: Int) = withController { controller ->
+    override fun tuneIn(channelIndex: Int) = withController { controller ->
         if (controller.currentMediaItemIndex != channelIndex) {
             controller.seekToDefaultPosition(channelIndex)
         }
@@ -40,13 +40,13 @@ class MediaplayerPresenter(private val context: Context) {
         controller.play()
     }
 
-    fun nextChannel() = withController { controller ->
+    override fun nextChannel() = withController { controller ->
         controller.seekToNextMediaItem()
         controller.prepare()
         controller.play()
     }
 
-    fun pauseRadio() = withController(MediaController::pause)
+    override fun pauseRadio() = withController(MediaController::pause)
 
     private fun withController(action: (MediaController) -> Unit) {
         val future = controllerFuture ?: connect()

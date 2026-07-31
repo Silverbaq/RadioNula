@@ -1,11 +1,9 @@
 package com.radionula.radionula.features.player
 
-import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.radionula.radionula.R
 import com.radionula.radionula.core.util.ChannelPresenter
-import com.radionula.radionula.services.mediaplayer.MediaplayerPresenter
+import com.radionula.radionula.services.mediaplayer.MediaPlayerController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,31 +18,21 @@ import com.radionula.radionula.data.db.entity.CurrentSong
 import com.radionula.radionula.domain.model.NulaTrack
 import com.radionula.radionula.domain.repository.PlaylistRepository
 
-/** The three per-channel drawables the player swaps together. */
-data class ChannelArt(
-    @param:DrawableRes val logo: Int,
-    @param:DrawableRes val skip: Int,
-    @param:DrawableRes val pause: Int,
-)
-
 data class PlayerUiState(
     val showTuneIn: Boolean = true,
     val isPlaying: Boolean = false,
     val cover: String = "",
     val tracks: List<NulaTrack> = emptyList(),
-    val channelArt: ChannelArt = CLASSIC_ART,
+    val channel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic,
 )
-
-val CLASSIC_ART =
-    ChannelArt(R.drawable.nula_channel1, R.drawable.skip_channel1, R.drawable.pause_channel1)
 
 class RadioViewModel(
     private val playlistReposetory: PlaylistRepository,
     private val channelPresenter: ChannelPresenter,
-    private val mediaplayerPresenter: MediaplayerPresenter,
+    private val mediaplayerPresenter: MediaPlayerController,
     private val nulaDatabase: NulaDatabase
 ) : ViewModel() {
-    private val channelArt = MutableStateFlow(CLASSIC_ART)
+    private val currentChannel = MutableStateFlow(ChannelPresenter.Channel.Classic)
 
     /**
      * Sticky. The tune-in button belongs to a cold start only - pausing or
@@ -64,15 +52,15 @@ class RadioViewModel(
         playlistReposetory.currentPlaylist().onStart { emit(emptyList()) },
         // Comes from the player, so audio focus and notification pauses show up here too.
         mediaplayerPresenter.isPlaying,
-        channelArt,
+        currentChannel,
         tunedIn,
-    ) { song, playlist, playing, art, tuned ->
+    ) { song, playlist, playing, channel, tuned ->
         PlayerUiState(
             showTuneIn = !tuned,
             isPlaying = playing,
             cover = song.cover,
             tracks = playlist,
-            channelArt = art,
+            channel = channel,
         )
         // Eagerly, not WhileSubscribed: the sticky tune-in state has to survive
         // the screen going away, and it is the ViewModel that owns it.
@@ -130,23 +118,11 @@ class RadioViewModel(
     private suspend fun onChannelChanged(index: Int) {
         val channel = channelPresenter.select(index)
         playlistReposetory.setChannel(channel)
-        channelArt.value = getChannelLogo(channel)
+        currentChannel.value = channel
 
         // Nothing is fetched until the radio has been started, so a cold start
         // shows no playlist rather than tracks this session never heard.
         if (tunedIn.value) playlistReposetory.fetchCurrentPlaylist()
-    }
-
-    private fun getChannelLogo(channel: ChannelPresenter.Channel): ChannelArt {
-        return when (channel) {
-            ChannelPresenter.Channel.Classic -> CLASSIC_ART
-            ChannelPresenter.Channel.Ch2 -> ChannelArt(
-                R.drawable.nula_channel2, R.drawable.skip_channel2, R.drawable.pause_channel2
-            )
-            ChannelPresenter.Channel.Smoky -> ChannelArt(
-                R.drawable.nula_channel3, R.drawable.skip_channel3, R.drawable.pause_channel3
-            )
-        }
     }
 
     private companion object {

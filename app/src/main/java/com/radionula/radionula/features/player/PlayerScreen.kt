@@ -74,11 +74,13 @@ fun PlayerScreen(
     onAddFavorite: (NulaTrack) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val art = state.channel.art()
+
     Box(modifier.fillMaxSize().background(Brown)) {
         Column(Modifier.fillMaxSize()) {
             Turntable(
                 cover = state.cover,
-                logo = state.channelArt.logo,
+                logo = art.logo,
                 spinning = state.isPlaying,
                 modifier = Modifier.fillMaxWidth().weight(1f),
             )
@@ -96,13 +98,13 @@ fun PlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
-                    painter = painterResource(state.channelArt.skip),
+                    painter = painterResource(art.skip),
                     contentDescription = "Skip to next",
                     modifier = Modifier.width(130.dp).height(80.dp).clickable(onClick = onSkip),
                 )
                 Spacer(Modifier.width(10.dp))
                 Image(
-                    painter = painterResource(state.channelArt.pause),
+                    painter = painterResource(art.pause),
                     contentDescription = "Pause",
                     modifier = Modifier.width(130.dp).height(80.dp).clickable(onClick = onPause),
                 )
@@ -345,7 +347,6 @@ private fun PlayerScreenPlayingPreview() = NulaTheme {
                     ""
                 ),
             ),
-            channelArt = CLASSIC_ART,
         ),
         onTuneIn = {}, onSkip = {}, onPause = {}, onAddFavorite = {},
     )
