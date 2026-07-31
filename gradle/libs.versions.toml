@@ -26,6 +26,7 @@ coil = "2.7.0"
 media3 = "1.7.1"
 firebaseCrashlytics = "19.4.4"
 firebaseAnalytics = "22.5.0"
+xmlutil = "0.86.3"
 
 junit = "4.13.2"
 mockito = "5.18.0"
@@ -84,6 +85,8 @@ media3-common = { module = "androidx.media3:media3-common", version.ref = "media
 
 firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx", version.ref = "firebaseCrashlytics" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
+
+xmlutil-core = { module = "io.github.pdvrieze.xmlutil:core", version.ref = "xmlutil" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }

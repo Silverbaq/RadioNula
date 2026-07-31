@@ -37,6 +37,7 @@ kotlin {
             api(libs.kotlinx.coroutines.core)
             implementation(libs.koin.core)
             implementation(libs.ktor.client.core)
+            implementation(libs.xmlutil.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

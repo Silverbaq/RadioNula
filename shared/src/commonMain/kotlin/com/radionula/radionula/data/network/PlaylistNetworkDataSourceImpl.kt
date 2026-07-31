@@ -7,8 +7,7 @@ import com.radionula.radionula.data.PlaylistApiService
 import com.radionula.radionula.domain.model.NulaTrack
 
 class PlaylistNetworkDataSourceImpl(
-        private val apiPlaylistApiService: PlaylistApiService,
-        private val parse: PlaylistFeedParser,
+        private val apiPlaylistApiService: PlaylistApiService
 ) : PlaylistNetworkDataSource {
 
     override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? {
@@ -18,7 +17,7 @@ class PlaylistNetworkDataSourceImpl(
         // more failure now that the connectivity interceptor is gone.
         try {
             val xml = apiPlaylistApiService.getPlaylist(channel.xmlPath, epochMillis())
-            return parse(xml)
+            return RecentlyPlayedParser.parse(xml)
         } catch (e: Exception) {
             logError("Playlist", "Could not read ${channel.xmlPath}", e)
         }

@@ -1,9 +1,9 @@
 package com.radionula.radionula
 
 import com.radionula.radionula.data.network.RecentlyPlayedParser
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class RecentlyPlayedParserTest {
 
@@ -33,7 +33,7 @@ class RecentlyPlayedParserTest {
     """.trimIndent().trim()
 
     @Test
-    fun `current track is first, artist and title split on the separator`() {
+    fun current_track_is_first_artist_and_title_split_on_the_separator() {
         val tracks = RecentlyPlayedParser.parse(feed)
 
         assertEquals(2, tracks.size)
@@ -47,7 +47,7 @@ class RecentlyPlayedParserTest {
     }
 
     @Test
-    fun `only the first separator splits, so titles keep their own dashes`() {
+    fun only_the_first_separator_splits_so_titles_keep_their_own_dashes() {
         val tracks = RecentlyPlayedParser.parse(
                 itemFeed("<title>Gil Scott-Heron - Me And The Devil - Remix</title>")
         )
@@ -57,7 +57,7 @@ class RecentlyPlayedParserTest {
     }
 
     @Test
-    fun `missing cover and missing separator do not drop the track`() {
+    fun missing_cover_and_missing_separator_do_not_drop_the_track() {
         val tracks = RecentlyPlayedParser.parse(itemFeed("<title>Untitled Jam</title>"))
 
         assertEquals("Untitled Jam", tracks[0].artist)
@@ -66,7 +66,7 @@ class RecentlyPlayedParserTest {
     }
 
     @Test
-    fun `cdata markers are stripped`() {
+    fun cdata_markers_are_stripped() {
         val tracks = RecentlyPlayedParser.parse(
                 itemFeed("<title>&lt;![CDATA[Bobby Oroza - Strange Girl]]&gt;</title>")
         )
@@ -76,7 +76,7 @@ class RecentlyPlayedParserTest {
     }
 
     @Test
-    fun `items without a title are skipped`() {
+    fun items_without_a_title_are_skipped() {
         val tracks = RecentlyPlayedParser.parse(itemFeed("<description>0:00</description>"))
 
         assertTrue(tracks.isEmpty())

@@ -27,7 +27,7 @@ val sharedModule = module {
 
     single { nulaHttpClient() }
     single { PlaylistApiService(get()) }
-    single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get(), get()) }
+    single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get()) }
 
     single { ChannelPresenter() }
     single<PlaylistRepository> {
