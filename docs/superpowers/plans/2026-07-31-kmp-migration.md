@@ -1020,9 +1020,9 @@ class PlaylistApiService(private val client: HttpClient) {
 private const val BASE_URL = "https://radionula.com/"
 
 fun nulaHttpClient(): HttpClient = HttpClient {
-    // A non-2xx used to arrive as an error body that then failed to parse.
-    // Failing here instead reaches the same catch in the data source, one
-    // step earlier and with a clearer message.
+    // Retrofit already threw HttpException on a non-2xx when the body was
+    // returned directly, and the data source's catch-all handled it. This keeps
+    // that behaviour explicit rather than relying on the engine's default.
     expectSuccess = true
     defaultRequest { url(BASE_URL) }
 }
