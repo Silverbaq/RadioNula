@@ -15,6 +15,12 @@ import kotlinx.coroutines.launch
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.AVAudioSessionInterruptionNotification
+import platform.AVFAudio.AVAudioSessionInterruptionOptionKey
+import platform.AVFAudio.AVAudioSessionInterruptionOptionShouldResume
+import platform.AVFAudio.AVAudioSessionInterruptionTypeBegan
+import platform.AVFAudio.AVAudioSessionInterruptionTypeEnded
+import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 import platform.AVFAudio.setActive
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
@@ -28,6 +34,7 @@ import platform.AVFoundation.AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRa
 import platform.AVFoundation.replaceCurrentItemWithPlayerItem
 import platform.AVFoundation.timeControlStatus
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSNumber
 import platform.Foundation.NSURL
 import platform.MediaPlayer.MPMediaItemPropertyArtist
 import platform.MediaPlayer.MPMediaItemPropertyTitle
@@ -74,6 +81,9 @@ class IosMediaPlayerController(
     /** Whether the listener wants audio, which an item failing does not change. */
     private var shouldPlay = false
 
+    /** Set while a call or Siri owns the session, so its end can hand it back. */
+    private var interruptedWhilePlaying = false
+
     private val reconnect = StreamReconnect(connectivityMonitor.isOnline, scope) {
         if (shouldPlay) tuneIn(_channelIndex.value)
     }
@@ -91,6 +101,7 @@ class IosMediaPlayerController(
         _channelIndex.value = channelIndex
         val url = NSURL.URLWithString(channel.url) ?: return
         shouldPlay = true
+        setSessionActive(true)
         player.replaceCurrentItemWithPlayerItem(AVPlayerItem(uRL = url))
         player.play()
     }
@@ -106,6 +117,8 @@ class IosMediaPlayerController(
         shouldPlay = false
         reconnect.cancel()
         player.pause()
+        // Hands the session back, so whatever was playing before us can carry on.
+        setSessionActive(false)
     }
 
     private fun resume() {
@@ -115,17 +128,42 @@ class IosMediaPlayerController(
             tuneIn(_channelIndex.value)
         } else {
             shouldPlay = true
+            setSessionActive(true)
             player.play()
         }
     }
 
+    /**
+     * Category only. Activating here instead would take the session at app
+     * start - the controller is a Koin single resolved by RadioViewModel, so
+     * merely opening the player screen would stop whatever else the phone was
+     * playing, before the listener has tuned in to anything.
+     */
     private fun configureAudioSession() {
         val session = AVAudioSession.sharedInstance()
         try {
             session.setCategory(AVAudioSessionCategoryPlayback, null)
-            session.setActive(true, null)
         } catch (e: Throwable) {
             logError("IosMediaPlayer", "Could not configure the audio session", e)
+        }
+    }
+
+    private fun setSessionActive(active: Boolean) {
+        val session = AVAudioSession.sharedInstance()
+        try {
+            if (active) {
+                session.setActive(true, null)
+            } else {
+                // Without the option other apps stay ducked or silent until the
+                // user starts them by hand.
+                session.setActive(
+                    false,
+                    AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                    null,
+                )
+            }
+        } catch (e: Throwable) {
+            logError("IosMediaPlayer", "Could not set the audio session active=$active", e)
         }
     }
 
@@ -140,19 +178,40 @@ class IosMediaPlayerController(
 
     /**
      * A phone call or a Siri request pauses playback without going through us.
-     * The poll below would notice on its own; this stops the static immediately
-     * rather than a quarter second later.
+     * The poll below would notice the pause on its own; this stops the static
+     * immediately rather than a quarter second later.
+     *
+     * Both ends of the interruption are handled: the same notification fires
+     * again when the call ends, and iOS expects the app to reactivate its
+     * session and resume itself - nothing else will.
      */
     private fun observeInterruptions() {
         NSNotificationCenter.defaultCenter.addObserverForName(
             name = AVAudioSessionInterruptionNotification,
             `object` = null,
             queue = null,
-        ) { _ ->
-            shouldPlay = false
-            reconnect.cancel()
-            _isPlaying.value = false
-            tuningNoise.stop()
+        ) { notification ->
+            val info = notification?.userInfo
+            when ((info?.get(AVAudioSessionInterruptionTypeKey) as? NSNumber)?.unsignedLongValue) {
+                AVAudioSessionInterruptionTypeBegan -> {
+                    // Remembered, because shouldPlay is about to be cleared and
+                    // it is what decides whether resuming is wanted at all.
+                    interruptedWhilePlaying = shouldPlay
+                    shouldPlay = false
+                    reconnect.cancel()
+                    _isPlaying.value = false
+                    tuningNoise.stop()
+                }
+
+                AVAudioSessionInterruptionTypeEnded -> {
+                    val options = (info[AVAudioSessionInterruptionOptionKey] as? NSNumber)
+                        ?.unsignedLongValue ?: 0uL
+                    val shouldResume =
+                        options and AVAudioSessionInterruptionOptionShouldResume != 0uL
+                    if (interruptedWhilePlaying && shouldResume) resume()
+                    interruptedWhilePlaying = false
+                }
+            }
         }
     }
 
