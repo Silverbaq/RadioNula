@@ -15,10 +15,14 @@ import kotlinx.coroutines.withContext
  * DDL, so a database written by the old build is picked up as-is. There is no
  * migration and no schema version to bump.
  *
- * ponytail: a connection is opened per operation rather than held open. These
- * are three user-triggered queries against one small table. If the favourites
- * list ever grows enough for that to show, hold a single connection behind a
- * Mutex rather than reaching for a connection pool.
+ * ponytail: a connection is opened per operation rather than held open, with
+ * no mutex and no busy timeout. NulaDatabase is a Koin single shared between
+ * RadioViewModel (insertTrack) and FavoritesViewModel (selectAllTracks,
+ * removeTrack), so two genuinely simultaneous calls could throw SQLITE_BUSY
+ * under the default rollback journal. That's a liveness risk from concurrent
+ * access, not a list-size one - unlikely from manual taps, but if two screens
+ * ever touch the store at once, hold a single connection behind a Mutex
+ * rather than reaching for a connection pool.
  */
 class NulaDatabase(
     private val driver: SQLiteDriver,

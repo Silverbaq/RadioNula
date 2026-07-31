@@ -6,6 +6,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.radionula.radionula.data.db.NulaDatabase
+import com.radionula.radionula.domain.model.NulaTrack
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -82,4 +83,37 @@ class LegacyFavoritesMigrationTest {
         assertEquals(1, after.size)
         assertEquals("Adi Oasis", after[0].artist)
     }
+
+    @Test
+    fun a_track_inserted_into_a_legacy_database_gets_a_new_id_and_leaves_existing_rows_alone() =
+        runBlocking {
+            val database = NulaDatabase(BundledSQLiteDriver(), dbFile.absolutePath)
+
+            val newId = database.insertTrack(
+                NulaTrack(artist = "Khruangbin", title = "August 10", image = "cover-c")
+            )
+
+            // The legacy database already has rows 1 and 2 - a new row colliding
+            // with either of those would mean last_insert_rowid() is being read
+            // from the wrong connection.
+            assertEquals(3L, newId)
+
+            val tracks = database.selectAllTracks().sortedBy { it.id }
+            assertEquals(3, tracks.size)
+
+            val inserted = tracks.single { it.id == newId.toInt() }
+            assertEquals("Khruangbin", inserted.artist)
+            assertEquals("August 10", inserted.title)
+            assertEquals("cover-c", inserted.image)
+
+            // The pre-existing favourites must be untouched by the insert.
+            assertEquals(1, tracks[0].id)
+            assertEquals("Izit", tracks[0].artist)
+            assertEquals("Make Way For The Solos", tracks[0].title)
+            assertEquals("cover-a", tracks[0].image)
+            assertEquals(2, tracks[1].id)
+            assertEquals("Adi Oasis", tracks[1].artist)
+            assertEquals("Serena", tracks[1].title)
+            assertEquals("cover-b", tracks[1].image)
+        }
 }
