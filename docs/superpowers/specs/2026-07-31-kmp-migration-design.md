@@ -131,7 +131,7 @@ it removes the large majority of the diff.
 | --- | --- | --- |
 | Retrofit 3.0.0 + OkHttp | Ktor **3.5.2** `client-core` | commonMain |
 | — | Ktor `client-okhttp` | androidMain |
-| `javax.xml` DOM | **xmlutil 1.0.1** `core`, pull reader | commonMain |
+| `javax.xml` DOM | **xmlutil 0.91.3** `core`, pull reader | commonMain |
 | `SQLiteOpenHelper` + hand-rolled SQL | **`androidx.sqlite:sqlite-bundled 2.7.0`** (driver only, no Room) | commonMain |
 | `lifecycle-viewmodel-ktx` 2.9.1 | `androidx.lifecycle:lifecycle-viewmodel` **2.11.0** (KMP) | commonMain |
 | Koin 4.1.0 (`koin-android`) | `koin-core` **4.2.2** + `koin-android` 4.2.2 | common / androidMain |
@@ -139,8 +139,10 @@ it removes the large majority of the diff.
 | Coil 2.7 | unchanged | `:app` |
 | media3, Firebase, WebView, Compose | unchanged | `:app` |
 
-No `kotlinx-serialization`. The feed is parsed with xmlutil's pull reader directly, which keeps the
-dependency and the R8 keep-rule surface smaller.
+No `kotlinx-serialization` *usage*, and no xmlutil serialization artifact: the feed is parsed with
+xmlutil's pull reader directly. `kotlinx-serialization-core` still reaches the runtime classpath
+transitively through `ktor-client-core` and through xmlutil `core` itself at every version — that is
+unavoidable and harmless. The constraint is about what the code uses and what is declared.
 
 ### Code changes forced by the move
 
@@ -327,4 +329,4 @@ independently reviewable and revertible. Eight tasks, same order and same gates.
 - **Compose compiler.** Applied only to `:app`. `:shared` contains no composables, so the plugin is not added there.
 - **Firebase.** `google-services` and the Crashlytics plugin stay on `:app` only; `google-services.json` does not move.
 - **No annotation processing in `:shared`.** KSP cannot run in a KMP module on this toolchain (see Constraints), so anything needing codegen — Room, a serialization processor, a DI processor — cannot live in `commonMain` until that changes. Koin's runtime DSL and hand-written SQL are chosen partly for this reason.
-- **xmlutil 1.0.1** is a recent major release; the pull-reader accessor was renamed from `XmlStreaming` to `xmlStreaming` across the 1.0 line. The exact call is confirmed against the library during phase 4, with `RecentlyPlayedParserTest` as the check.
+- **xmlutil is pinned to 0.91.3, not the 1.0.x line.** 1.0.x is built against Kotlin 2.4.0 and its metadata cannot be read by the 2.2.10 compiler AGP 9.3.1 embeds (`compiler version 2.2.0 can read versions up to 2.3.0`). 0.91.3 is the newest usable release — verified by building each candidate. The accessor is `XmlStreaming.newGenericReader`; the lowercase `xmlStreaming` rename belongs to the 1.0 line and does not apply here.

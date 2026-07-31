@@ -4,9 +4,9 @@
 
 **Goal:** Restructure RadioNula as a Kotlin Multiplatform project targeting Android only, with every platform-agnostic layer in `commonMain`, so adding an iOS target later needs only UI and a player implementation.
 
-**Architecture:** A new `:shared` KMP library module (`com.android.kotlin.multiplatform.library`) holds domain, data, repository and ViewModel code in `commonMain`, with a thin `androidMain` for the Room builder, the Ktor engine and two platform functions. `:app` stays a plain `com.android.application` module owning all Compose UI, media3 playback, Firebase and the WebView comments screen, and depends on `:shared`. Android-locked libraries are swapped for multiplatform equivalents: Retrofit→Ktor, `javax.xml` DOM→xmlutil, `SQLiteOpenHelper`→the multiplatform `androidx.sqlite` driver.
+**Architecture:** A new `:shared` KMP library module (`com.android.kotlin.multiplatform.library`) holds domain, data, repository and ViewModel code in `commonMain`, with a thin `androidMain` for the Ktor engine and two platform functions. `:app` stays a plain `com.android.application` module owning all Compose UI, media3 playback, Firebase and the WebView comments screen, and depends on `:shared`. Android-locked libraries are swapped for multiplatform equivalents: Retrofit→Ktor, `javax.xml` DOM→xmlutil, `SQLiteOpenHelper`→the multiplatform `androidx.sqlite` driver.
 
-**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 1.0.1, `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.11.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
+**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 0.91.3, `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.11.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
 
 **Spec:** `docs/superpowers/specs/2026-07-31-kmp-migration-design.md`
 
@@ -17,7 +17,7 @@
 - `applicationId = "com.radionula.nula"`, `:app` namespace `com.radionula.radionula`, `:shared` namespace `com.radionula.shared`.
 - **Kotlin packages stay `com.radionula.radionula.*` in both modules.** Moved files get no import edits. Do not rename packages.
 - **No Compose in `:shared`.** The Compose compiler plugin is applied only to `:app`.
-- **No `kotlinx-serialization`.** The RSS feed is parsed with xmlutil's pull reader directly.
+- **No `kotlinx-serialization` *usage*, and no xmlutil serialization artifact.** The RSS feed is parsed with xmlutil's pull reader directly. Note `kotlinx-serialization-core` lands on the runtime classpath transitively anyway — via `ktor-client-core`, and via xmlutil `core` at every version — which is unavoidable and harmless. The constraint is about what the code uses and what artifacts are declared, not about the resolved runtime graph.
 - **`:shared` requests the KMP plugins without a version** — `id("org.jetbrains.kotlin.multiplatform")`, not `alias(...)`. AGP 9 puts KGP on the plugin classpath untracked, so a versioned request fails. Versionless resolves to the AGP-embedded 2.2.10.
 - **No KSP, and therefore no Room, in `:shared`.** KSP `2.2.10-2.0.2` cannot run in a `com.android.kotlin.multiplatform.library` module on this toolchain. Do not add either plugin to `:shared`.
 - **The favorites table DDL is frozen** at what `MyDatabaseHelper` wrote: `NulaTracks (_id INTEGER PRIMARY KEY AUTOINCREMENT, artist TEXT NOT NULL, title TEXT NOT NULL, image TEXT NOT NULL)`. Favorites are user data; changing the column list strands them.
@@ -1185,7 +1185,7 @@ error body that fails to parse."
 In `gradle/libs.versions.toml`, add to `[versions]`:
 
 ```toml
-xmlutil = "1.0.1"
+xmlutil = "0.91.3"
 ```
 
 Add to `[libraries]`:
@@ -1200,7 +1200,7 @@ In `shared/build.gradle.kts`, add to `commonMain.dependencies`:
             implementation(libs.xmlutil.core)
 ```
 
-Only `core` — the serialization artifact is not needed and would drag in `kotlinx-serialization`, which the constraints forbid.
+Only `core` — the serialization artifact is not needed. (`core` itself declares `kotlinx-serialization-core` on the *runtime* classpath at every version, as does `ktor-client-core`; the compile classpath stays clean, and the constraint is about usage and declared artifacts.)
 
 - [ ] **Step 2: Move the test to `commonTest` and convert it**
 
@@ -1251,7 +1251,7 @@ package com.radionula.radionula.data.network
 import com.radionula.radionula.domain.model.NulaTrack
 import nl.adaptivity.xmlutil.EventType
 import nl.adaptivity.xmlutil.XmlReader
-import nl.adaptivity.xmlutil.xmlStreaming
+import nl.adaptivity.xmlutil.XmlStreaming
 
 /**
  * Parses the RSS 0.92 feeds at https://radionula.com/recently_played_chN.xml.
@@ -1265,7 +1265,7 @@ object RecentlyPlayedParser {
         // The *generic* reader, not the platform one: the feed is remote, and
         // the generic reader does not resolve external entities. This is what
         // isExpandEntityReferences = false did on the DOM parser.
-        val reader = xmlStreaming.newGenericReader(xml)
+        val reader = XmlStreaming.newGenericReader(xml)
         val tracks = mutableListOf<NulaTrack>()
 
         while (reader.hasNext()) {
@@ -1338,7 +1338,7 @@ object RecentlyPlayedParser {
 
 Two things to check if this does not compile or a test fails:
 
-- **`xmlStreaming` unresolved:** the accessor was `XmlStreaming` (capital X) before the 1.0 line. Try the capitalised name. Do not switch to a convenience `parse`-from-string helper — those use the platform reader and lose the external-entity protection.
+- **Accessor name:** on 0.91.x it is `XmlStreaming` (capital X); the lowercase `xmlStreaming` belongs to the 1.0 line, which this project cannot use. Do not switch to a convenience `parse`-from-string helper — those use the platform reader and lose the external-entity protection.
 - **`cdata_markers_are_stripped` fails:** the fixture uses `&lt;![CDATA[...]]&gt;`, so the markers arrive as escaped text. If `elementText()` returns an empty or partial string, the generic reader is emitting `ENTITY_REF` events whose `text` is the entity name rather than its replacement. Log the event sequence for that fixture before changing the accumulator.
 
 - [ ] **Step 5: Run the parser tests to verify they pass**
