@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.KotlinMultiplatformAndroidHostTestCompilation
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -28,6 +29,13 @@ kotlin {
         // instrumented test in this migration lives in :app, which already
         // has a runner configured.
         withHostTestBuilder {}
+
+        // Same as :app's testOptions.unitTests.isReturnDefaultValues: the host
+        // test JVM has no real android.jar, so an unmocked call (Log.e, reached
+        // through logError) throws instead of being a no-op.
+        compilations.withType(KotlinMultiplatformAndroidHostTestCompilation::class.java).configureEach {
+            isReturnDefaultValues = true
+        }
     }
 
     sourceSets {
@@ -48,9 +56,17 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
         }
     }
+}
+
+// The KMP android target's host tests run under testAndroidHostTest, not test -
+// so the habitual `./gradlew test` (and CI's :app:testDebug) would silently
+// skip every test in this module. Alias it so `test` stays the honest entrypoint.
+tasks.register("test") {
+    dependsOn("testAndroidHostTest")
 }

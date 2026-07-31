@@ -50,13 +50,10 @@ dependencies {
     implementation(project(":shared"))
 
     implementation(libs.androidx.appcompat)
-    implementation(libs.android.material)
     implementation(libs.androidx.core.ktx)
 
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
-    implementation(libs.coil)
     implementation(libs.coil.compose)
 
     // Compose
@@ -95,10 +92,8 @@ dependencies {
     testImplementation(libs.androidx.arch.core.testing)
 
     androidTestImplementation(libs.androidx.test.core)
-    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
-    androidTestImplementation(libs.mockito.android)
     // 3.6.1 calls InputManager.getInstance(), which newer Android removed, so
     // every Compose test died in Espresso.onIdle before reaching an assertion.
     androidTestImplementation(libs.espresso.core)

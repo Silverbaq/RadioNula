@@ -25,9 +25,9 @@ class PlaylistApiService(private val client: HttpClient) {
 private const val BASE_URL = "https://radionula.com/"
 
 fun nulaHttpClient(): HttpClient = HttpClient {
-    // Retrofit already threw HttpException on a non-2xx when the body was
-    // returned directly, and the data source's catch-all handled it. This keeps
-    // that behaviour explicit rather than relying on the engine's default.
+    // A non-2xx must throw rather than be returned as if it were a valid body -
+    // PlaylistNetworkDataSourceImpl's catch-all turns that throw into the null
+    // the repository relies on to ignore a failed fetch.
     expectSuccess = true
     defaultRequest { url(BASE_URL) }
 }

@@ -116,4 +116,29 @@ class LegacyFavoritesMigrationTest {
             assertEquals("Serena", tracks[1].title)
             assertEquals("cover-b", tracks[1].image)
         }
+
+    @Test
+    fun a_fresh_install_creates_the_database_and_stamps_user_version_1() = runBlocking {
+        // Both tests above pre-populate dbFile via raw SQLiteDatabase before
+        // NulaDatabase ever touches it. Every real install instead takes the
+        // create-from-nothing path, which neither of them exercises.
+        dbFile.delete()
+        File("${dbFile.path}-wal").delete()
+        File("${dbFile.path}-shm").delete()
+
+        val database = NulaDatabase(BundledSQLiteDriver(), dbFile.absolutePath)
+
+        val newId = database.insertTrack(
+            NulaTrack(artist = "Izit", title = "Make Way For The Solos", image = "cover-a")
+        )
+        val tracks = database.selectAllTracks()
+
+        assertEquals(1, tracks.size)
+        assertEquals(newId, tracks[0].id.toLong())
+        assertEquals("Izit", tracks[0].artist)
+        assertEquals("Make Way For The Solos", tracks[0].title)
+        assertEquals("cover-a", tracks[0].image)
+
+        SQLiteDatabase.openOrCreateDatabase(dbFile, null).use { assertEquals(1, it.version) }
+    }
 }

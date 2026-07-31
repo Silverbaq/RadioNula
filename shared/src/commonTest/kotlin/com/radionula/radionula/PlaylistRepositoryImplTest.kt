@@ -24,8 +24,13 @@ class PlaylistRepositoryImplTest {
     private class FakeNetworkDataSource : PlaylistNetworkDataSource {
         var nextResult: List<NulaTrack>? = null
 
-        override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? =
-            nextResult
+        /** The channel the repository last asked for - pins setChannel()'s effect. */
+        var requestedChannel: ChannelPresenter.Channel? = null
+
+        override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? {
+            requestedChannel = channel
+            return nextResult
+        }
     }
 
     private val dataSource = FakeNetworkDataSource()
@@ -44,6 +49,7 @@ class PlaylistRepositoryImplTest {
 
         val playlist = repository.currentPlaylist().first()
         assertEquals(listOf("Current"), playlist.map { it.title })
+        assertEquals(ChannelPresenter.Channel.Classic, dataSource.requestedChannel)
     }
 
     @Test
@@ -120,5 +126,16 @@ class PlaylistRepositoryImplTest {
         repository.fetchCurrentPlaylist()
 
         assertEquals(listOf("Playing"), repository.currentPlaylist().first().map { it.title })
+    }
+
+    @Test
+    fun setChannel_makes_the_next_fetch_request_that_channel() = runTest {
+        val repository = repository(this)
+        dataSource.nextResult = feed("Playing")
+
+        repository.setChannel(ChannelPresenter.Channel.Smoky)
+        repository.fetchCurrentPlaylist()
+
+        assertEquals(ChannelPresenter.Channel.Smoky, dataSource.requestedChannel)
     }
 }

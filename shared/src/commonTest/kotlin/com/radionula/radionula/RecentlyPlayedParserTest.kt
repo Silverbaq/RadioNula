@@ -82,6 +82,32 @@ class RecentlyPlayedParserTest {
         assertTrue(tracks.isEmpty())
     }
 
+    @Test
+    fun the_first_of_two_titles_in_one_item_wins() {
+        val tracks = RecentlyPlayedParser.parse(
+                itemFeed("<title>First Artist - First Title</title><title>Second - Second</title>")
+        )
+
+        assertEquals("First Artist", tracks[0].artist)
+        assertEquals("First Title", tracks[0].title)
+    }
+
+    @Test
+    fun a_doctype_declared_external_entity_is_not_resolved_and_does_not_crash_parsing() {
+        // A crafted feed trying classic XXE: read a local file into the track title.
+        val maliciousFeed = """
+            <?xml version='1.0' encoding='utf-8'?>
+            <!DOCTYPE rss [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+            <rss version="0.92"><channel><item><title>Track &xxe; Name</title></item></channel></rss>
+        """.trimIndent()
+
+        val tracks = RecentlyPlayedParser.parse(maliciousFeed)
+
+        // Whatever came out, it must not be /etc/passwd's contents.
+        val allText = tracks.joinToString { "${it.artist} ${it.title}" }
+        assertTrue(!allText.contains("root:"))
+    }
+
     private fun itemFeed(itemBody: String) =
             """<rss version="0.92"><channel><item>$itemBody</item></channel></rss>"""
 }

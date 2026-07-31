@@ -14,9 +14,11 @@ import nl.adaptivity.xmlutil.XmlStreaming
 object RecentlyPlayedParser {
 
     fun parse(xml: String): List<NulaTrack> {
-        // The *generic* reader, not the platform one: the feed is remote, and
-        // the generic reader does not resolve external entities. This is what
-        // isExpandEntityReferences = false did on the DOM parser.
+        // The *generic* reader, not the platform one: the feed is remote and
+        // untrusted, and this reader does not resolve external entities - so a
+        // crafted <!DOCTYPE> can't make it read a local file or another URL.
+        // The Reader overload of newGenericReader defaults expandEntities to
+        // true, so do not switch overloads without re-checking this.
         val reader = XmlStreaming.newGenericReader(xml)
         val tracks = mutableListOf<NulaTrack>()
 
@@ -43,8 +45,10 @@ object RecentlyPlayedParser {
             when (next()) {
                 EventType.START_ELEMENT -> when (localName) {
                     "image" -> inImage = true
-                    "title" -> title = elementText()
-                    // First image's url only, matching the DOM version's item(0).
+                    // First title wins - a second <title> in the same item must
+                    // not overwrite the track name already read.
+                    "title" -> if (title == null) title = elementText()
+                    // First image wins.
                     "url" -> if (inImage && cover == null) cover = elementText()
                 }
 

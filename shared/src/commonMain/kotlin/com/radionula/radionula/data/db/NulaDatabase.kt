@@ -2,7 +2,9 @@ package com.radionula.radionula.data.db
 
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.SQLiteDriver
+import androidx.sqlite.SQLiteException
 import androidx.sqlite.execSQL
+import com.radionula.radionula.core.util.logError
 import com.radionula.radionula.domain.model.NulaTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,20 +31,30 @@ class NulaDatabase(
     private val databasePath: String,
 ) {
 
-    suspend fun insertTrack(track: NulaTrack): Long = withConnection { connection ->
-        connection
-            .prepare("INSERT INTO $TABLE ($COLUMN_ARTIST, $COLUMN_TITLE, $COLUMN_IMAGE) VALUES (?, ?, ?)")
-            .use { statement ->
-                statement.bindText(1, track.artist)
-                statement.bindText(2, track.title)
-                statement.bindText(3, track.image)
-                statement.step()
+    // The old ContentValues insert (SQLiteDatabase.insert()) caught SQLException
+    // internally and returned -1 rather than throwing. SQLiteStatement.step()
+    // throws instead, and addFavoriteClicked launches this with no try of its
+    // own, so an uncaught SQLITE_BUSY here would kill the app instead of just
+    // failing to save a favourite. Restore the old failure mode.
+    suspend fun insertTrack(track: NulaTrack): Long = try {
+        withConnection { connection ->
+            connection
+                .prepare("INSERT INTO $TABLE ($COLUMN_ARTIST, $COLUMN_TITLE, $COLUMN_IMAGE) VALUES (?, ?, ?)")
+                .use { statement ->
+                    statement.bindText(1, track.artist)
+                    statement.bindText(2, track.title)
+                    statement.bindText(3, track.image)
+                    statement.step()
+                }
+            // The old ContentValues insert returned the new row id, and
+            // FavoritesViewModel's contract still says Long.
+            connection.prepare("SELECT last_insert_rowid()").use { statement ->
+                if (statement.step()) statement.getLong(0) else -1L
             }
-        // The old ContentValues insert returned the new row id, and
-        // FavoritesViewModel's contract still says Long.
-        connection.prepare("SELECT last_insert_rowid()").use { statement ->
-            if (statement.step()) statement.getLong(0) else -1L
         }
+    } catch (e: SQLiteException) {
+        logError("NulaDatabase", "Could not insert $track", e)
+        -1L
     }
 
     suspend fun selectAllTracks(): List<NulaTrack> = withConnection { connection ->
@@ -85,11 +97,25 @@ class NulaDatabase(
             val connection = driver.open(databasePath)
             try {
                 connection.execSQL(CREATE_TRACKS)
+                connection.stampFreshUserVersion()
                 block(connection)
             } finally {
                 connection.close()
             }
         }
+
+    /**
+     * SQLiteOpenHelper stamped every database it created with
+     * user_version = 1. The driver path never touches user_version, so a
+     * fresh install would otherwise leave it at SQLite's own default of 0 -
+     * only setting it when it is still 0 leaves an existing database untouched.
+     */
+    private fun SQLiteConnection.stampFreshUserVersion() {
+        val isFresh = prepare("PRAGMA user_version").use { statement ->
+            statement.step() && statement.getInt(0) == 0
+        }
+        if (isFresh) execSQL("PRAGMA user_version = 1")
+    }
 
     private companion object {
         const val TABLE = "NulaTracks"

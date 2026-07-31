@@ -11,10 +11,10 @@ class PlaylistNetworkDataSourceImpl(
 ) : PlaylistNetworkDataSource {
 
     override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? {
-        // Returns null on *any* failure, deliberately. The repository's
-        // early-return on null is what keeps a failed poll from clearing the
-        // session or publishing a stale track, and being offline is just one
-        // more failure now that the connectivity interceptor is gone.
+        // Any failure here - offline, a non-2xx, a malformed feed - returns null
+        // rather than throwing. PlaylistRepositoryImpl's early-return on null
+        // depends on that: it is what stops a failed poll from clearing the
+        // session or publishing a stale track.
         try {
             val xml = apiPlaylistApiService.getPlaylist(channel.xmlPath, epochMillis())
             return RecentlyPlayedParser.parse(xml)
