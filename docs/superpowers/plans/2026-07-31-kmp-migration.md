@@ -1718,11 +1718,13 @@ class LegacyFavoritesMigrationTest {
 
 Deliberately no `androidx.room:room-testing` / `MigrationTestHelper`: there is no Room and no migration to replay. Building the legacy file by hand with `SQLiteDatabase` is what proves the real compatibility claim.
 
+**A third test is required, covering `insertTrack`.** The two tests above prove reads and deletes are safe against a legacy database, but `insertTrack` is the only function that creates user data and the only one that exercises `last_insert_rowid()`'s connection scoping — a connection-per-operation implementation reading that value from the wrong connection would return a stale or zero id, and nothing else here would catch it. Reusing the same legacy-seeded fixture, the test must insert a track, assert via a follow-up `selectAllTracks()` that it persisted with the right fields, assert the returned id is the real new rowid and collides with neither pre-existing id, and assert both pre-existing rows are still present and unchanged.
+
 - [ ] **Step 5: Run the instrumented tests**
 
 Run: `./gradlew :app:connectedDebugAndroidTest --tests "*LegacyFavoritesMigrationTest*"`
 
-Expected: PASS, 2 tests.
+Expected: PASS, 3 tests.
 
 If `selectAllTracks` returns an empty list, the `databasePath` is not the file the test wrote — check that `NulaDatabase` opens the path it is given and does not derive its own. If ids come back as `0`, the `getInt(0)` column index is wrong: the `SELECT` lists `_id` first.
 
