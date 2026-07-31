@@ -1,6 +1,10 @@
 package com.radionula.radionula.core.di
 
 import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.data.PlaylistApiService
+import com.radionula.radionula.data.network.PlaylistNetworkDataSource
+import com.radionula.radionula.data.network.PlaylistNetworkDataSourceImpl
+import com.radionula.radionula.data.nulaHttpClient
 import com.radionula.radionula.data.repository.PlaylistRepositoryImpl
 import com.radionula.radionula.domain.repository.PlaylistRepository
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +24,10 @@ val sharedModule = module {
     factory<CoroutineScope>(named("default")) { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     factory<CoroutineScope>(named("main")) { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
     factory<CoroutineScope>(named("ioScope")) { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
+
+    single { nulaHttpClient() }
+    single { PlaylistApiService(get()) }
+    single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get(), get()) }
 
     single { ChannelPresenter() }
     single<PlaylistRepository> {

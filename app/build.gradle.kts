@@ -53,7 +53,6 @@ dependencies {
     implementation(libs.android.material)
     implementation(libs.androidx.core.ktx)
 
-    implementation(libs.retrofit)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 

@@ -1,24 +1,13 @@
 package com.radionula.radionula.features.player
 
-import org.koin.android.ext.koin.androidContext
+import com.radionula.radionula.data.network.PlaylistFeedParser
+import com.radionula.radionula.data.network.RecentlyPlayedParser
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import com.radionula.radionula.data.PlaylistApiService
-import com.radionula.radionula.data.network.ConnectivityInterceptorImpl
-import com.radionula.radionula.data.network.PlaylistNetworkDataSource
-import com.radionula.radionula.data.network.PlaylistNetworkDataSourceImpl
 
 val playlistModule = module {
-    single {
-        ConnectivityInterceptorImpl(
-            androidContext()
-        )
-    }
-    single { PlaylistApiService(get()) }
-    single<PlaylistNetworkDataSource> {
-        PlaylistNetworkDataSourceImpl(
-            get()
-        )
-    }
+    // RecentlyPlayedParser still lives here, not in :shared - see the
+    // PlaylistFeedParser doc comment. Resolved when Task 5 moves it.
+    single<PlaylistFeedParser> { RecentlyPlayedParser::parse }
     viewModel { RadioViewModel(get(), get(), get(), get()) }
 }

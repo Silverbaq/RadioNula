@@ -21,7 +21,7 @@ lifecycle = "2.9.1"
 coroutines = "1.10.2"
 kotlinxCoroutinesCore = "1.10.2"
 koin = "4.2.2"
-retrofit = "3.0.0"
+ktor = "3.5.2"
 coil = "2.7.0"
 media3 = "1.7.1"
 firebaseCrashlytics = "19.4.4"
@@ -72,7 +72,8 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
 
-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
