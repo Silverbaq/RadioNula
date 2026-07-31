@@ -29,7 +29,7 @@ class PlayerScreenTest {
     private fun setContent(
         state: PlayerUiState,
         onTuneIn: () -> Unit = {},
-        onAddFavorite: (com.radionula.radionula.domain.model.NulaTrack) -> Unit = {},
+        onAddFavorite: (NulaTrack) -> Unit = {},
     ) = composeRule.setContent {
         NulaTheme {
             PlayerScreen(
@@ -93,7 +93,7 @@ class PlayerScreenTest {
 
     @Test
     fun a_row_reveals_the_favourite_button_only_once_tapped() {
-        val added = mutableListOf<com.radionula.radionula.domain.model.NulaTrack>()
+        val added = mutableListOf<NulaTrack>()
         setContent(
             state = PlayerUiState(showTuneIn = false, tracks = listOf(track("Session Victim"))),
             onAddFavorite = { added += it },
@@ -120,7 +120,7 @@ class PlayerScreenTest {
     }
 
     private fun track(artist: String) =
-        _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+        NulaTrack(
             artist,
             "$artist title",
             "",

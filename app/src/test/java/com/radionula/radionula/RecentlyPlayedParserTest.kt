@@ -1,6 +1,6 @@
 package com.radionula.radionula
 
-import com.radionula.radionula.core.data.network.RecentlyPlayedParser
+import com.radionula.radionula.data.network.RecentlyPlayedParser
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

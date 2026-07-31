@@ -19,7 +19,7 @@ class NulaDatabase(context: Context) {
 
     private val helper = MyDatabaseHelper(context)
 
-    suspend fun insertTrack(track: com.radionula.radionula.domain.model.NulaTrack): Long = withContext(Dispatchers.IO) {
+    suspend fun insertTrack(track: NulaTrack): Long = withContext(Dispatchers.IO) {
         val values = ContentValues().apply {
             put(COLUMN_ARTIST, track.artist)
             put(COLUMN_TITLE, track.title)
@@ -28,7 +28,7 @@ class NulaDatabase(context: Context) {
         helper.writableDatabase.insert(TABLE, null, values)
     }
 
-    suspend fun selectAllTracks(): List<com.radionula.radionula.domain.model.NulaTrack> = withContext(Dispatchers.IO) {
+    suspend fun selectAllTracks(): List<NulaTrack> = withContext(Dispatchers.IO) {
         helper.readableDatabase.query(
             TABLE,
             arrayOf(COLUMN_ID, COLUMN_ARTIST, COLUMN_TITLE, COLUMN_IMAGE),
@@ -37,7 +37,7 @@ class NulaDatabase(context: Context) {
             buildList {
                 while (cursor.moveToNext()) {
                     add(
-                        _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+                        NulaTrack(
                             artist = cursor.getString(1),
                             title = cursor.getString(2),
                             image = cursor.getString(3),
@@ -49,7 +49,7 @@ class NulaDatabase(context: Context) {
         }
     }
 
-    suspend fun removeTrack(track: com.radionula.radionula.domain.model.NulaTrack): Int = withContext(Dispatchers.IO) {
+    suspend fun removeTrack(track: NulaTrack): Int = withContext(Dispatchers.IO) {
         helper.writableDatabase.delete(TABLE, "$COLUMN_ID = ?", arrayOf(track.id.toString()))
     }
 

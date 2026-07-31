@@ -44,8 +44,8 @@ import com.radionula.radionula.core.ui.theme.RobotoLight
 /** fragment_favorits.xml and its adapter_playlist.xml rows. */
 @Composable
 fun FavoritesScreen(
-    tracks: List<com.radionula.radionula.domain.model.NulaTrack>,
-    onRemove: (com.radionula.radionula.domain.model.NulaTrack) -> Unit,
+    tracks: List<NulaTrack>,
+    onRemove: (NulaTrack) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -101,7 +101,7 @@ fun FavoritesScreen(
  */
 @Composable
 private fun FavoriteRow(
-    track: com.radionula.radionula.domain.model.NulaTrack,
+    track: NulaTrack,
     onRemove: () -> Unit,
     onSearch: () -> Unit,
     modifier: Modifier = Modifier,
@@ -176,13 +176,13 @@ private fun FavoriteRow(
 private fun FavoritesScreenPreview() = NulaTheme {
     FavoritesScreen(
         tracks = listOf(
-            _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+            NulaTrack(
                 "Session Victim",
                 "Taste Of Life",
                 "",
                 id = 1
             ),
-            _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+            NulaTrack(
                 "The Experience",
                 "Of The Unaligned",
                 "",

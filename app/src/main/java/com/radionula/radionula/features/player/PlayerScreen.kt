@@ -71,7 +71,7 @@ fun PlayerScreen(
     onTuneIn: () -> Unit,
     onSkip: () -> Unit,
     onPause: () -> Unit,
-    onAddFavorite: (com.radionula.radionula.domain.model.NulaTrack) -> Unit,
+    onAddFavorite: (NulaTrack) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize().background(Brown)) {
@@ -218,8 +218,8 @@ private fun vinylRotation(spinning: Boolean): Pair<Float, Float> {
 
 @Composable
 private fun Playlist(
-    tracks: List<com.radionula.radionula.domain.model.NulaTrack>,
-    onAddFavorite: (com.radionula.radionula.domain.model.NulaTrack) -> Unit,
+    tracks: List<NulaTrack>,
+    onAddFavorite: (NulaTrack) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.background(BackgroundBlue)) {
@@ -256,8 +256,8 @@ private fun Playlist(
  */
 @Composable
 private fun TrackRow(
-    track: com.radionula.radionula.domain.model.NulaTrack,
-    onAddFavorite: (com.radionula.radionula.domain.model.NulaTrack) -> Unit,
+    track: NulaTrack,
+    onAddFavorite: (NulaTrack) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // rememberSaveable keyed on the row's identity, so recycling a row while
@@ -334,12 +334,12 @@ private fun PlayerScreenPlayingPreview() = NulaTheme {
             showTuneIn = false,
             isPlaying = true,
             tracks = listOf(
-                _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+                NulaTrack(
                     "Session Victim",
                     "Taste Of Life",
                     ""
                 ),
-                _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+                NulaTrack(
                     "The Experience",
                     "Of The Unaligned",
                     ""

@@ -10,7 +10,7 @@ import okhttp3.Response
 
 class ConnectivityInterceptorImpl(
         context: Context
-) : com.radionula.radionula.data.network.ConnectivityInterceptor {
+) : ConnectivityInterceptor {
     private val appContext = context.applicationContext
 
     override fun intercept(chain: Interceptor.Chain): Response {

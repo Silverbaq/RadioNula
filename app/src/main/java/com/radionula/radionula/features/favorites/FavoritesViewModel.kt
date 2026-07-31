@@ -14,16 +14,16 @@ import kotlinx.coroutines.launch
  * adapter. It lives here now so a query still in flight when the screen closes
  * cannot land on a dead view.
  */
-class FavoritesViewModel(private val nulaDatabase: com.radionula.radionula.data.db.NulaDatabase) : ViewModel() {
+class FavoritesViewModel(private val nulaDatabase: NulaDatabase) : ViewModel() {
 
-    private val _tracks = MutableStateFlow<List<com.radionula.radionula.domain.model.NulaTrack>>(emptyList())
-    val tracks: StateFlow<List<com.radionula.radionula.domain.model.NulaTrack>> = _tracks.asStateFlow()
+    private val _tracks = MutableStateFlow<List<NulaTrack>>(emptyList())
+    val tracks: StateFlow<List<NulaTrack>> = _tracks.asStateFlow()
 
     init {
         refresh()
     }
 
-    fun remove(track: com.radionula.radionula.domain.model.NulaTrack) {
+    fun remove(track: NulaTrack) {
         viewModelScope.launch {
             nulaDatabase.removeTrack(track)
             refresh()

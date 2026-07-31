@@ -7,25 +7,29 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import com.radionula.radionula.data.db.entity.CurrentSong
+import com.radionula.radionula.data.network.PlaylistNetworkDataSource
+import com.radionula.radionula.domain.model.NulaTrack
+import com.radionula.radionula.domain.repository.PlaylistRepository
 
 class PlaylistRepositoryImpl(
-    private val playlistNetworkDataSource: com.radionula.radionula.data.network.PlaylistNetworkDataSource,
+    private val playlistNetworkDataSource: PlaylistNetworkDataSource,
     private val coroutineScope: CoroutineScope,
-) : com.radionula.radionula.domain.repository.PlaylistRepository {
+) : PlaylistRepository {
     private var _currentChannel: ChannelPresenter.Channel = ChannelPresenter.Channel.Classic
-    private var _currentSong: com.radionula.radionula.data.db.entity.CurrentSong? = null
+    private var _currentSong: CurrentSong? = null
     private var autoFetchJob: Job? = null
 
     /** Only what has actually been heard since the app was opened. */
-    private val sessionHistory = mutableListOf<com.radionula.radionula.domain.model.NulaTrack>()
+    private val sessionHistory = mutableListOf<NulaTrack>()
 
     // replay = 1 so observers attaching after a fetch still see the latest feed.
-    private val _currentSongFlow = MutableSharedFlow<com.radionula.radionula.data.db.entity.CurrentSong>(replay = 1)
-    private val _playlist = MutableSharedFlow<List<com.radionula.radionula.domain.model.NulaTrack>>(replay = 1)
+    private val _currentSongFlow = MutableSharedFlow<CurrentSong>(replay = 1)
+    private val _playlist = MutableSharedFlow<List<NulaTrack>>(replay = 1)
 
-    override fun currentSong(): Flow<com.radionula.radionula.data.db.entity.CurrentSong> = _currentSongFlow
+    override fun currentSong(): Flow<CurrentSong> = _currentSongFlow
 
-    override fun currentPlaylist(): Flow<List<com.radionula.radionula.domain.model.NulaTrack>> = _playlist
+    override fun currentPlaylist(): Flow<List<NulaTrack>> = _playlist
 
     override suspend fun fetchCurrentPlaylist() {
         val tracks = playlistNetworkDataSource.fetchPlaylist(_currentChannel) ?: return
@@ -34,7 +38,7 @@ class PlaylistRepositoryImpl(
         // were played before the app was even open, and the playlist is meant to
         // be what this session has heard.
         val current = tracks.firstOrNull() ?: return
-        val song = _root_ide_package_.com.radionula.radionula.data.db.entity.CurrentSong(
+        val song = CurrentSong(
             current.artist,
             current.image,
             current.title

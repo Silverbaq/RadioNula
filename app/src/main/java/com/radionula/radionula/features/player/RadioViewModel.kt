@@ -15,6 +15,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.radionula.radionula.data.db.NulaDatabase
+import com.radionula.radionula.data.db.entity.CurrentSong
+import com.radionula.radionula.domain.model.NulaTrack
+import com.radionula.radionula.domain.repository.PlaylistRepository
 
 /** The three per-channel drawables the player swaps together. */
 data class ChannelArt(
@@ -27,7 +31,7 @@ data class PlayerUiState(
     val showTuneIn: Boolean = true,
     val isPlaying: Boolean = false,
     val cover: String = "",
-    val tracks: List<com.radionula.radionula.domain.model.NulaTrack> = emptyList(),
+    val tracks: List<NulaTrack> = emptyList(),
     val channelArt: ChannelArt = CLASSIC_ART,
 )
 
@@ -35,10 +39,10 @@ val CLASSIC_ART =
     ChannelArt(R.drawable.nula_channel1, R.drawable.skip_channel1, R.drawable.pause_channel1)
 
 class RadioViewModel(
-    private val playlistReposetory: com.radionula.radionula.domain.repository.PlaylistRepository,
+    private val playlistReposetory: PlaylistRepository,
     private val channelPresenter: ChannelPresenter,
     private val mediaplayerPresenter: MediaplayerPresenter,
-    private val nulaDatabase: com.radionula.radionula.data.db.NulaDatabase
+    private val nulaDatabase: NulaDatabase
 ) : ViewModel() {
     private val channelArt = MutableStateFlow(CLASSIC_ART)
 
@@ -116,7 +120,7 @@ class RadioViewModel(
         mediaplayerPresenter.pauseRadio()
     }
 
-    fun addFavoriteClicked(track: com.radionula.radionula.domain.model.NulaTrack) {
+    fun addFavoriteClicked(track: NulaTrack) {
         viewModelScope.launch {
             nulaDatabase.insertTrack(track)
             _favoriteAdded.emit(track.title)
@@ -146,7 +150,7 @@ class RadioViewModel(
     }
 
     private companion object {
-        val EMPTY_SONG = _root_ide_package_.com.radionula.radionula.data.db.entity.CurrentSong(
+        val EMPTY_SONG = CurrentSong(
             artist = "",
             cover = "",
             title = ""

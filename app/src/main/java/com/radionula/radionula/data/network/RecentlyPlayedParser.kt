@@ -14,7 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory
  */
 object RecentlyPlayedParser {
 
-    fun parse(xml: String): List<com.radionula.radionula.domain.model.NulaTrack> {
+    fun parse(xml: String): List<NulaTrack> {
         val factory = DocumentBuilderFactory.newInstance().apply {
             // Feed is remote: never let it pull in external content.
             isExpandEntityReferences = false
@@ -27,7 +27,7 @@ object RecentlyPlayedParser {
             val item = items.item(index) as? Element ?: return@mapNotNull null
             val title = item.firstText("title")?.stripCdata() ?: return@mapNotNull null
             val parts = title.split(" - ", limit = 2)
-            _root_ide_package_.com.radionula.radionula.domain.model.NulaTrack(
+            NulaTrack(
                 artist = parts[0].trim(),
                 title = parts.getOrElse(1) { "" }.trim(),
                 image = item.cover().orEmpty()

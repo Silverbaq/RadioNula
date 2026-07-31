@@ -2,9 +2,9 @@ package com.radionula.radionula
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import com.radionula.radionula.core.data.repository.PlaylistRepositoryImpl
-import com.radionula.radionula.core.data.network.PlaylistNetworkDataSource
-import com.radionula.radionula.core.domain.model.NulaTrack
+import com.radionula.radionula.data.repository.PlaylistRepositoryImpl
+import com.radionula.radionula.data.network.PlaylistNetworkDataSource
+import com.radionula.radionula.domain.model.NulaTrack
 import com.radionula.radionula.core.util.ChannelPresenter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first

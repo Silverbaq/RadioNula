@@ -6,9 +6,9 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import com.radionula.radionula.core.domain.repository.PlaylistRepository
-import com.radionula.radionula.core.data.db.NulaDatabase
-import com.radionula.radionula.core.domain.model.NulaTrack
+import com.radionula.radionula.domain.repository.PlaylistRepository
+import com.radionula.radionula.data.db.NulaDatabase
+import com.radionula.radionula.domain.model.NulaTrack
 import com.radionula.radionula.core.util.ChannelPresenter
 import com.radionula.radionula.features.player.RadioViewModel
 import com.radionula.radionula.services.mediaplayer.MediaplayerPresenter

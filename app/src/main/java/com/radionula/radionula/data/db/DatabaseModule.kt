@@ -6,6 +6,6 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val databaseModule = module {
-    single { _root_ide_package_.com.radionula.radionula.data.db.NulaDatabase(androidContext()) }
+    single { NulaDatabase(androidContext()) }
     viewModel { FavoritesViewModel(get()) }
 }

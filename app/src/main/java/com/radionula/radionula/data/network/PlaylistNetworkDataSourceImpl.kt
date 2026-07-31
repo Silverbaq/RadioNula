@@ -3,17 +3,19 @@ package com.radionula.radionula.data.network
 import android.util.Log
 import com.radionula.radionula.core.exceptions.NoConnectivityException
 import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.data.PlaylistApiService
+import com.radionula.radionula.domain.model.NulaTrack
 
 class PlaylistNetworkDataSourceImpl(
-        private val apiPlaylistApiService: com.radionula.radionula.data.PlaylistApiService
-) : com.radionula.radionula.data.network.PlaylistNetworkDataSource {
+        private val apiPlaylistApiService: PlaylistApiService
+) : PlaylistNetworkDataSource {
 
-    override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<com.radionula.radionula.domain.model.NulaTrack>? {
+    override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? {
         try {
             val xml = apiPlaylistApiService
                     .getPlaylist(channel.xmlPath, System.currentTimeMillis())
                     .use { it.string() }
-            return _root_ide_package_.com.radionula.radionula.data.network.RecentlyPlayedParser.parse(xml)
+            return RecentlyPlayedParser.parse(xml)
         } catch (e: NoConnectivityException) {
             Log.e("Connectivity", "No internet")
         } catch (e: Exception) {

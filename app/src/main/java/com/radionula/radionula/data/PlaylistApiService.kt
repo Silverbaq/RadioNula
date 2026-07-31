@@ -22,7 +22,7 @@ interface PlaylistApiService {
 
     companion object {
         operator fun invoke(
-                connectivityInterceptor: com.radionula.radionula.data.network.ConnectivityInterceptorImpl
+                connectivityInterceptor: ConnectivityInterceptorImpl
         ): PlaylistApiService {
             val okHttpClient = OkHttpClient.Builder()
                     .addInterceptor(connectivityInterceptor)
