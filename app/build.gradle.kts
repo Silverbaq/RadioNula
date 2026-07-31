@@ -41,6 +41,13 @@ val canSignRelease = releaseStoreFile?.exists() == true &&
         releaseKeyAlias != null &&
         releaseKeyPassword != null
 
+/**
+ * :shared's Compose resources, as assets. See the comment on
+ * :shared:androidComposeAssets for why this is not automatic.
+ */
+val sharedComposeAssets = project(":shared").layout.buildDirectory
+    .dir("composeResourcesAndroidAssets")
+
 android {
     compileSdk = libs.versions.compileSdk.get().toInt()
     buildToolsVersion = libs.versions.buildTools.get()
@@ -98,7 +105,19 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+
+
 }
+
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addStaticSourceDirectory(sharedComposeAssets.get().asFile.path)
+    }
+}
+
+// addStaticSourceDirectory carries no task dependency of its own.
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
+    .configureEach { dependsOn(":shared:androidComposeAssets") }
 
 dependencies {
     implementation(project(":shared"))
@@ -108,29 +127,17 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.coil.compose)
-
-    // Compose
+    // Compose: only what MainActivity needs to host the shared UI, plus the
+    // test artifacts. Everything else moved to :shared with the screens.
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    // collectAsStateWithLifecycle
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    // ConnectivityLiveData drives its callback off onActive/onInactive, which
-    // observeAsState honours - so it stays a LiveData rather than being rewritten.
-    implementation(libs.compose.runtime.livedata)
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.test.manifest)
 
-    implementation(libs.androidx.navigation.compose)
-
     implementation(libs.koin.android)
-    implementation(libs.koin.androidx.compose)
 
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.session)

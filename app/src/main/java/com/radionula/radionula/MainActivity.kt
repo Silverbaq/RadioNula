@@ -1,23 +1,15 @@
 package com.radionula.radionula
 
-import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.radionula.radionula.core.ui.NulaApp
 import com.radionula.radionula.core.ui.theme.NulaTheme
-import com.radionula.radionula.core.util.ConnectivityLiveData
 
 class MainActivity : AppCompatActivity() {
-
-    private val connectionData by lazy {
-        ConnectivityLiveData(getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Drops the SplashTheme window background used for the cold-start window.
@@ -35,12 +27,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            NulaTheme {
-                // Assume connected until the callback says otherwise, so the
-                // overlay does not flash over the player on every cold start.
-                val connected by connectionData.observeAsState(true)
-                NulaApp(connected = connected)
-            }
+            NulaTheme { NulaApp() }
         }
     }
 }
