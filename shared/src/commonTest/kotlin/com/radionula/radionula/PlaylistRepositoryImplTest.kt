@@ -1,37 +1,43 @@
 package com.radionula.radionula
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
-import com.radionula.radionula.data.repository.PlaylistRepositoryImpl
-import com.radionula.radionula.data.network.PlaylistNetworkDataSource
-import com.radionula.radionula.domain.model.NulaTrack
 import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.data.network.PlaylistNetworkDataSource
+import com.radionula.radionula.data.repository.PlaylistRepositoryImpl
+import com.radionula.radionula.domain.model.NulaTrack
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeoutOrNull
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(JUnit4::class)
 class PlaylistRepositoryImplTest {
 
-    private val dataSource: PlaylistNetworkDataSource = mock()
+    /**
+     * Replaces the Mockito mock. Only one method to stub, and the tests only
+     * ever need "what does the next fetch return", so a mutable property is
+     * the whole fake.
+     */
+    private class FakeNetworkDataSource : PlaylistNetworkDataSource {
+        var nextResult: List<NulaTrack>? = null
+
+        override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? =
+            nextResult
+    }
+
+    private val dataSource = FakeNetworkDataSource()
 
     private fun repository(scope: TestScope) = PlaylistRepositoryImpl(dataSource, scope)
 
     private fun feed(vararg titles: String) = titles.map { NulaTrack("Artist", it, "cover-$it") }
 
     @Test
-    fun `the playlist is only what this session heard, not the feed history`() = runTest {
+    fun the_playlist_is_only_what_this_session_heard_not_the_feed_history() = runTest {
         // The feed carries the current track plus ten played before the app opened.
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Current", "Older", "Oldest"))
+        dataSource.nextResult = feed("Current", "Older", "Oldest")
         val repository = repository(this)
 
         repository.fetchCurrentPlaylist()
@@ -41,24 +47,21 @@ class PlaylistRepositoryImplTest {
     }
 
     @Test
-    fun `a new track is prepended to the session history`() = runTest {
+    fun a_new_track_is_prepended_to_the_session_history() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("First"))
+        dataSource.nextResult = feed("First")
         repository.fetchCurrentPlaylist()
 
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Second"))
+        dataSource.nextResult = feed("Second")
         repository.fetchCurrentPlaylist()
 
         assertEquals(listOf("Second", "First"), repository.currentPlaylist().first().map { it.title })
     }
 
     @Test
-    fun `the same track fetched twice is not repeated`() = runTest {
+    fun the_same_track_fetched_twice_is_not_repeated() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Same"))
+        dataSource.nextResult = feed("Same")
 
         repository.fetchCurrentPlaylist()
         repository.fetchCurrentPlaylist()
@@ -67,10 +70,9 @@ class PlaylistRepositoryImplTest {
     }
 
     @Test
-    fun `clearSession leaves a new subscriber with nothing replayed`() = runTest {
+    fun clearSession_leaves_a_new_subscriber_with_nothing_replayed() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Heard last time"))
+        dataSource.nextResult = feed("Heard last time")
         repository.fetchCurrentPlaylist()
 
         repository.clearSession()
@@ -82,28 +84,25 @@ class PlaylistRepositoryImplTest {
     }
 
     @Test
-    fun `history restarts from empty after clearSession`() = runTest {
+    fun history_restarts_from_empty_after_clearSession() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Heard last time"))
+        dataSource.nextResult = feed("Heard last time")
         repository.fetchCurrentPlaylist()
         repository.clearSession()
 
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Heard this time"))
+        dataSource.nextResult = feed("Heard this time")
         repository.fetchCurrentPlaylist()
 
         assertEquals(
-                listOf("Heard this time"),
-                repository.currentPlaylist().first().map { it.title }
+            listOf("Heard this time"),
+            repository.currentPlaylist().first().map { it.title }
         )
     }
 
     @Test
-    fun `clearSession stops the polling loop`() = runTest {
+    fun clearSession_stops_the_polling_loop() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Playing"))
+        dataSource.nextResult = feed("Playing")
 
         repository.autoFetchPlaylist()
         repository.clearSession()
@@ -112,13 +111,12 @@ class PlaylistRepositoryImplTest {
     }
 
     @Test
-    fun `a failed fetch leaves the session untouched`() = runTest {
+    fun a_failed_fetch_leaves_the_session_untouched() = runTest {
         val repository = repository(this)
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic))
-                .thenReturn(feed("Playing"))
+        dataSource.nextResult = feed("Playing")
         repository.fetchCurrentPlaylist()
 
-        whenever(dataSource.fetchPlaylist(ChannelPresenter.Channel.Classic)).thenReturn(null)
+        dataSource.nextResult = null
         repository.fetchCurrentPlaylist()
 
         assertEquals(listOf("Playing"), repository.currentPlaylist().first().map { it.title })

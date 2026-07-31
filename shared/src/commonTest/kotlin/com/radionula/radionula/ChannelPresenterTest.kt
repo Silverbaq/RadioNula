@@ -1,18 +1,15 @@
 package com.radionula.radionula
 
 import com.radionula.radionula.core.util.ChannelPresenter
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-@RunWith(JUnit4::class)
 class ChannelPresenterTest {
 
     lateinit var channelPresenter : ChannelPresenter
 
-    @Before
+    @BeforeTest
     fun before() {
         channelPresenter= ChannelPresenter()
     }

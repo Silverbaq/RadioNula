@@ -35,6 +35,7 @@ kotlin {
             // api, not implementation: Flow and StateFlow appear in the public
             // API that :app consumes.
             api(libs.kotlinx.coroutines.core)
+            implementation(libs.koin.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
