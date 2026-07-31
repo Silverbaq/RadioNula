@@ -946,7 +946,7 @@ Moves the whole network call into `commonMain` and deletes the connectivity inte
 - Modify: `shared/build.gradle.kts`, `gradle/libs.versions.toml`, `shared/.../core/di/SharedModule.kt`, `app/src/main/.../features/player/PlaylistModule.kt`, `app/build.gradle.kts`
 
 **Interfaces:**
-- Consumes: `PlaylistNetworkDataSource`, `ChannelPresenter`, `NulaTrack`, `logError`, `epochMillis`, `sharedModule` from Task 3. `RecentlyPlayedParser.parse(xml: String): List<NulaTrack>` still lives in `:app` at this point and is called across the module boundary — that is temporary and resolved in Task 5.
+- Consumes: `PlaylistNetworkDataSource`, `ChannelPresenter`, `NulaTrack`, `logError`, `epochMillis`, `sharedModule` from Task 3. `RecentlyPlayedParser` still lives in `:app` at this point and **cannot be called from `commonMain`** — `:app` already depends on `:shared`, so the reverse dependency would be circular. The parse function is therefore injected: `typealias PlaylistFeedParser = (xml: String) -> List<NulaTrack>` declared in `commonMain`, bound in `:app` to `RecentlyPlayedParser::parse`. This adds one Koin definition (16, up from 15) and makes `PlaylistNetworkDataSourceImpl` take two constructor parameters. **Task 5 removes all of it.**
 - Produces:
   - `class PlaylistApiService(private val client: HttpClient)` with `suspend fun getPlaylist(xmlPath: String, cacheBuster: Long): String`
   - `fun nulaHttpClient(): HttpClient`
@@ -1175,8 +1175,10 @@ error body that fails to parse."
 - Modify: `shared/build.gradle.kts`, `gradle/libs.versions.toml`
 
 **Interfaces:**
-- Consumes: `NulaTrack` from Task 3.
-- Produces: `object RecentlyPlayedParser` with `fun parse(xml: String): List<NulaTrack>` — same signature and same behaviour as the DOM version it replaces.
+- Consumes: `NulaTrack` from Task 3, and the `PlaylistFeedParser` seam Task 4 introduced.
+- Produces: `object RecentlyPlayedParser` with `fun parse(xml: String): List<NulaTrack>` — same signature and same behaviour as the DOM version it replaces — now in `commonMain`.
+
+**This task also dismantles Task 4's temporary parser seam.** Task 4 could not call `RecentlyPlayedParser` from `commonMain` (the parser was in `:app`, and `:shared` cannot depend back on `:app`), so it injected the parse function. Once the parser is in `commonMain` that indirection has no reason to exist, and leaving it behind would be a permanent abstraction created solely by a transient constraint. Step 6 removes it.
 
 - [ ] **Step 1: Add xmlutil to the catalog and the module**
 
@@ -1345,15 +1347,48 @@ Run: `./gradlew :shared:testAndroidHostTest --tests "*RecentlyPlayedParserTest*"
 
 Expected: PASS, 5 tests.
 
-- [ ] **Step 6: Run everything and install**
+- [ ] **Step 6: Remove Task 4's parser seam**
+
+The parser is in `commonMain` now, so the injected parse function is dead weight. Remove all three parts:
+
+1. In `shared/src/commonMain/.../data/network/PlaylistNetworkDataSource.kt`, delete the `PlaylistFeedParser` typealias and its doc comment. The file goes back to holding only the `PlaylistNetworkDataSource` interface.
+2. In `shared/src/commonMain/.../data/network/PlaylistNetworkDataSourceImpl.kt`, drop the `parse` constructor parameter and call `RecentlyPlayedParser.parse(xml)` directly:
+
+```kotlin
+class PlaylistNetworkDataSourceImpl(
+        private val apiPlaylistApiService: PlaylistApiService
+) : PlaylistNetworkDataSource {
+
+    override suspend fun fetchPlaylist(channel: ChannelPresenter.Channel): List<NulaTrack>? {
+        // Returns null on *any* failure, deliberately. The repository's
+        // early-return on null is what keeps a failed poll from clearing the
+        // session or publishing a stale track, and being offline is just one
+        // more failure now that the connectivity interceptor is gone.
+        try {
+            val xml = apiPlaylistApiService.getPlaylist(channel.xmlPath, epochMillis())
+            return RecentlyPlayedParser.parse(xml)
+        } catch (e: Exception) {
+            logError("Playlist", "Could not read ${channel.xmlPath}", e)
+        }
+        return null
+    }
+}
+```
+
+3. In `app/src/main/.../features/player/PlaylistModule.kt`, delete the `single<PlaylistFeedParser> { ... }` definition, its comment, and both now-unused imports. The module goes back to just the `viewModel { RadioViewModel(...) }` binding.
+4. In `sharedModule`, `single<PlaylistNetworkDataSource> { PlaylistNetworkDataSourceImpl(get()) }` now takes a single `get()`.
+
+Afterwards `grep -rn "PlaylistFeedParser" app/src shared/src` must return nothing, and the Koin count returns to **15**.
+
+- [ ] **Step 7: Run everything and install**
 
 Run: `./gradlew :shared:testAndroidHostTest :app:testDebugUnitTest :app:installDebug`
 
-Expected: PASS. `:shared` is now 19 tests; `:app`'s drops by 5.
+Expected: PASS. `:shared` is now 19 tests; `:app`'s drops by 5. Koin reports `Started 15 definitions` — if it still says 16, the seam was not fully removed.
 
 On the device: tune in and confirm the artist, title and cover art are correct on all three channels. The unit tests use a trimmed fixture, so this is the check against the real feed.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 Ask the user for permission to commit, then:
 
