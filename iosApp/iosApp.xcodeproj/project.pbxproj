@@ -11,6 +11,8 @@
 		A1000010000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000020000000000000002 /* ContentView.swift */; };
 		A1000010000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000020000000000000003 /* Assets.xcassets */; };
 		A1000010000000000000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1000020000000000000004 /* PrivacyInfo.xcprivacy */; };
+		A1000010000000000000005 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1000020000000000000005 /* GoogleService-Info.plist */; };
+		A1000010000000000000006 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = A10000C0000000000000002 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,7 @@
 		A1000020000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1000020000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000020000000000000004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A1000020000000000000005 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A1000030000000000000001 /* iosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -26,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1000010000000000000006 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,6 +51,7 @@
 				A1000020000000000000002 /* ContentView.swift */,
 				A1000020000000000000003 /* Assets.xcassets */,
 				A1000020000000000000004 /* PrivacyInfo.xcprivacy */,
+				A1000020000000000000005 /* GoogleService-Info.plist */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -70,6 +75,7 @@
 				A1000080000000000000001 /* Sources */,
 				A1000040000000000000001 /* Frameworks */,
 				A1000080000000000000002 /* Resources */,
+				A1000070000000000000002 /* Upload dSYMs to Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -77,6 +83,9 @@
 			);
 			name = iosApp;
 			productName = iosApp;
+			packageProductDependencies = (
+				A10000C0000000000000002 /* FirebaseCrashlytics */,
+			);
 			productReference = A1000030000000000000001 /* iosApp.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -105,6 +114,9 @@
 			);
 			mainGroup = A1000050000000000000001;
 			productRefGroup = A1000050000000000000003 /* Products */;
+			packageReferences = (
+				A10000C0000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -120,6 +132,7 @@
 			files = (
 				A1000010000000000000003 /* Assets.xcassets in Resources */,
 				A1000010000000000000004 /* PrivacyInfo.xcprivacy in Resources */,
+				A1000010000000000000005 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +153,23 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode";
 		};
+		A1000070000000000000002 /* Upload dSYMs to Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = "Upload dSYMs to Crashlytics";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -153,6 +183,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A10000C0000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000C0000000000000002 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000C0000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A10000B0000000000000001 /* Debug */ = {

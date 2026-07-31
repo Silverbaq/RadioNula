@@ -3,24 +3,80 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  The iOS app collects nothing. It fetches the channel's RSS feed, plays the
-	  stream, keeps favourites in a local SQLite file, and loads the Remark42
-	  comment thread in a web view - no identifiers leave the device, and
-	  Crashlytics and Analytics are on the Android app only.
+	  What the app does with data: fetches the channel's RSS feed, plays the
+	  stream, keeps favourites in a local SQLite file, loads the Remark42 comment
+	  thread in a web view, and reports crashes to Crashlytics. No Analytics -
+	  :app has it, this target deliberately does not - and no tracking, so no
+	  tracking domains either.
 
-	  NSPrivacyAccessedAPITypes is deliberately empty rather than absent: nothing
-	  in the app or the framework calls a required-reason API. NSUserDefaults
-	  appears in the framework only as a Foundation cinterop binding, with no
-	  standardUserDefaults call anywhere. Add an entry here the moment that
-	  changes - App Store Connect rejects the upload, it does not warn.
+	  Crash data is declared here as well as in Firebase's own manifest inside
+	  FirebaseCrashlytics.bundle: Apple merges the two, and the app is what asks
+	  for the collection by calling FirebaseApp.configure().
+
+	  The two accessed-API entries come from the bundled SQLite driver, not from
+	  hand-written code. Verified against a release framework link for iosArm64:
+	  it needs _stat, _lstat and _fstat (file timestamps) and _statfs and
+	  _fstatfs (disk space), and the same five symbols are undefined in
+	  libandroidXBundledSqlite.a. Both are SQLite looking after its own database
+	  file in the app container, which is what DDA9.1 and E174.1 describe.
+
+	  Redo that check when a dependency is added or the driver changes:
+
+	      ./gradlew :shared:linkReleaseFrameworkIosArm64
+	      nm -u shared/build/bin/iosArm64/releaseFramework/Shared.framework/Shared
+
+	  A required-reason API that is used but not declared here is an App Store
+	  Connect rejection, not a warning.
 	-->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCrashData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeOtherDiagnosticData</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSPrivacyAccessedAPITypes</key>
-	<array/>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>DDA9.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>E174.1</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
