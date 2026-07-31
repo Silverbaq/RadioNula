@@ -26,7 +26,7 @@ coil = "2.7.0"
 media3 = "1.7.1"
 firebaseCrashlytics = "19.4.4"
 firebaseAnalytics = "22.5.0"
-xmlutil = "0.86.3"
+xmlutil = "0.91.3"
 
 junit = "4.13.2"
 mockito = "5.18.0"
