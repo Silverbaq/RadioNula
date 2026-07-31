@@ -4,9 +4,9 @@
 
 **Goal:** Restructure RadioNula as a Kotlin Multiplatform project targeting Android only, with every platform-agnostic layer in `commonMain`, so adding an iOS target later needs only UI and a player implementation.
 
-**Architecture:** A new `:shared` KMP library module (`com.android.kotlin.multiplatform.library`) holds domain, data, repository and ViewModel code in `commonMain`, with a thin `androidMain` for the Room builder, the Ktor engine and two platform functions. `:app` stays a plain `com.android.application` module owning all Compose UI, media3 playback, Firebase and the WebView comments screen, and depends on `:shared`. Android-locked libraries are swapped for multiplatform equivalents: Retrofit→Ktor, `javax.xml` DOM→xmlutil, `SQLiteOpenHelper`→Room.
+**Architecture:** A new `:shared` KMP library module (`com.android.kotlin.multiplatform.library`) holds domain, data, repository and ViewModel code in `commonMain`, with a thin `androidMain` for the Room builder, the Ktor engine and two platform functions. `:app` stays a plain `com.android.application` module owning all Compose UI, media3 playback, Firebase and the WebView comments screen, and depends on `:shared`. Android-locked libraries are swapped for multiplatform equivalents: Retrofit→Ktor, `javax.xml` DOM→xmlutil, `SQLiteOpenHelper`→the multiplatform `androidx.sqlite` driver.
 
-**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 1.0.1, Room 2.8.4 + `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.11.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
+**Tech Stack:** Kotlin 2.2.10, AGP 9.3.1, Gradle 9.5, Ktor 3.5.2, xmlutil 1.0.1, `androidx.sqlite:sqlite-bundled` 2.7.0, Koin 4.2.2, androidx.lifecycle 2.11.0, Jetpack Compose (BOM 2026.03.00), media3 1.7.1.
 
 **Spec:** `docs/superpowers/specs/2026-07-31-kmp-migration-design.md`
 
@@ -18,7 +18,9 @@
 - **Kotlin packages stay `com.radionula.radionula.*` in both modules.** Moved files get no import edits. Do not rename packages.
 - **No Compose in `:shared`.** The Compose compiler plugin is applied only to `:app`.
 - **No `kotlinx-serialization`.** The RSS feed is parsed with xmlutil's pull reader directly.
-- **No `fallbackToDestructiveMigration` anywhere.** It wipes user favorites.
+- **`:shared` requests the KMP plugins without a version** — `id("org.jetbrains.kotlin.multiplatform")`, not `alias(...)`. AGP 9 puts KGP on the plugin classpath untracked, so a versioned request fails. Versionless resolves to the AGP-embedded 2.2.10.
+- **No KSP, and therefore no Room, in `:shared`.** KSP `2.2.10-2.0.2` cannot run in a `com.android.kotlin.multiplatform.library` module on this toolchain. Do not add either plugin to `:shared`.
+- **The favorites table DDL is frozen** at what `MyDatabaseHelper` wrote: `NulaTracks (_id INTEGER PRIMARY KEY AUTOINCREMENT, artist TEXT NOT NULL, title TEXT NOT NULL, image TEXT NOT NULL)`. Favorites are user data; changing the column list strands them.
 - **`PlaylistNetworkDataSourceImpl` must return `null` on any fetch failure**, never propagate. `PlaylistRepositoryImpl`'s early-return on `null` is what protects the polling loop and the UI state.
 - **Assertion semantics of migrated tests must not change.** They are the regression net for the whole migration.
 - Every task ends with a project that builds, installs and runs. Never leave `master`/`develop` mergeable-but-broken.
@@ -27,12 +29,18 @@
 
 ## Deviations from the spec
 
-Three corrections found while verifying the spec against the actual code. The spec is updated to match.
+Corrections found while verifying the spec against the actual code, and while executing it. The spec is updated to match.
 
-1. **The Room migration is a table rebuild, not a no-op.** Verified with `sqlite3`: the legacy `_id INTEGER PRIMARY KEY AUTOINCREMENT` reports `pragma table_info` → `notnull = 0`, while Room's generated DDL emits explicit `NOT NULL` → `notnull = 1`. Room's `TableInfo` validation compares `notNull`, so a no-op `Migration(1, 2)` fails with *"Migration didn't properly handle NulaTracks"*. Task 6 rebuilds the table instead.
+1. ~~**The Room migration is a table rebuild, not a no-op.**~~ **Superseded by deviation 6** — Room is gone, so there is no migration at all. Kept for the record because the finding is what made the Room path look expensive before it turned out to be impossible: verified with `sqlite3`, the legacy `_id INTEGER PRIMARY KEY AUTOINCREMENT` reports `pragma table_info` → `notnull = 0` while Room's generated DDL emits explicit `NOT NULL` → `notnull = 1`, and Room's `TableInfo` validation compares that field.
 2. **`RadioViewModelTest` stays in `app/src/test` with Mockito.** It has four mocks and ~20 `verify` assertions, two of them on final classes (`ChannelPresenter`, `NulaDatabase`). Rewriting it as hand-rolled spies risks weakening assertions, which the spec forbids. `:app`'s JVM unit tests can exercise `:shared` classes directly, so coverage is unchanged. Upgrade path: rewrite to fakes when an iOS target is added and the test needs to run on Native.
 3. **`PlayerScreenTest` needs no changes.** It only ever constructs `PlayerUiState()` with defaults and named arguments, and never references `channelArt`, so replacing that property is source-compatible with the test.
-4. **The Room builder is a Koin binding in `:app`, not an `expect`/`actual` in `androidMain`.** The spec called for an `actual` factory because the builder needs a `Context`. Koin already performs that platform split — `:app` supplies `RoomDatabase.Builder<NulaRoomDatabase>` via `androidContext()`, and `commonMain` consumes it. This removes an `expect`/`actual` pair with one implementation. An iOS target supplies its own builder from `iosMain` the same way, so nothing is foreclosed.
+4. **The database path is a Koin binding in `:app`, not an `expect`/`actual` in `androidMain`.** The spec called for an `actual` factory because it needs a `Context`. Koin already performs that platform split — `:app` supplies the path via `androidContext()`, and `commonMain` consumes it. This removes an `expect`/`actual` pair with one implementation. An iOS target supplies its own path from `iosMain` the same way, so nothing is foreclosed.
+
+Two further corrections, both found by Task 2 failing and both verified empirically in-repo:
+
+5. **`:shared` requests its KMP plugins without a version.** `alias(libs.plugins.kotlinMultiplatform)` fails with *"the plugin is already on the classpath with an unknown version, so compatibility cannot be checked"*. AGP 9 declares `kotlin-gradle-plugin` as a plain runtime dependency, so resolving AGP anywhere in the build puts KGP on the plugin classpath with no version Gradle can track — reproduced with an empty root build script and no `:app` in the build at all. Versionless `id("...")` resolves from that classpath, which is the AGP-embedded 2.2.10, so the constraint's intent is preserved exactly. The two catalog plugin aliases are therefore never added.
+
+6. **Room is replaced by the `androidx.sqlite` driver** — see the note at the head of Task 6 for the three verified dead ends (KSP crashes against the AGP 9 KMP plugin, AGP 9 rejects the legacy `com.android.library` + `androidTarget()` combination, and AGP 9.4.0-alpha07 embeds the same Kotlin). This removes the riskiest part of the migration rather than adding risk: with no Room, there is no `TableInfo` validation, no identity hash, and no migration, so the legacy `NulaTracks` table is used exactly as written. The `notnull` mismatch documented in deviation 1 no longer applies to anything.
 
 ## File Structure
 
@@ -48,12 +56,9 @@ Three corrections found while verifying the spec against the actual code. The sp
 | `shared/src/commonMain/kotlin/com/radionula/radionula/core/util/Platform.kt` | `expect fun logError`, `expect fun epochMillis` |
 | `shared/src/androidMain/kotlin/com/radionula/radionula/core/util/Platform.android.kt` | Their `actual`s |
 | `shared/src/commonMain/kotlin/com/radionula/radionula/core/di/SharedModule.kt` | Koin module for shared singletons |
-| `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaTrackEntity.kt` | Room entity matching the legacy table |
-| `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/FavoritesDao.kt` | Room DAO |
-| `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaRoomDatabase.kt` | `RoomDatabase`, constructor `expect`, migration, factory |
 | `shared/src/commonMain/kotlin/com/radionula/radionula/services/mediaplayer/MediaPlayerController.kt` | Player interface consumed by `RadioViewModel` |
 | `app/src/main/java/com/radionula/radionula/features/player/ChannelArt.kt` | Per-channel drawables, moved out of the ViewModel |
-| `app/src/androidTest/java/com/radionula/radionula/LegacyFavoritesMigrationTest.kt` | Proves favorites survive the Room adoption |
+| `app/src/androidTest/java/com/radionula/radionula/LegacyFavoritesMigrationTest.kt` | Proves favorites written by the old `SQLiteOpenHelper` are still readable |
 
 **Moved to `shared/src/commonMain`** (no content change unless a task says otherwise): `domain/model/NulaTrack.kt`, `domain/repository/PlaylistRepository.kt`, `data/repository/PlaylistRepositoryImpl.kt`, `data/db/entity/CurrentSong.kt`, `core/util/channelPresenter.kt`, `data/network/PlaylistNetworkDataSource.kt`, `data/PlaylistApiService.kt`, `data/network/PlaylistNetworkDataSourceImpl.kt`, `data/network/RecentlyPlayedParser.kt`, `data/db/NulaDatabase.kt`, `features/player/RadioViewModel.kt`, `features/favorites/FavoritesViewModel.kt`.
 
@@ -403,7 +408,7 @@ An empty KMP module wired into the build, with one trivial test to prove the tes
   - `fun logError(tag: String, message: String, cause: Throwable? = null)` in package `com.radionula.radionula.core.util`
   - `fun epochMillis(): Long` in the same package
   - the Gradle project `:shared`, on `:app`'s `implementation` configuration
-  - the shared unit-test task name, recorded in Step 4
+  - the shared unit-test task, confirmed as `:shared:testAndroidHostTest`
 
 - [ ] **Step 1: Add the KMP plugin and shared dependencies to the catalog**
 
@@ -413,13 +418,6 @@ In `gradle/libs.versions.toml`, add to `[versions]`:
 kotlinxCoroutinesCore = "1.10.2"
 ```
 
-Add to `[plugins]`:
-
-```toml
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
-```
-
 Add to `[libraries]`:
 
 ```toml
@@ -427,7 +425,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 ```
 
-`com.android.kotlin.multiplatform.library` ships inside AGP, so it shares the `agp` version ref — its plugin marker at 9.3.1 was confirmed present on Google's Maven.
+**Do not add catalog plugin aliases for the KMP plugins.** They would be unused: the two plugins `:shared` needs are already on the plugin classpath via AGP, and must be requested *without* a version — see Step 2. A catalog alias carries a version by construction, which is exactly what breaks here.
 
 - [ ] **Step 2: Create `shared/build.gradle.kts`**
 
@@ -435,8 +433,17 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKotlinMultiplatformLibrary)
+    // Versionless on purpose, and load-bearing.
+    //
+    // AGP 9 declares kotlin-gradle-plugin as a plain runtime dependency, so
+    // resolving AGP anywhere in the build puts KGP on the plugin classpath with
+    // no version Gradle can track. Requesting either of these *with* a version
+    // then fails outright: "the plugin is already on the classpath with an
+    // unknown version, so compatibility cannot be checked". Versionless
+    // resolves from that classpath - which is the AGP-embedded 2.2.10, the
+    // version this project pins to anyway.
+    id("org.jetbrains.kotlin.multiplatform")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 kotlin {
@@ -504,13 +511,13 @@ class PlatformTest {
 }
 ```
 
-- [ ] **Step 5: Run the test to verify it fails, and record the task name**
+- [ ] **Step 5: Run the test to verify it fails**
 
 Run: `./gradlew :shared:testAndroidHostTest`
 
-Expected: FAIL with "Unresolved reference: epochMillis".
+Expected: FAIL with "Unresolved reference 'epochMillis'".
 
-If Gradle instead reports that the *task* does not exist, run `./gradlew :shared:tasks --all | grep -i hostTest` and use the reported task name for the rest of this plan. Write the confirmed name at the top of this task before continuing, so later tasks use it verbatim.
+`:shared:testAndroidHostTest` is the confirmed task name under the `androidLibrary` DSL — verified against `:shared:tasks --all`, which describes it as "Run unit tests for the androidMain build". Every later task uses it. If the failure is anything other than the unresolved reference, stop and report: a plugin or configuration problem is being masked.
 
 - [ ] **Step 6: Write the expect declarations**
 
@@ -1368,204 +1375,51 @@ unchanged."
 
 ---
 
-### Task 6: Replace `SQLiteOpenHelper` with Room
+### Task 6: Replace `SQLiteOpenHelper` with the multiplatform SQLite driver
 
-The one task that can destroy user data. The migration is a **table rebuild**, not a no-op: verified with `sqlite3`, the legacy `_id INTEGER PRIMARY KEY AUTOINCREMENT` reports `pragma table_info` → `notnull = 0`, while Room's generated DDL emits explicit `NOT NULL` → `notnull = 1`. Room's `TableInfo` validation compares that field, so a no-op `Migration(1, 2)` fails with *"Migration didn't properly handle NulaTracks"*.
+The one task that can destroy user data.
+
+Room was the original choice here and is **not usable**. Verified in-repo: KSP `2.2.10-2.0.2` crashes against `com.android.kotlin.multiplatform.library` with `KotlinMultiplatformAndroidCompilationImpl cannot be cast to KotlinJvmAndroidCompilation`; the legacy `com.android.library` + `androidTarget()` combination is rejected outright by AGP 9 (*"not compatible with the org.jetbrains.kotlin.multiplatform plugin since AGP 9.0"*); and AGP 9.4.0-alpha07 embeds the same KGP 2.2.10, so no newer KSP is reachable. No KSP means no Room.
+
+`androidx.sqlite` provides the driver Room would have sat on, with no code generation. That turns the risky part of this task into a non-event: without Room's `TableInfo` validation there is **no identity hash, no schema check, and no migration**. The existing `NulaTracks` table is used exactly as `MyDatabaseHelper` wrote it.
 
 **Files:**
-- Create: `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaTrackEntity.kt`
-- Create: `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/FavoritesDao.kt`
-- Create: `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaRoomDatabase.kt`
 - Move + rewrite: `app/src/main/.../data/db/NulaDatabase.kt` → `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaDatabase.kt`
 - Create: `app/src/androidTest/java/com/radionula/radionula/LegacyFavoritesMigrationTest.kt`
 - Delete: `app/src/main/.../core/util/MyDatabaseHelper.kt`
 - Modify: `shared/build.gradle.kts`, `gradle/libs.versions.toml`, `shared/.../core/di/SharedModule.kt`, `app/src/main/.../data/db/DatabaseModule.kt`
 
 **Interfaces:**
-- Consumes: `NulaTrack`, `sharedModule` from Task 3.
+- Consumes: `NulaTrack` and `sharedModule` from Task 3.
 - Produces:
-  - `class NulaDatabase(private val dao: FavoritesDao)` keeping today's exact public surface: `suspend fun insertTrack(track: NulaTrack): Long`, `suspend fun selectAllTracks(): List<NulaTrack>`, `suspend fun removeTrack(track: NulaTrack): Int`. `RadioViewModel` and `FavoritesViewModel` are not touched by this task.
-  - `abstract class NulaRoomDatabase : RoomDatabase()` with `abstract fun favoritesDao(): FavoritesDao`
-  - `fun createNulaRoomDatabase(builder: RoomDatabase.Builder<NulaRoomDatabase>): NulaRoomDatabase`
-  - `val MIGRATION_1_2: Migration`
-  - a Koin `single<RoomDatabase.Builder<NulaRoomDatabase>>`, supplied from `:app` because it needs `Context`
+  - `class NulaDatabase(private val driver: SQLiteDriver, private val databasePath: String)` keeping today's exact public surface: `suspend fun insertTrack(track: NulaTrack): Long`, `suspend fun selectAllTracks(): List<NulaTrack>`, `suspend fun removeTrack(track: NulaTrack): Int`. `RadioViewModel` and `FavoritesViewModel` are **not** touched by this task.
+  - a Koin `single<SQLiteDriver>` in `sharedModule`, and a `single<String>(named("databasePath"))` supplied from `:app` because it needs `Context`
 
-- [ ] **Step 1: Add Room, KSP and the sqlite driver**
+- [ ] **Step 1: Add the sqlite driver**
 
 In `gradle/libs.versions.toml`, add to `[versions]`:
 
 ```toml
-room = "2.8.4"
 androidxSqlite = "2.7.0"
-```
-
-Add to `[plugins]`:
-
-```toml
-room = { id = "androidx.room", version.ref = "room" }
 ```
 
 Add to `[libraries]`:
 
 ```toml
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidxSqlite" }
 ```
 
-In `shared/build.gradle.kts`, add to `plugins`:
+In `shared/build.gradle.kts`, add to `commonMain.dependencies`:
 
 ```kotlin
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.room)
+            // api, not implementation: SQLiteDriver is a constructor parameter of
+            // NulaDatabase, which :app instantiates through Koin.
+            api(libs.androidx.sqlite.bundled)
 ```
 
-add to `commonMain.dependencies`:
+Do **not** add the KSP or Room plugins to this module. See the note at the top of this task.
 
-```kotlin
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
-```
-
-and add at the bottom of the file, outside the `kotlin` block:
-
-```kotlin
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
-dependencies {
-    // One entry per target. Adding an iOS target later needs a matching
-    // kspIosArm64 / kspIosSimulatorArm64 / kspIosX64 line, or Room silently
-    // generates nothing for it.
-    add("kspAndroid", libs.androidx.room.compiler)
-}
-```
-
-- [ ] **Step 2: Write the entity, DAO and database**
-
-Create `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaTrackEntity.kt`:
-
-```kotlin
-package com.radionula.radionula.data.db
-
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-/**
- * Maps onto the table MyDatabaseHelper created, so an existing install's
- * favourites are adopted rather than recreated. Column names and nullability
- * are load-bearing - see MIGRATION_1_2.
- */
-@Entity(tableName = "NulaTracks")
-data class NulaTrackEntity(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "_id") val id: Int = 0,
-    val artist: String,
-    val title: String,
-    val image: String,
-)
-```
-
-Create `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/FavoritesDao.kt`:
-
-```kotlin
-package com.radionula.radionula.data.db
-
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-
-@Dao
-interface FavoritesDao {
-
-    @Insert
-    suspend fun insert(track: NulaTrackEntity): Long
-
-    @Query("SELECT * FROM NulaTracks")
-    suspend fun selectAll(): List<NulaTrackEntity>
-
-    /** By id rather than by entity, so callers do not have to rebuild one. */
-    @Query("DELETE FROM NulaTracks WHERE _id = :id")
-    suspend fun deleteById(id: Int): Int
-}
-```
-
-Create `shared/src/commonMain/kotlin/com/radionula/radionula/data/db/NulaRoomDatabase.kt`:
-
-```kotlin
-package com.radionula.radionula.data.db
-
-import androidx.room.ConstructedBy
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.RoomDatabaseConstructor
-import androidx.room.migration.Migration
-import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import kotlinx.coroutines.Dispatchers
-
-/**
- * Version 2, not 1, on purpose.
- *
- * Version 1 is the database MyDatabaseHelper wrote. Room cannot open a
- * database it did not create - there is no room_master_table to verify - so
- * the app adopts the existing file by migrating it to 2. See MIGRATION_1_2.
- */
-@Database(entities = [NulaTrackEntity::class], version = 2)
-@ConstructedBy(NulaRoomDatabaseConstructor::class)
-abstract class NulaRoomDatabase : RoomDatabase() {
-    abstract fun favoritesDao(): FavoritesDao
-}
-
-// The Room compiler generates the `actual`.
-@Suppress("KotlinNoActualForExpect")
-expect object NulaRoomDatabaseConstructor : RoomDatabaseConstructor<NulaRoomDatabase> {
-    override fun initialize(): NulaRoomDatabase
-}
-
-/**
- * Rebuilds NulaTracks with the DDL Room expects, carrying the rows over.
- *
- * A no-op migration is not enough. SQLite reports `_id INTEGER PRIMARY KEY
- * AUTOINCREMENT` as notnull=0 in pragma table_info, while Room's schema for a
- * non-null Int primary key expects notnull=1, and TableInfo validation
- * compares that field. Verified with sqlite3 against both DDLs.
- *
- * The CREATE statement below must stay byte-identical to `createSql` in
- * schemas/..../2.json. Step 3 copies it from there rather than hand-writing it.
- */
-val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(connection: SQLiteConnection) {
-        connection.execSQL(
-            "CREATE TABLE IF NOT EXISTS `NulaTracks_new` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `artist` TEXT NOT NULL, `title` TEXT NOT NULL, `image` TEXT NOT NULL)"
-        )
-        connection.execSQL(
-            "INSERT INTO `NulaTracks_new` (`_id`, `artist`, `title`, `image`) SELECT `_id`, `artist`, `title`, `image` FROM `NulaTracks`"
-        )
-        connection.execSQL("DROP TABLE `NulaTracks`")
-        connection.execSQL("ALTER TABLE `NulaTracks_new` RENAME TO `NulaTracks`")
-    }
-}
-
-fun createNulaRoomDatabase(
-    builder: RoomDatabase.Builder<NulaRoomDatabase>,
-): NulaRoomDatabase = builder
-    .addMigrations(MIGRATION_1_2)
-    .setDriver(BundledSQLiteDriver())
-    .setQueryCoroutineContext(Dispatchers.IO)
-    .build()
-```
-
-- [ ] **Step 3: Generate the schema and make the migration DDL match it exactly**
-
-Run: `./gradlew :shared:assemble`
-
-Read `shared/schemas/com.radionula.radionula.data.db.NulaRoomDatabase/2.json` and find the `createSql` value for `NulaTracks`. Replace the `CREATE TABLE` string in `MIGRATION_1_2` with it verbatim, substituting `NulaTracks_new` for the `${TABLE_NAME}` placeholder.
-
-Do not skip this step or eyeball the match. A single difference in backticks, column order or the `NOT NULL` placement makes `validateMigration` fail at runtime on a real user's device, which is exactly the failure the instrumented test in Step 6 exists to catch.
-
-- [ ] **Step 4: Rewrite `NulaDatabase` over the DAO**
+- [ ] **Step 2: Rewrite `NulaDatabase` over the driver**
 
 ```bash
 git mv app/src/main/java/com/radionula/radionula/data/db/NulaDatabase.kt \
@@ -1577,24 +1431,111 @@ Replace its contents with:
 ```kotlin
 package com.radionula.radionula.data.db
 
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.SQLiteDriver
+import androidx.sqlite.execSQL
 import com.radionula.radionula.domain.model.NulaTrack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * The favourites store.
  *
  * Same three suspend functions the SQLiteOpenHelper version exposed, so the
- * ViewModels are unchanged. The manual withContext(Dispatchers.IO) wrappers
- * are gone: Room runs queries on the context given to setQueryCoroutineContext.
+ * ViewModels are unchanged - and deliberately the same table, with the same
+ * DDL, so a database written by the old build is picked up as-is. There is no
+ * migration and no schema version to bump.
+ *
+ * ponytail: a connection is opened per operation rather than held open. These
+ * are three user-triggered queries against one small table. If the favourites
+ * list ever grows enough for that to show, hold a single connection behind a
+ * Mutex rather than reaching for a connection pool.
  */
-class NulaDatabase(private val dao: FavoritesDao) {
+class NulaDatabase(
+    private val driver: SQLiteDriver,
+    private val databasePath: String,
+) {
 
-    suspend fun insertTrack(track: NulaTrack): Long =
-        dao.insert(NulaTrackEntity(artist = track.artist, title = track.title, image = track.image))
+    suspend fun insertTrack(track: NulaTrack): Long = withConnection { connection ->
+        connection
+            .prepare("INSERT INTO $TABLE ($COLUMN_ARTIST, $COLUMN_TITLE, $COLUMN_IMAGE) VALUES (?, ?, ?)")
+            .use { statement ->
+                statement.bindText(1, track.artist)
+                statement.bindText(2, track.title)
+                statement.bindText(3, track.image)
+                statement.step()
+            }
+        // The old ContentValues insert returned the new row id, and
+        // FavoritesViewModel's contract still says Long.
+        connection.prepare("SELECT last_insert_rowid()").use { statement ->
+            if (statement.step()) statement.getLong(0) else -1L
+        }
+    }
 
-    suspend fun selectAllTracks(): List<NulaTrack> =
-        dao.selectAll().map { NulaTrack(it.artist, it.title, it.image, it.id) }
+    suspend fun selectAllTracks(): List<NulaTrack> = withConnection { connection ->
+        connection
+            .prepare("SELECT $COLUMN_ID, $COLUMN_ARTIST, $COLUMN_TITLE, $COLUMN_IMAGE FROM $TABLE")
+            .use { statement ->
+                buildList {
+                    while (statement.step()) {
+                        add(
+                            NulaTrack(
+                                artist = statement.getText(1),
+                                title = statement.getText(2),
+                                image = statement.getText(3),
+                                id = statement.getInt(0),
+                            )
+                        )
+                    }
+                }
+            }
+    }
 
-    suspend fun removeTrack(track: NulaTrack): Int = dao.deleteById(track.id)
+    suspend fun removeTrack(track: NulaTrack): Int = withConnection { connection ->
+        connection.prepare("DELETE FROM $TABLE WHERE $COLUMN_ID = ?").use { statement ->
+            statement.bindInt(1, track.id)
+            statement.step()
+        }
+        connection.prepare("SELECT changes()").use { statement ->
+            if (statement.step()) statement.getInt(0) else 0
+        }
+    }
+
+    /**
+     * CREATE TABLE IF NOT EXISTS on every open, which is exactly what
+     * MyDatabaseHelper's onCreate and onUpgrade both did. Idempotent, so a
+     * database from the old build needs nothing done to it, and a fresh install
+     * gets the same schema it always had.
+     */
+    private suspend fun <T> withConnection(block: (SQLiteConnection) -> T): T =
+        withContext(Dispatchers.IO) {
+            val connection = driver.open(databasePath)
+            try {
+                connection.execSQL(CREATE_TRACKS)
+                block(connection)
+            } finally {
+                connection.close()
+            }
+        }
+
+    private companion object {
+        const val TABLE = "NulaTracks"
+        const val COLUMN_ID = "_id"
+        const val COLUMN_ARTIST = "artist"
+        const val COLUMN_TITLE = "title"
+        const val COLUMN_IMAGE = "image"
+
+        // Byte-for-byte the DDL MyDatabaseHelper used. Favourites are user data;
+        // changing this column list strands them.
+        const val CREATE_TRACKS = """
+            CREATE TABLE IF NOT EXISTS NulaTracks (
+                _id INTEGER PRIMARY KEY AUTOINCREMENT,
+                artist TEXT NOT NULL,
+                title TEXT NOT NULL,
+                image TEXT NOT NULL
+            )
+        """
+    }
 }
 ```
 
@@ -1604,22 +1545,25 @@ Then delete the helper:
 git rm app/src/main/java/com/radionula/radionula/core/util/MyDatabaseHelper.kt
 ```
 
-- [ ] **Step 5: Wire it up in Koin**
+- [ ] **Step 3: Wire it up in Koin**
 
 In `shared/.../core/di/SharedModule.kt`, add the imports:
 
 ```kotlin
+import androidx.sqlite.SQLiteDriver
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.radionula.radionula.data.db.NulaDatabase
-import com.radionula.radionula.data.db.NulaRoomDatabase
-import com.radionula.radionula.data.db.createNulaRoomDatabase
+import org.koin.core.qualifier.named
 ```
 
-and the definitions:
+(`named` may already be imported for the CoroutineScope qualifiers — do not duplicate it.)
+
+Add the definitions:
 
 ```kotlin
-    // The RoomDatabase.Builder comes from :app - it needs a Context.
-    single { createNulaRoomDatabase(get()) }
-    single { NulaDatabase(get<NulaRoomDatabase>().favoritesDao()) }
+    single<SQLiteDriver> { BundledSQLiteDriver() }
+    // The database path comes from :app - it needs a Context.
+    single { NulaDatabase(get(), get(named("databasePath"))) }
 ```
 
 Replace `app/src/main/java/com/radionula/radionula/data/db/DatabaseModule.kt` with:
@@ -1627,29 +1571,25 @@ Replace `app/src/main/java/com/radionula/radionula/data/db/DatabaseModule.kt` wi
 ```kotlin
 package com.radionula.radionula.data.db
 
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import com.radionula.radionula.features.favorites.FavoritesViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val databaseModule = module {
     // getDatabasePath("NulaDB") is the exact file SQLiteOpenHelper used, which
-    // is what makes the adoption in MIGRATION_1_2 possible.
-    single<RoomDatabase.Builder<NulaRoomDatabase>> {
-        Room.databaseBuilder<NulaRoomDatabase>(
-            androidContext(),
-            androidContext().getDatabasePath("NulaDB").absolutePath,
-        )
+    // is what makes an existing install's favourites just appear.
+    single(named("databasePath")) {
+        androidContext().getDatabasePath("NulaDB").absolutePath
     }
     viewModel { FavoritesViewModel(get()) }
 }
 ```
 
-Note the `single { NulaDatabase(androidContext()) }` that used to live here is gone — `NulaDatabase` is built in `sharedModule` from the DAO now.
+The `single { NulaDatabase(androidContext()) }` that used to live here is gone — `NulaDatabase` is built in `sharedModule` now.
 
-- [ ] **Step 6: Write the failing migration test**
+- [ ] **Step 4: Write the failing legacy-database test**
 
 Create `app/src/androidTest/java/com/radionula/radionula/LegacyFavoritesMigrationTest.kt`:
 
@@ -1658,11 +1598,10 @@ package com.radionula.radionula
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import androidx.room.Room
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.radionula.radionula.data.db.NulaRoomDatabase
-import com.radionula.radionula.data.db.createNulaRoomDatabase
+import com.radionula.radionula.data.db.NulaDatabase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -1671,9 +1610,9 @@ import org.junit.runner.RunWith
 import java.io.File
 
 /**
- * Favourites are user data. This is the gate on the SQLiteOpenHelper -> Room
- * swap: it recreates the exact database an installed 2.3.0 has, opens it with
- * Room, and checks the rows came through.
+ * Favourites are user data. This is the gate on the SQLiteOpenHelper ->
+ * androidx.sqlite swap: it recreates the exact database an installed 2.3.0 has,
+ * opens it with the new code, and checks the rows came through untouched.
  */
 @RunWith(AndroidJUnit4::class)
 class LegacyFavoritesMigrationTest {
@@ -1684,6 +1623,7 @@ class LegacyFavoritesMigrationTest {
     @Before
     fun createLegacyDatabase() {
         dbFile = context.getDatabasePath("MigrationTestNulaDB")
+        dbFile.parentFile?.mkdirs()
         dbFile.delete()
         File("${dbFile.path}-wal").delete()
         File("${dbFile.path}-shm").delete()
@@ -1711,12 +1651,10 @@ class LegacyFavoritesMigrationTest {
     }
 
     @Test
-    fun favorites_saved_before_the_room_swap_survive_it() = runBlocking {
-        val database = createNulaRoomDatabase(
-            Room.databaseBuilder<NulaRoomDatabase>(context, dbFile.absolutePath)
-        )
+    fun favorites_saved_before_the_driver_swap_survive_it() = runBlocking {
+        val database = NulaDatabase(BundledSQLiteDriver(), dbFile.absolutePath)
 
-        val tracks = database.favoritesDao().selectAll().sortedBy { it.id }
+        val tracks = database.selectAllTracks().sortedBy { it.id }
 
         assertEquals(2, tracks.size)
         assertEquals("Izit", tracks[0].artist)
@@ -1726,54 +1664,73 @@ class LegacyFavoritesMigrationTest {
         // Ids are the favourites' identity for deletion, so they must not shift.
         assertEquals(1, tracks[0].id)
         assertEquals(2, tracks[1].id)
+    }
 
-        database.close()
+    @Test
+    fun a_track_removed_from_a_legacy_database_is_the_right_one() = runBlocking {
+        val database = NulaDatabase(BundledSQLiteDriver(), dbFile.absolutePath)
+        val before = database.selectAllTracks().sortedBy { it.id }
+
+        val removed = database.removeTrack(before[0])
+
+        assertEquals(1, removed)
+        val after = database.selectAllTracks()
+        assertEquals(1, after.size)
+        assertEquals("Adi Oasis", after[0].artist)
     }
 }
 ```
 
-Deliberately no `androidx.room:room-testing` / `MigrationTestHelper`: that helper replays migrations against a Room-generated schema, and the whole point here is a database Room did **not** create. Building the legacy file by hand with `SQLiteDatabase` is the only version of this test that reproduces the real failure.
+Deliberately no `androidx.room:room-testing` / `MigrationTestHelper`: there is no Room and no migration to replay. Building the legacy file by hand with `SQLiteDatabase` is what proves the real compatibility claim.
 
-- [ ] **Step 7: Run the migration test**
+- [ ] **Step 5: Run the instrumented tests**
 
 Run: `./gradlew :app:connectedDebugAndroidTest --tests "*LegacyFavoritesMigrationTest*"`
 
-Expected: PASS.
+Expected: PASS, 2 tests.
 
-If it fails with *"Migration didn't properly handle NulaTracks"*, the `CREATE TABLE` in `MIGRATION_1_2` does not match `2.json`. Read both, diff them character by character, and fix the migration — never the entity, and never by adding `fallbackToDestructiveMigration`.
+If `selectAllTracks` returns an empty list, the `databasePath` is not the file the test wrote — check that `NulaDatabase` opens the path it is given and does not derive its own. If ids come back as `0`, the `getInt(0)` column index is wrong: the `SELECT` lists `_id` first.
 
-- [ ] **Step 8: Run everything and verify on a real upgrade**
+- [ ] **Step 6: Run the whole suite and install**
 
-Run: `./gradlew :shared:testAndroidHostTest :app:testDebugUnitTest :app:connectedDebugAndroidTest`
+Run: `./gradlew :shared:testAndroidHostTest :app:testDebugUnitTest :app:connectedDebugAndroidTest :app:installDebug`
 
-Expected: PASS.
+Expected: PASS. `:shared` stays at 19 tests, `:app`'s unit tests are unchanged by this task, and `:app`'s instrumented tests gain 2.
 
-Then verify a genuine upgrade, which the instrumented test cannot cover:
+- [ ] **Step 7: Verify a genuine upgrade**
 
-1. `git stash` this task's changes, `./gradlew :app:installDebug`, open the app, and add two favourites from the player's heart button.
-2. `git stash pop`, then `./gradlew :app:installDebug` — an install over the top, **not** an uninstall.
-3. Open the favourites screen. Both tracks must still be listed, and deleting one must remove the right one.
+The instrumented test builds its own database file. This step is the one that exercises the real one, at the real path, written by the real old code.
 
-- [ ] **Step 9: Commit**
+1. `git stash --include-untracked`, then `./gradlew :app:installDebug`. Open the app, tune in, and add two favourites with the heart button. Confirm they appear on the favourites screen.
+2. `git stash pop`, then `./gradlew :app:installDebug` — an install **over the top**, not an uninstall.
+3. Open the favourites screen. Both tracks must still be listed, and deleting one must remove that one.
 
-Ask the user for permission to commit, then:
+This step needs a human for the sensory parts. Report it as UNVERIFIED with the exact steps for the human to run, and do not claim it passed.
+
+- [ ] **Step 8: Stage**
 
 ```bash
 git add -A shared app gradle/libs.versions.toml
-git commit -m "refactor: replace SQLiteOpenHelper with Room
+```
 
-Database version 2 with a migration from 1, because 1 is what
-MyDatabaseHelper wrote and Room refuses to open a database with no
-room_master_table to verify.
+Do not commit. Report the staged file list. The controller commits with:
 
-The migration rebuilds NulaTracks rather than doing nothing. SQLite reports
-'_id INTEGER PRIMARY KEY AUTOINCREMENT' as notnull=0, Room's schema for a
-non-null Int primary key expects notnull=1, and TableInfo validation compares
-that - so a no-op migration fails validation on every existing install. The
-CREATE statement is copied from the generated 2.json.
+```
+refactor: replace SQLiteOpenHelper with the multiplatform SQLite driver
+
+Room was the plan here and cannot be used: KSP 2.2.10-2.0.2 crashes against
+com.android.kotlin.multiplatform.library, AGP 9 rejects the legacy
+com.android.library + androidTarget() combination outright, and AGP
+9.4.0-alpha07 embeds the same Kotlin, so no newer KSP is reachable.
+
+androidx.sqlite is the driver Room would have sat on, without the code
+generation. It also removes the risk Room introduced: no TableInfo validation
+means no identity hash, no schema check and no migration, so the existing
+NulaTracks table is used exactly as MyDatabaseHelper wrote it.
 
 NulaDatabase keeps its three suspend functions, so the ViewModels are
-untouched. Room's query context replaces the manual withContext(IO)."
+untouched. An instrumented test builds a database with the legacy schema and
+proves the rows and their ids survive.
 ```
 
 ---
@@ -2100,7 +2057,14 @@ It is a generic package-layout template referencing Hilt, WorkManager and FCM, n
 
 - [ ] **Step 3: Confirm the dependency list matches reality**
 
-Read `app/build.gradle.kts` and `gradle/libs.versions.toml`. Every `[libraries]` entry must be referenced by a module, and every `implementation` must have a consumer in source. Remove any orphan. `mockito-kotlin`, `mockito-core` and `androidx-arch-core-testing` are still used by `RadioViewModelTest` and `ConnectionLiveDataTest` — keep them.
+Read `app/build.gradle.kts`, `build.gradle.kts` and `gradle/libs.versions.toml`. Every `[libraries]` and `[plugins]` entry must be referenced, and every `implementation` must have a consumer in source. Remove any orphan.
+
+Two specific ones to expect:
+
+- **KSP.** Task 1 corrected its pin to `2.2.10-2.0.2`, but with Room out of the design nothing applies it. Remove `alias(libs.plugins.ksp) apply false` from the root `build.gradle.kts`, and the `ksp` entries from both `[versions]` and `[plugins]`.
+- **The `retrofit` entry**, if Task 4 did not already remove it.
+
+`mockito-kotlin`, `mockito-core` and `androidx-arch-core-testing` are still used by `RadioViewModelTest` and `ConnectionLiveDataTest` — keep them.
 
 Run: `./gradlew :shared:testAndroidHostTest :app:testDebugUnitTest`
 
@@ -2110,7 +2074,7 @@ Expected: PASS. A removed-but-needed dependency fails here.
 
 Run: `./gradlew :app:assembleRelease`
 
-Expected: PASS. If R8 fails on a missing class from Room, Ktor or xmlutil, add a keep rule to `app/proguard-rules.pro` naming the specific class — do not broaden an existing rule to a whole package, and do not disable minification.
+Expected: PASS. If R8 fails on a missing class from the sqlite driver, Ktor or xmlutil, add a keep rule to `app/proguard-rules.pro` naming the specific class — do not broaden an existing rule to a whole package, and do not disable minification.
 
 - [ ] **Step 5: Install the release build and verify it end to end**
 
@@ -2119,7 +2083,7 @@ Run: `./gradlew :app:installRelease`
 A minified build behaves differently from debug, and all three swapped libraries are new to it. Verify on the device:
 
 1. Tune in — audio plays and the track title and cover appear. *(Ktor and xmlutil survived R8.)*
-2. Add a favourite, force-stop the app, reopen, open favourites — the track is there. *(Room survived R8.)*
+2. Add a favourite, force-stop the app, reopen, open favourites — the track is there. *(The sqlite driver survived R8.)*
 3. Open comments — the Remark42 thread loads. *(WebView unaffected.)*
 4. Airplane mode on — the overlay appears and the app does not crash. Airplane mode off — the playlist resumes within 30 seconds.
 5. Swipe the app away while playing — audio stops.
@@ -2136,8 +2100,8 @@ Removes the Retrofit and OkHttp coordinates now that Ktor owns the fetch
 path, and deletes filestructure.txt - a generic package-layout template
 mentioning Hilt, WorkManager and FCM, none of which this project uses.
 
-Verified against a minified release build on device: Room, Ktor and xmlutil
-all survive R8."
+Verified against a minified release build on device: the sqlite driver, Ktor
+and xmlutil all survive R8."
 ```
 
 - [ ] **Step 7: Report the final state**
@@ -2146,5 +2110,5 @@ Summarise for the user:
 
 - the test counts in `:shared` and `:app` before and after
 - which files ended up in `commonMain`, `androidMain` and `:app`
-- exactly what adding an iOS target would now require: three `ios*` targets plus `binaries.framework` in `shared/build.gradle.kts`, matching `kspIos*` Room compiler entries, `ktor-client-darwin` in `iosMain`, a `MediaPlayerController` implementation over `AVPlayer`, a connectivity abstraction in `commonMain`, a rewrite of `RadioViewModelTest` to fakes, and the SwiftUI app itself
+- exactly what adding an iOS target would now require: three `ios*` targets plus `binaries.framework` in `shared/build.gradle.kts`, `ktor-client-darwin` in `iosMain`, a `MediaPlayerController` implementation over `AVPlayer`, a connectivity abstraction in `commonMain`, a rewrite of `RadioViewModelTest` to fakes, and the SwiftUI app itself
 - any `ponytail:` comment or keep rule added along the way

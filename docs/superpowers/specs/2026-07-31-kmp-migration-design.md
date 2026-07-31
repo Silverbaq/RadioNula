@@ -13,18 +13,32 @@ Non-goals: Compose Multiplatform, iOS app, desktop/web targets, feature changes,
 
 ## Constraints
 
-AGP 9.3.1 embeds Kotlin Gradle Plugin **2.2.10** (verified in the AGP POM). Every Kotlin plugin is
-pinned to that version:
+AGP 9.3.1 embeds Kotlin Gradle Plugin **2.2.10** (verified in the AGP POM), and that pins the whole
+Kotlin toolchain. Bumping AGP does not help: 9.4.0-alpha07 embeds 2.2.10 as well.
 
-| Plugin | Version |
-| --- | --- |
-| `org.jetbrains.kotlin.multiplatform` | 2.2.10 |
-| `org.jetbrains.kotlin.plugin.compose` | 2.2.10 |
-| `com.google.devtools.ksp` | **2.2.10-2.0.2** |
-| `com.android.kotlin.multiplatform.library` | 9.3.1 (ships with AGP) |
+| Plugin | Version | How it is requested |
+| --- | --- | --- |
+| `org.jetbrains.kotlin.plugin.compose` | 2.2.10 | catalog alias, in `:app` |
+| `org.jetbrains.kotlin.multiplatform` | 2.2.10 (AGP-embedded) | **versionless `id(...)`**, in `:shared` |
+| `com.android.kotlin.multiplatform.library` | ships with AGP | **versionless `id(...)`**, in `:shared` |
 
-The root `build.gradle` currently declares KSP `2.3.6`, which does not match Kotlin 2.2.10. It is
-never applied today so nothing fails, but Room needs KSP — the pin is corrected in phase 1.
+**The two `:shared` plugins must be requested without a version.** AGP 9 declares
+`kotlin-gradle-plugin` as a plain runtime dependency, so resolving AGP anywhere in the build puts
+KGP on the plugin classpath with no version Gradle can track. A versioned request then fails with
+*"the plugin is already on the classpath with an unknown version, so compatibility cannot be
+checked"* — reproduced with an empty root build script and `:app` excluded from the build entirely.
+Versionless resolves from that classpath, which is 2.2.10, so the pin is honoured in effect.
+
+**KSP cannot be used in a Kotlin Multiplatform module on this toolchain**, which is why there is no
+Room in this design. Verified: KSP `2.2.10-2.0.2` crashes against
+`com.android.kotlin.multiplatform.library` with `KotlinMultiplatformAndroidCompilationImpl cannot be
+cast to KotlinJvmAndroidCompilation`, and the legacy `com.android.library` + `androidTarget()`
+combination is rejected outright — *"not compatible with the org.jetbrains.kotlin.multiplatform
+plugin since AGP 9.0"*. `2.2.10-2.0.2` is the newest KSP in the Kotlin 2.2.10 line.
+
+The root `build.gradle` declared KSP `2.3.6`, which matches no Kotlin version this project can use.
+It was never applied, so nothing failed. Phase 1 corrects the pin to `2.2.10-2.0.2`; once Room drops
+out, KSP has no consumer at all and phase 7 removes the plugin and its catalog entry outright.
 
 Existing floors are unchanged: `minSdk 23`, `compileSdk 36`, Java 21.
 
@@ -35,8 +49,9 @@ settings.gradle.kts               Groovy → Kotlin DSL
 gradle/libs.versions.toml         new: version catalog
 build.gradle.kts                  root, plugins declared `apply false`
 shared/
-  build.gradle.kts                kotlin("multiplatform")
+  build.gradle.kts                org.jetbrains.kotlin.multiplatform
                                   + com.android.kotlin.multiplatform.library
+                                  (both requested versionless — see Constraints)
   src/commonMain/kotlin/
   src/androidMain/kotlin/
   src/commonTest/kotlin/
@@ -53,12 +68,14 @@ kotlin {
         compileSdk = 36
         minSdk = 23
         compilerOptions { jvmTarget = JvmTarget.JVM_21 }
+        // Runs commonTest on the JVM as :shared:testAndroidHostTest.
         withHostTestBuilder {}
-        withDeviceTestBuilder { sourceSetTreeName = "test" }
-            .configure { instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
     }
 }
 ```
+
+No `withDeviceTestBuilder`: the one instrumented test in this migration lives in `:app`, which
+already has a runner configured.
 
 Adding iOS later is: add the three `ios*` targets plus `binaries.framework`, and write the
 Swift UI and a `MediaPlayerController` actual. No module moves.
@@ -83,7 +100,7 @@ it removes the large majority of the diff.
 - `data/PlaylistApiService` — rewritten on Ktor
 - `data/network/RecentlyPlayedParser` — rewritten on xmlutil
 - `data/network/PlaylistNetworkDataSource` + `Impl`
-- `data/db/` — Room entity, DAO, `NulaDatabase`
+- `data/db/NulaDatabase.kt` — the favourites store, hand-written SQL over the `androidx.sqlite` driver
 - `features/player/RadioViewModel`
 - `features/favorites/FavoritesViewModel`
 - `services/mediaplayer/MediaPlayerController` — new interface
@@ -92,10 +109,10 @@ it removes the large majority of the diff.
 
 ### shared/androidMain
 
-- Nothing Room-specific. The `RoomDatabase.Builder` needs a `Context`, so `:app` supplies it as a
+- Nothing database-specific. The database file path needs a `Context`, so `:app` supplies it as a
   Koin binding and `commonMain` consumes it — Koin already performs the platform split, and an
   `expect`/`actual` pair with one implementation buys nothing. An iOS target supplies its own
-  builder from `iosMain` the same way.
+  path from `iosMain` the same way.
 - Ktor `client-okhttp` dependency. `PlaylistApiService` constructs `HttpClient { }` in `commonMain`
   with **no engine argument** — Ktor resolves the single engine on the classpath via `ServiceLoader`,
   so no `expect`/`actual` is needed. Adding `client-darwin` to a future `iosMain` works the same way.
@@ -115,7 +132,7 @@ it removes the large majority of the diff.
 | Retrofit 3.0.0 + OkHttp | Ktor **3.5.2** `client-core` | commonMain |
 | — | Ktor `client-okhttp` | androidMain |
 | `javax.xml` DOM | **xmlutil 1.0.1** `core`, pull reader | commonMain |
-| `SQLiteOpenHelper` + hand-rolled SQL | **Room 2.8.4** + `androidx.sqlite:sqlite-bundled 2.7.0` | commonMain |
+| `SQLiteOpenHelper` + hand-rolled SQL | **`androidx.sqlite:sqlite-bundled 2.7.0`** (driver only, no Room) | commonMain |
 | `lifecycle-viewmodel-ktx` 2.9.1 | `androidx.lifecycle:lifecycle-viewmodel` **2.11.0** (KMP) | commonMain |
 | Koin 4.1.0 (`koin-android`) | `koin-core` **4.2.2** + `koin-android` 4.2.2 | common / androidMain |
 | `android.util.Log` | `expect`/`actual` `logError` | split |
@@ -203,66 +220,38 @@ Out of scope, noted for later: connectivity awareness lives in `:app` because th
 When an iOS UI is added it will need a `commonMain` connectivity abstraction. Adding one now would be
 an interface with a single implementation and no second consumer.
 
-## Favorites data migration
+## Favorites data compatibility
 
-This is the one place where getting it wrong destroys user data.
+This is the one place where getting it wrong destroys user data — but dropping Room turned it from
+the migration hazard it was into a compatibility requirement.
 
 The existing database is created by `MyDatabaseHelper` (`SQLiteOpenHelper`):
 
 - file `NulaDB`, `user_version = 1`
 - table `NulaTracks (_id INTEGER PRIMARY KEY AUTOINCREMENT, artist TEXT NOT NULL, title TEXT NOT NULL, image TEXT NOT NULL)`
 
-Room refuses to open a database it did not create: there is no `room_master_table`, so identity
-verification throws *"Room cannot verify the data integrity"*.
+`androidx.sqlite` is a driver, not an ORM. There is no `room_master_table`, no identity hash, no
+`TableInfo` validation and therefore **no migration**. The requirement is simply that the new code
+opens the same file and speaks the same schema:
 
-**Solution:** declare `@Database(version = 2)` with a `Migration(1, 2)`. Room runs the migration on
-existing installs, then writes its identity hash and adopts the database in place. Fresh installs
-are created at version 2 directly.
+- **Same path.** `:app` supplies `context.getDatabasePath("NulaDB").absolutePath` — the exact file
+  `SQLiteOpenHelper` used.
+- **Same DDL, frozen.** `CREATE TABLE IF NOT EXISTS` with the column list above runs on every open,
+  which is what `MyDatabaseHelper`'s `onCreate` and `onUpgrade` both did. Idempotent, so an existing
+  database is untouched and a fresh install gets the schema it always had.
+- **Same ids.** `_id` is the favourites' identity for deletion, so `selectAllTracks` reads it back
+  and `removeTrack` deletes by it. Ids must not be reassigned.
 
-**The migration must rebuild the table — a no-op is not sufficient.** Verified with `sqlite3`:
-
-| DDL | `pragma table_info` → `notnull` for `_id` |
-| --- | --- |
-| legacy `_id INTEGER PRIMARY KEY AUTOINCREMENT` | `0` |
-| Room `_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL` | `1` |
-
-Room's `TableInfo` validation compares `notNull`, so a no-op migration fails with *"Migration didn't
-properly handle NulaTracks"* on every existing install. The migration therefore creates a table with
-Room's exact generated DDL, copies the rows across, drops the original and renames:
-
-```
-CREATE TABLE IF NOT EXISTS NulaTracks_new (<Room's createSql, verbatim from schemas/.../2.json>);
-INSERT INTO NulaTracks_new (_id, artist, title, image) SELECT _id, artist, title, image FROM NulaTracks;
-DROP TABLE NulaTracks;
-ALTER TABLE NulaTracks_new RENAME TO NulaTracks;
-```
-
-The `CREATE` statement is copied from Room's generated schema JSON rather than hand-written — any
-difference in backticks, column order or `NOT NULL` placement reproduces the same validation failure.
-
-The entity must generate DDL identical to the legacy table:
-
-```kotlin
-@Entity(tableName = "NulaTracks")
-data class NulaTrackEntity(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "_id") val id: Int = 0,
-    val artist: String,
-    val title: String,
-    val image: String,
-)
-```
-
-`fallbackToDestructiveMigration` is **not** used anywhere — it would silently wipe favorites.
-
-`NulaDatabase`'s current public surface (`insertTrack`, `selectAllTracks`, `removeTrack`, all
-`suspend`) is preserved so `RadioViewModel` and `FavoritesViewModel` do not change. Room's own
-`Dispatchers.IO` query context replaces the manual `withContext(Dispatchers.IO)` wrappers.
+`NulaDatabase` keeps its current public surface (`insertTrack`, `selectAllTracks`, `removeTrack`, all
+`suspend`) so `RadioViewModel` and `FavoritesViewModel` do not change. The manual
+`withContext(Dispatchers.IO)` wrappers stay — the driver is synchronous.
 `MyDatabaseHelper` is deleted.
 
 **Verification (blocking):** an instrumented test that seeds a database file with the legacy
-`SQLiteOpenHelper` schema plus rows, opens it through Room, and asserts the rows are readable and
-the ids are unchanged. It lives in `app/src/androidTest`, which already has a runner and depends on
-`:shared` — no new source set is introduced for one test. Phase 5 is not done until this passes.
+`SQLiteOpenHelper` schema plus rows, opens it through `NulaDatabase`, and asserts the rows are
+readable with unchanged ids and that a delete removes the intended row. It lives in
+`app/src/androidTest`, which already has a runner and depends on `:shared`. Phase 5 is not done until
+it passes, and a real install-over-the-top upgrade has been checked by hand.
 
 ## Tests
 
@@ -274,7 +263,7 @@ the ids are unchanged. It lives in `app/src/androidTest`, which already has a ru
 | `RadioViewModelTest` | **stays `app/src/test`** | `MediaplayerPresenter` → `MediaPlayerController` only |
 | `ConnectionLiveDataTest` | stays `app/src/test` | none |
 | `PlayerScreenTest` | stays `app/src/androidTest` | **none** |
-| legacy-DB migration test | `app/src/androidTest` | new |
+| legacy-DB compatibility test | `app/src/androidTest` | new |
 
 Mockito and mockito-kotlin are JVM-only and cannot be used from `commonTest`.
 `PlaylistRepositoryImplTest` fakes exactly one interface, so a hand-written fake is smaller than the
@@ -318,22 +307,24 @@ independently reviewable and revertible. Eight tasks, same order and same gates.
    metadata on all three channels; and, with the device in airplane mode, the "no internet" overlay
    still appears, the app does not crash, no stale track is published, and the playlist resumes
    updating within 30 seconds of the network returning.
-5. **Room swap.** Entity/DAO/database in `commonMain`, builder `actual` in `androidMain`, no-op
-   1→2 migration, delete `MyDatabaseHelper`. *Done when:* the legacy-DB instrumented test passes
-   and favorites saved by the pre-migration build are still listed after upgrade.
+5. **Favourites store swap.** `NulaDatabase` rewritten on the `androidx.sqlite` driver in
+   `commonMain`, database path supplied from `:app` through Koin, `MyDatabaseHelper` deleted. The
+   `NulaTracks` DDL is frozen and no migration is involved. *Done when:* the legacy-DB instrumented
+   test passes and favorites saved by the pre-migration build are still listed, with working
+   deletion, after an install over the top.
 6. **ViewModels.** `RadioViewModel` and `FavoritesViewModel` → `commonMain`; `ChannelArt` moves to
    `:app`; `MediaPlayerController` interface split with the media3 implementation bound from `:app`.
    *Done when:* moved tests pass, `PlayerScreenTest` passes, playback and channel skip work from
    both the UI and the notification.
-7. **Cleanup.** Drop Retrofit/OkHttp/mockito dependencies that no longer have a consumer, remove
+7. **Cleanup.** Drop Retrofit/OkHttp and the now-consumerless KSP plugin and catalog entry, remove
    dead imports, confirm the release build. *Done when:* `assembleRelease` succeeds and a minified
    build plays audio, lists favorites and loads comments on a device.
 
 ## Risks
 
-- **R8 / release build.** Room and Ktor are new to the minified build. `android.r8.strictFullModeForKeepRules=false` is already set. Phase 7 explicitly verifies a minified release on device rather than assuming the debug build generalises.
-- **Room identity hash.** Covered above; the instrumented test is the gate.
+- **R8 / release build.** The `androidx.sqlite` driver (which ships native libraries) and Ktor are new to the minified build. `android.r8.strictFullModeForKeepRules=false` is already set. Phase 7 explicitly verifies a minified release on device rather than assuming the debug build generalises.
+- **Favourites data loss.** The DDL and the database path are frozen; the instrumented test plus a hand-checked install-over-the-top are the gate. No destructive fallback exists to hide a mistake.
 - **Compose compiler.** Applied only to `:app`. `:shared` contains no composables, so the plugin is not added there.
 - **Firebase.** `google-services` and the Crashlytics plugin stay on `:app` only; `google-services.json` does not move.
-- **KSP for one target.** Room's compiler is registered via `add("kspAndroid", ...)`. When iOS targets are added, matching `kspIos*` entries must be added too, or Room silently generates nothing for them.
+- **No annotation processing in `:shared`.** KSP cannot run in a KMP module on this toolchain (see Constraints), so anything needing codegen — Room, a serialization processor, a DI processor — cannot live in `commonMain` until that changes. Koin's runtime DSL and hand-written SQL are chosen partly for this reason.
 - **xmlutil 1.0.1** is a recent major release; the pull-reader accessor was renamed from `XmlStreaming` to `xmlStreaming` across the 1.0 line. The exact call is confirmed against the library during phase 4, with `RecentlyPlayedParserTest` as the check.
