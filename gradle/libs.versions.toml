@@ -19,6 +19,7 @@ composeBom = "2026.03.00"
 navigationCompose = "2.9.1"
 lifecycle = "2.9.1"
 coroutines = "1.10.2"
+kotlinxCoroutinesCore = "1.10.2"
 koin = "4.1.0"
 retrofit = "3.0.0"
 coil = "2.7.0"
@@ -64,6 +65,8 @@ compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }

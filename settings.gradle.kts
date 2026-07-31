@@ -20,3 +20,4 @@ plugins {
 rootProject.name = "RadioNula"
 
 include(":app")
+include(":shared")
