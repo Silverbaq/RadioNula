@@ -1,18 +1,17 @@
 package com.radionula.radionula
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import com.radionula.radionula.data.PlaylistRepository
+import com.radionula.radionula.domain.repository.PlaylistRepository
 import com.radionula.radionula.data.db.NulaDatabase
-import com.radionula.radionula.model.NulaTrack
-import com.radionula.radionula.radio.ChannelPresenter
-import com.radionula.radionula.radio.RadioViewModel
-import com.radionula.services.mediaplayer.MediaplayerPresenter
+import com.radionula.radionula.domain.model.NulaTrack
+import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.features.player.RadioViewModel
+import com.radionula.radionula.services.mediaplayer.MediaPlayerController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +38,7 @@ class RadioViewModelTest  {
 
     private val playlistRepository: PlaylistRepository = mock()
     private val channelPresenter: ChannelPresenter = mock()
-    private val mediaplayerPresenter: MediaplayerPresenter = mock()
+    private val mediaplayerPresenter: MediaPlayerController = mock()
     private val nulaDatabase: NulaDatabase = mock()
     private lateinit var radioViewModel: RadioViewModel
 
@@ -113,13 +112,10 @@ class RadioViewModelTest  {
         assertEquals(false, tuneInVisible())
     }
 
-    /** asLiveData() only collects while observed, which the fragment does. */
-    private fun observeTuneInButton(): () -> Boolean? {
-        radioViewModel.showTuneInButton.observeForever { }
-        return { radioViewModel.showTuneInButton.value }
-    }
+    /** uiState is shared Eagerly, so its value is live without a collector. */
+    private fun observeTuneInButton(): () -> Boolean = { radioViewModel.uiState.value.showTuneIn }
 
-    private fun observedTuneInButton(): Boolean? = observeTuneInButton()()
+    private fun observedTuneInButton(): Boolean = observeTuneInButton()()
 
     @Test
     fun pauseRadio_only_pauses() {
@@ -165,14 +161,11 @@ class RadioViewModelTest  {
 
     @Test
     fun isPlaying_follows_the_player_not_the_ui() {
-        val observer = mock<Observer<Boolean>>()
-        radioViewModel.isPlaying.observeForever(observer)
-
         // Nothing in the ViewModel was touched: the player reports this itself,
         // which is how an audio-focus or notification pause reaches the UI.
         isPlayingFlow.value = true
 
-        verify(observer).onChanged(true)
+        assertEquals(true, radioViewModel.uiState.value.isPlaying)
     }
 
     @Test

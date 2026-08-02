@@ -65,6 +65,7 @@ base64.txt
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
+GoogleService-Info.plist
 
 # Freeline
 freeline.py
@@ -77,3 +78,14 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+
+# Kotlin Multiplatform build state
+.kotlin/
+
+# Xcode. Package.resolved, which sits next to xcuserdata in the workspace, is
+# tracked on purpose: it pins the SPM versions so CI and every machine resolve
+# the same Firebase.
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+DerivedData/

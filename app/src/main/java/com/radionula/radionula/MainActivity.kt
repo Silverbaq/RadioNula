@@ -1,69 +1,33 @@
 package com.radionula.radionula
 
-import android.net.ConnectivityManager
 import android.os.Bundle
-import android.view.MenuItem
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.navigation.NavigationView
-import com.radionula.radionula.databinding.ActivityMainBinding
-import com.radionula.radionula.util.ConnectivityLiveData
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.radionula.radionula.core.ui.NulaApp
+import com.radionula.radionula.core.ui.theme.NulaTheme
 
-class MainActivity : BaseActivity() {
-    private lateinit var binding: ActivityMainBinding
-
-    private lateinit var connectionData: ConnectivityLiveData
-
-    private val navController: NavController
-        get() = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment)
-            .navController
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Drops the SplashTheme window background used for the cold-start window.
+        setTheme(R.style.Theme_AppCompat_Light_NoActionBar_FullScreen)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        binding.activityMainToolbar.navButton.setOnClickListener {
-            binding.drawerLayout.openDrawer(
-                GravityCompat.START
-            )
+        // The app has always run with the status bar hidden - that came from
+        // android:windowFullscreen, which no longer takes effect once the
+        // content is Compose. Asking the insets controller directly is the
+        // supported way to get the same window back.
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.statusBars())
         }
 
-        setupDrawerContent(binding.nvView)
-
-        connectionData =
-            ConnectivityLiveData(this.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
-
-        // The nav host is declared in the layout and stays mounted for the life
-        // of the activity: the no-connection state is only an overlay on top of
-        // it, so the NavController and the back stack survive going offline.
-        connectionData.observe(this) { connected ->
-            binding.noConnectionOverlay.root.isVisible = !connected
+        setContent {
+            NulaTheme { NulaApp() }
         }
-    }
-
-    private fun setupDrawerContent(navigationView: NavigationView) {
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            selectDrawerItem(menuItem)
-            true
-        }
-    }
-
-    fun selectDrawerItem(menuItem: MenuItem) {
-        // Navigating by destination works from any current destination. The
-        // actions do not - they are declared on radioFragment only, so using
-        // them from e.g. the favourites screen throws.
-        when (menuItem.itemId) {
-            R.id.nav_Radio_Player -> navController.popBackStack(R.id.radioFragment, false)
-            R.id.nav_Favorites -> navController.navigate(R.id.favoritesFragment)
-            R.id.nav_Comments -> navController.navigate(R.id.commentsFragment)
-            else -> Unit
-        }
-        binding.drawerLayout.closeDrawer(GravityCompat.START)
     }
 }

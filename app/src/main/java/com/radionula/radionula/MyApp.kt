@@ -1,9 +1,10 @@
 package com.radionula.radionula
 
 import android.app.Application
-import com.radionula.radionula.data.db.databaseModule
-import com.radionula.radionula.radio.playlistModule
-import com.radionula.services.mediaplayer.radioPlayerModule
+import com.radionula.radionula.core.di.sharedModule
+import com.radionula.radionula.core.di.androidModule
+import com.radionula.radionula.features.player.playlistModule
+import com.radionula.radionula.services.mediaplayer.radioPlayerModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -17,10 +18,10 @@ class MyApp : Application() {
         // TODO Auto-generated method stub
         super.onCreate()
 
-        startKoin{
+        startKoin {
             androidLogger()
             androidContext(this@MyApp)
-            modules(appModule, playlistModule, radioPlayerModule, databaseModule)
+            modules(sharedModule, playlistModule, radioPlayerModule, androidModule)
         }
     }
 }
