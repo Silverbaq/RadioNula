@@ -1,7 +1,6 @@
 package com.radionula.radionula.features.comments
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.multiplatform.webview.request.RequestInterceptor
@@ -19,16 +18,17 @@ actual fun CommentsWebView(html: String, modifier: Modifier) {
     val state = rememberWebViewStateWithHTMLData(data = html, baseUrl = SITE_URL)
     val navigator = rememberWebViewNavigator(requestInterceptor = ExternalLinkInterceptor)
 
-    DisposableEffect(state) {
-        state.webSettings.apply {
-            isJavaScriptEnabled = true
-            // Transparent, so the artwork and scrim behind the view show through -
-            // opaque = false is what actually lets a WKWebView be see-through.
-            backgroundColor = Color.Transparent
-            iOSWebSettings.opaque = false
-            iOSWebSettings.backgroundColor = Color.Transparent
-        }
-        onDispose { }
+    // Applied inline, not in an effect: the library reads webSettings when it builds
+    // the WKWebView during composition, so an effect would run too late.
+    state.webSettings.apply {
+        isJavaScriptEnabled = true
+        // Black, not transparent: Compose on iOS cuts a hole in its own canvas for
+        // an interop view, so the artwork and scrim drawn behind this never show
+        // through - a see-through web view just reveals the white host view.
+        backgroundColor = Color.Black
+        iOSWebSettings.opaque = false
+        iOSWebSettings.backgroundColor = Color.Black
+        iOSWebSettings.underPageBackgroundColor = Color.Black
     }
 
     WebView(state = state, navigator = navigator, modifier = modifier)

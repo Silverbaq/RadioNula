@@ -45,9 +45,11 @@ kotlin {
         }
     }
 
-    // Device and simulator only - iosX64 would need an Intel Mac to be useful.
+    // iosX64 is here for the x86_64 slice a generic simulator destination asks
+    // for (ARCHS = "arm64 x86_64"): without it syncComposeResourcesForIos fails
+    // to map that arch to a target. Nobody runs it on an Intel Mac.
     // Framework is static so the iOS app links it with no embed-and-sign step.
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
+    listOf(iosArm64(), iosSimulatorArm64(), iosX64()).forEach { target ->
         target.binaries.framework {
             baseName = "Shared"
             isStatic = true
