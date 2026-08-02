@@ -1,0 +1,264 @@
+package com.radionula.radionula.services.mediaplayer
+
+import com.radionula.radionula.core.util.ChannelPresenter
+import com.radionula.radionula.core.util.ConnectivityMonitor
+import com.radionula.radionula.core.util.logError
+import com.radionula.radionula.domain.repository.PlaylistRepository
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionInterruptionNotification
+import platform.AVFAudio.AVAudioSessionInterruptionOptionKey
+import platform.AVFAudio.AVAudioSessionInterruptionOptionShouldResume
+import platform.AVFAudio.AVAudioSessionInterruptionTypeBegan
+import platform.AVFAudio.AVAudioSessionInterruptionTypeEnded
+import platform.AVFAudio.AVAudioSessionInterruptionTypeKey
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
+import platform.AVFAudio.setActive
+import platform.AVFoundation.AVPlayer
+import platform.AVFoundation.AVPlayerItem
+import platform.AVFoundation.AVPlayerItemStatusFailed
+import platform.AVFoundation.currentItem
+import platform.AVFoundation.status
+import platform.AVFoundation.pause
+import platform.AVFoundation.play
+import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
+import platform.AVFoundation.AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate
+import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.timeControlStatus
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSNumber
+import platform.Foundation.NSURL
+import platform.MediaPlayer.MPMediaItemPropertyArtist
+import platform.MediaPlayer.MPMediaItemPropertyTitle
+import platform.MediaPlayer.MPNowPlayingInfoCenter
+import platform.MediaPlayer.MPNowPlayingInfoPropertyIsLiveStream
+import platform.MediaPlayer.MPRemoteCommandCenter
+import platform.MediaPlayer.MPRemoteCommandHandlerStatus
+import platform.MediaPlayer.MPRemoteCommandHandlerStatusSuccess
+
+/**
+ * The iOS half of what RadioPlaybackService does on Android.
+ *
+ * AVPlayer plays one item at a time, so "the three channels are the playlist"
+ * becomes an index this class keeps and an item it swaps in. Background audio
+ * comes from the AVAudioSession playback category (plus the audio background
+ * mode in the app's Info.plist), and the lock screen comes from the remote
+ * command centre - the two things media3's MediaSession gave us for free.
+ *
+ * A dropped stream is retried through [StreamReconnect], driven off the same
+ * poll: AVPlayer will not revive an item it has failed, so the retry replaces
+ * the item outright.
+ *
+ * ponytail: timeControlStatus is polled every 250ms rather than observed,
+ * because KVO from Kotlin/Native needs an ObjC observer class for one enum.
+ * That is also what decides when the tuning noise plays, so a burst of static
+ * can start up to a quarter second late. Still no lock-screen artwork.
+ */
+@OptIn(ExperimentalForeignApi::class)
+class IosMediaPlayerController(
+    private val playlistRepository: PlaylistRepository,
+    connectivityMonitor: ConnectivityMonitor,
+) : MediaPlayerController {
+
+    private val player = AVPlayer()
+    private val tuningNoise = IosTuningNoise()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private val _isPlaying = MutableStateFlow(false)
+    override val isPlaying: StateFlow<Boolean> = _isPlaying
+
+    private val _channelIndex = MutableStateFlow(0)
+    override val channelIndex: StateFlow<Int> = _channelIndex
+
+    /** Whether the listener wants audio, which an item failing does not change. */
+    private var shouldPlay = false
+
+    /** Set while a call or Siri owns the session, so its end can hand it back. */
+    private var interruptedWhilePlaying = false
+
+    private val reconnect = StreamReconnect(connectivityMonitor.isOnline, scope) {
+        if (shouldPlay) tuneIn(_channelIndex.value)
+    }
+
+    init {
+        configureAudioSession()
+        registerRemoteCommands()
+        observeInterruptions()
+        observeNowPlaying()
+        observePlaybackState()
+    }
+
+    override fun tuneIn(channelIndex: Int) {
+        val channel = ChannelPresenter.Channel.entries.getOrNull(channelIndex) ?: return
+        _channelIndex.value = channelIndex
+        val url = NSURL.URLWithString(channel.url) ?: return
+        shouldPlay = true
+        setSessionActive(true)
+        player.replaceCurrentItemWithPlayerItem(AVPlayerItem(uRL = url))
+        player.play()
+    }
+
+    override fun nextChannel() {
+        // REPEAT_MODE_ALL on the Android player - the notification's next button
+        // wraps from the last channel back to the first.
+        val next = (_channelIndex.value + 1) % ChannelPresenter.Channel.entries.size
+        tuneIn(next)
+    }
+
+    override fun pauseRadio() {
+        shouldPlay = false
+        reconnect.cancel()
+        player.pause()
+        // Hands the session back, so whatever was playing before us can carry on.
+        setSessionActive(false)
+    }
+
+    private fun resume() {
+        // Nothing queued yet means the listener has not tuned in at all, so
+        // there is no channel to resume - start the one the UI is showing.
+        if (player.currentItem == null) {
+            tuneIn(_channelIndex.value)
+        } else {
+            shouldPlay = true
+            setSessionActive(true)
+            player.play()
+        }
+    }
+
+    /**
+     * Category only. Activating here instead would take the session at app
+     * start - the controller is a Koin single resolved by RadioViewModel, so
+     * merely opening the player screen would stop whatever else the phone was
+     * playing, before the listener has tuned in to anything.
+     */
+    private fun configureAudioSession() {
+        val session = AVAudioSession.sharedInstance()
+        try {
+            session.setCategory(AVAudioSessionCategoryPlayback, null)
+        } catch (e: Throwable) {
+            logError("IosMediaPlayer", "Could not configure the audio session", e)
+        }
+    }
+
+    private fun setSessionActive(active: Boolean) {
+        val session = AVAudioSession.sharedInstance()
+        try {
+            if (active) {
+                session.setActive(true, null)
+            } else {
+                // Without the option other apps stay ducked or silent until the
+                // user starts them by hand.
+                session.setActive(
+                    false,
+                    AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                    null,
+                )
+            }
+        } catch (e: Throwable) {
+            logError("IosMediaPlayer", "Could not set the audio session active=$active", e)
+        }
+    }
+
+    private fun registerRemoteCommands() {
+        val commands = MPRemoteCommandCenter.sharedCommandCenter()
+        commands.playCommand.addTargetWithHandler { resume(); success() }
+        commands.pauseCommand.addTargetWithHandler { pauseRadio(); success() }
+        commands.nextTrackCommand.addTargetWithHandler { nextChannel(); success() }
+    }
+
+    private fun success(): MPRemoteCommandHandlerStatus = MPRemoteCommandHandlerStatusSuccess
+
+    /**
+     * A phone call or a Siri request pauses playback without going through us.
+     * The poll below would notice the pause on its own; this stops the static
+     * immediately rather than a quarter second later.
+     *
+     * Both ends of the interruption are handled: the same notification fires
+     * again when the call ends, and iOS expects the app to reactivate its
+     * session and resume itself - nothing else will.
+     */
+    private fun observeInterruptions() {
+        NSNotificationCenter.defaultCenter.addObserverForName(
+            name = AVAudioSessionInterruptionNotification,
+            `object` = null,
+            queue = null,
+        ) { notification ->
+            val info = notification?.userInfo
+            when ((info?.get(AVAudioSessionInterruptionTypeKey) as? NSNumber)?.unsignedLongValue) {
+                AVAudioSessionInterruptionTypeBegan -> {
+                    // Remembered, because shouldPlay is about to be cleared and
+                    // it is what decides whether resuming is wanted at all.
+                    interruptedWhilePlaying = shouldPlay
+                    shouldPlay = false
+                    reconnect.cancel()
+                    _isPlaying.value = false
+                    tuningNoise.stop()
+                }
+
+                AVAudioSessionInterruptionTypeEnded -> {
+                    val options = (info[AVAudioSessionInterruptionOptionKey] as? NSNumber)
+                        ?.unsignedLongValue ?: 0uL
+                    val shouldResume =
+                        options and AVAudioSessionInterruptionOptionShouldResume != 0uL
+                    if (interruptedWhilePlaying && shouldResume) resume()
+                    interruptedWhilePlaying = false
+                }
+            }
+        }
+    }
+
+    /**
+     * isPlaying comes from the player, not from whoever called us - that is what
+     * makes an interruption or a dead stream show up on the screen. Waiting to
+     * play at the requested rate is AVPlayer's buffering, so it is when the
+     * static belongs: exactly the STATE_BUFFERING && playWhenReady check the
+     * Android service makes.
+     */
+    private fun observePlaybackState() {
+        scope.launch {
+            while (true) {
+                val status = player.timeControlStatus
+                _isPlaying.value = status == AVPlayerTimeControlStatusPlaying
+                if (status == AVPlayerTimeControlStatusWaitingToPlayAtSpecifiedRate) {
+                    tuningNoise.start()
+                } else {
+                    tuningNoise.stop()
+                }
+                // A dropped stream fails the item, and AVPlayer never retries an
+                // item it has failed - the same dead end ExoPlayer's error state
+                // is. The poll is already here, so it is also the error signal.
+                if (shouldPlay && player.currentItem?.status == AVPlayerItemStatusFailed) {
+                    reconnect.schedule()
+                }
+                delay(POLL_INTERVAL_MILLIS)
+            }
+        }
+    }
+
+    private companion object {
+        const val POLL_INTERVAL_MILLIS = 250L
+    }
+
+    /** The feed's track, on the lock screen. */
+    private fun observeNowPlaying() {
+        scope.launch {
+            playlistRepository.currentSong().collect { song ->
+                val channel = ChannelPresenter.Channel.entries
+                    .getOrNull(_channelIndex.value) ?: return@collect
+                MPNowPlayingInfoCenter.defaultCenter().nowPlayingInfo = mapOf<Any?, Any?>(
+                    MPMediaItemPropertyTitle to song.title.ifBlank { channel.displayName },
+                    MPMediaItemPropertyArtist to song.artist,
+                    MPNowPlayingInfoPropertyIsLiveStream to true,
+                )
+            }
+        }
+    }
+}

@@ -11,7 +11,7 @@ import com.radionula.radionula.data.db.NulaDatabase
 import com.radionula.radionula.domain.model.NulaTrack
 import com.radionula.radionula.core.util.ChannelPresenter
 import com.radionula.radionula.features.player.RadioViewModel
-import com.radionula.radionula.services.mediaplayer.MediaplayerPresenter
+import com.radionula.radionula.services.mediaplayer.MediaPlayerController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +38,7 @@ class RadioViewModelTest  {
 
     private val playlistRepository: PlaylistRepository = mock()
     private val channelPresenter: ChannelPresenter = mock()
-    private val mediaplayerPresenter: MediaplayerPresenter = mock()
+    private val mediaplayerPresenter: MediaPlayerController = mock()
     private val nulaDatabase: NulaDatabase = mock()
     private lateinit var radioViewModel: RadioViewModel
 

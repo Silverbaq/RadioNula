@@ -1,8 +1,8 @@
 package com.radionula.radionula
 
 import android.app.Application
-import com.radionula.radionula.core.di.appModule
-import com.radionula.radionula.data.db.databaseModule
+import com.radionula.radionula.core.di.sharedModule
+import com.radionula.radionula.core.di.androidModule
 import com.radionula.radionula.features.player.playlistModule
 import com.radionula.radionula.services.mediaplayer.radioPlayerModule
 import org.koin.android.ext.koin.androidContext
@@ -21,7 +21,7 @@ class MyApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@MyApp)
-            modules(appModule, playlistModule, radioPlayerModule, databaseModule)
+            modules(sharedModule, playlistModule, radioPlayerModule, androidModule)
         }
     }
 }
